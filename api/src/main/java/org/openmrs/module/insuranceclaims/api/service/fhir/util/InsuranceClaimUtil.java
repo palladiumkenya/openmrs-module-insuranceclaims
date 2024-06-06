@@ -1,11 +1,5 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
-// import org.hl7.fhir.dstu3.model.Claim;
-// import org.hl7.fhir.dstu3.model.ClaimResponse;
-// import org.hl7.fhir.dstu3.model.CodeableConcept;
-// import org.hl7.fhir.dstu3.model.Identifier;
-// import org.hl7.fhir.dstu3.model.Period;
-// import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.r4.model.CodeableConcept;

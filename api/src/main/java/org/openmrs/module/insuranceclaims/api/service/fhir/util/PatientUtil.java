@@ -1,7 +1,6 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
 import org.apache.commons.lang3.math.NumberUtils;
-// import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Identifier;
 
@@ -9,8 +8,6 @@ import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonName;
 import org.openmrs.api.context.Context;
-// import org.openmrs.module.fhir.api.util.FHIRConstants;
-// import org.openmrs.module.fhir.api.util.FHIRUtils;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 
 import java.util.List;

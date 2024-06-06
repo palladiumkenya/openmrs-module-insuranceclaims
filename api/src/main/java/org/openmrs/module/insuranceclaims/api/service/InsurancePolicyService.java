@@ -1,7 +1,5 @@
 package org.openmrs.module.insuranceclaims.api.service;
 
-// import org.hl7.fhir.dstu3.model.EligibilityResponse;
-// import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.r4.model.CoverageEligibilityResponse;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.exceptions.FHIRException;

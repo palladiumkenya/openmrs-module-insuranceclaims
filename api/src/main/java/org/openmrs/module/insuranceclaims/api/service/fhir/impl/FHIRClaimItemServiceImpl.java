@@ -1,34 +1,5 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.impl;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-// import org.hl7.fhir.dstu3.model.Claim;
-// import org.hl7.fhir.dstu3.model.ClaimResponse;
-// import org.hl7.fhir.dstu3.model.CodeableConcept;
-// import org.hl7.fhir.dstu3.model.Money;
-// import org.hl7.fhir.dstu3.model.PositiveIntType;
-// import org.hl7.fhir.dstu3.model.StringType;
-import org.hl7.fhir.r4.model.Claim;
-import org.hl7.fhir.r4.model.ClaimResponse;
-import org.hl7.fhir.r4.model.CodeableConcept;
-import org.hl7.fhir.r4.model.Money;
-import org.hl7.fhir.r4.model.PositiveIntType;
-import org.hl7.fhir.r4.model.StringType;
-import org.hl7.fhir.exceptions.FHIRException;
-import org.openmrs.Concept;
-import org.openmrs.api.context.Context;
-import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
-import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
-import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
-import org.openmrs.module.insuranceclaims.api.service.db.ItemDbService;
-import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.ClaimResponseUtil.getProcessNote;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.IdentifierUtil.getUnambiguousElement;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.EXTERNAL_SYSTEM_CODE_SOURCE_MAPPING_NAME;
@@ -47,6 +18,29 @@ import static org.openmrs.module.insuranceclaims.api.service.fhir.util.Insurance
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimItemUtil.getItemQuantity;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimItemUtil.getItemUnitPrice;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.SpecialComponentUtil.getSpecialConditionComponentBySequenceNumber;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.ClaimResponse;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Money;
+import org.hl7.fhir.r4.model.PositiveIntType;
+import org.hl7.fhir.r4.model.StringType;
+import org.openmrs.Concept;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
+import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
+import org.openmrs.module.insuranceclaims.api.service.db.ItemDbService;
+import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
 
 public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
 

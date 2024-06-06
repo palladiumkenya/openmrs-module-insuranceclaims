@@ -1,42 +1,28 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.impl;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-// import org.hl7.fhir.dstu3.model.Claim;
-// import org.hl7.fhir.dstu3.model.CodeableConcept;
-// import org.hl7.fhir.dstu3.model.Coding;
-import org.hl7.fhir.exceptions.FHIRException;
-import org.openmrs.Concept;
-import org.openmrs.api.context.Context;
-// import org.openmrs.module.fhir.api.util.BaseOpenMRSDataUtil;
-// import org.openmrs.module.fhir.api.util.FHIRConstants;
-// import org.openmrs.module.fhir.api.util.FHIRUtils;
-import org.openmrs.module.insuranceclaims.util.OpenmrsUtils;
-import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
-import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimDiagnosis;
-import org.openmrs.module.insuranceclaims.api.service.db.DiagnosisDbService;
-import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimDiagnosisService;
-import org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants;
-import org.openmrs.module.fhir2.api.translators.CodingTranslator;
-import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
-import org.openmrs.module.fhir2.api.translators.impl.ConceptTranslatorImpl;
-import org.openmrs.module.fhir2.api.translators.impl.MedicationQuantityCodingTranslatorImpl;
-import org.hl7.fhir.r4.model.Claim;
-import org.hl7.fhir.r4.model.CodeableConcept;
-
-import org.hl7.fhir.r4.model.Coding;
-import org.openmrs.module.fhir2.api.translators.CodingTranslator;
-import org.openmrs.module.fhir2.api.translators.impl.BaseCodingTranslator;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.IdentifierUtil.getUnambiguousElement;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.IdentifierUtil.getUnambiguousElement;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
+import org.openmrs.Concept;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
+import org.openmrs.module.fhir2.api.translators.impl.ConceptTranslatorImpl;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimDiagnosis;
+import org.openmrs.module.insuranceclaims.api.service.db.DiagnosisDbService;
+import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimDiagnosisService;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants;
+import org.openmrs.module.insuranceclaims.util.OpenmrsUtils;
 
 public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService {
 

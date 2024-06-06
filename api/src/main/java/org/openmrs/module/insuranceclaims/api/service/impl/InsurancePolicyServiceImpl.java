@@ -6,13 +6,9 @@ import org.hibernate.Criteria;
 import org.hibernate.NullPrecedence;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-// import org.hl7.fhir.dstu3.model.EligibilityResponse;
-// import org.hl7.fhir.dstu3.model.Money;
-// import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.r4.model.CoverageEligibilityResponse;
 import org.hl7.fhir.r4.model.Money;
 import org.hl7.fhir.r4.model.Reference;
-import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.exceptions.FHIRException;
 
 import org.openmrs.Patient;

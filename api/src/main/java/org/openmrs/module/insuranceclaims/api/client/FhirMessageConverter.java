@@ -25,7 +25,7 @@ public class FhirMessageConverter extends AbstractHttpMessageConverter<IBaseReso
     private static final String TYPE = "application";
     private static final String SUBTYPE_1 = "json";
 
-    private IParser parser = FhirContext.forDstu3().newJsonParser();
+    private IParser parser = FhirContext.forR4().newJsonParser();
 
     public FhirMessageConverter() {
         super(new MediaType(TYPE, SUBTYPE_1, Charset.forName(CHARSET)));

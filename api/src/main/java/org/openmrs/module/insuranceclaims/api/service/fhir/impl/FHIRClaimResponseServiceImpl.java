@@ -1,8 +1,5 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.impl;
 
-// import org.hl7.fhir.dstu3.model.ClaimResponse;
-// import org.hl7.fhir.dstu3.model.IdType;
-// import org.hl7.fhir.dstu3.model.Money;
 import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.r4.model.ClaimResponse.RemittanceOutcome;
 import org.hl7.fhir.r4.model.CodeableConcept;
@@ -11,7 +8,6 @@ import org.hl7.fhir.r4.model.IdType;
 import org.hl7.fhir.r4.model.Money;
 import org.hl7.fhir.r4.model.ClaimResponse.PaymentComponent;
 
-// import org.openmrs.module.fhir.api.util.BaseOpenMRSDataUtil;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
