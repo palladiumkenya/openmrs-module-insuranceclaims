@@ -1,10 +1,8 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
-// import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.r4.model.Reference;
 import org.openmrs.Location;
 import org.openmrs.LocationAttribute;
-// import org.openmrs.module.fhir.api.util.FHIRConstants;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.LOCATION_EXTERNAL_ID_ATTRIBUTE_UUID;

@@ -1,14 +1,6 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
 import org.apache.commons.lang3.StringUtils;
-// import org.hl7.fhir.dstu3.model.Claim;
-// import org.hl7.fhir.dstu3.model.ClaimResponse;
-// import org.hl7.fhir.dstu3.model.CodeableConcept;
-// import org.hl7.fhir.dstu3.model.Coding;
-// import org.hl7.fhir.dstu3.model.Money;
-// import org.hl7.fhir.dstu3.model.PositiveIntType;
-// import org.hl7.fhir.dstu3.model.PrimitiveType;
-// import org.hl7.fhir.dstu3.model.SimpleQuantity;
 import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.r4.model.CodeableConcept;

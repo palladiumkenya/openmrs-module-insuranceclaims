@@ -1,8 +1,5 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
-// import org.hl7.fhir.dstu3.model.Claim;
-// import org.hl7.fhir.dstu3.model.CodeableConcept;
-// import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.StringType;

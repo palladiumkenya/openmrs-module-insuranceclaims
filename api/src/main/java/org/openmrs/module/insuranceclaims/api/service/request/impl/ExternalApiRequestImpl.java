@@ -1,11 +1,5 @@
 package org.openmrs.module.insuranceclaims.api.service.request.impl;
 
-// import org.hl7.fhir.dstu3.model.BooleanType;
-// import org.hl7.fhir.dstu3.model.Claim;
-// import org.hl7.fhir.dstu3.model.ClaimResponse;
-// import org.hl7.fhir.dstu3.model.EligibilityRequest;
-// import org.hl7.fhir.dstu3.model.EligibilityResponse;
-// import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.ClaimResponse;
