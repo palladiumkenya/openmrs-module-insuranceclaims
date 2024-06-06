@@ -1,14 +1,22 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.ClaimResponse;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
-import org.hl7.fhir.dstu3.model.Coding;
-import org.hl7.fhir.dstu3.model.Money;
-import org.hl7.fhir.dstu3.model.PositiveIntType;
-import org.hl7.fhir.dstu3.model.PrimitiveType;
-import org.hl7.fhir.dstu3.model.SimpleQuantity;
+// import org.hl7.fhir.dstu3.model.Claim;
+// import org.hl7.fhir.dstu3.model.ClaimResponse;
+// import org.hl7.fhir.dstu3.model.CodeableConcept;
+// import org.hl7.fhir.dstu3.model.Coding;
+// import org.hl7.fhir.dstu3.model.Money;
+// import org.hl7.fhir.dstu3.model.PositiveIntType;
+// import org.hl7.fhir.dstu3.model.PrimitiveType;
+// import org.hl7.fhir.dstu3.model.SimpleQuantity;
+import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.ClaimResponse;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.Money;
+import org.hl7.fhir.r4.model.PositiveIntType;
+import org.hl7.fhir.r4.model.PrimitiveType;
+import org.hl7.fhir.r4.model.SimpleQuantity;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.Concept;
 import org.openmrs.ConceptMap;
@@ -133,7 +141,7 @@ public final class InsuranceClaimItemUtil {
         List<ClaimResponse.AddedItemComponent> addedItemComponents = response.getAddItem();
 
         ClaimResponse.AddedItemComponent correspondingAddItem = addedItemComponents.stream()
-                .filter(addItem -> isValueInSequence(addItem.getSequenceLinkId(), sequenceId))
+                .filter(addItem -> isValueInSequence(addItem.getDetailSequence(), sequenceId))
                 .findFirst()
                 .orElse(null);
 
@@ -141,7 +149,7 @@ public final class InsuranceClaimItemUtil {
             throw new FHIRException("No item code corresponding to " + sequenceId + " found");
         }
 
-        List<Coding> itemCoding = correspondingAddItem.getService().getCoding();
+        List<Coding> itemCoding = correspondingAddItem.getProductOrService().getCoding();
         return itemCoding.stream()
                 .map(Coding::getCode)
                 .collect(Collectors.toList());

@@ -1,7 +1,9 @@
 package org.openmrs.module.insuranceclaims.api.client.impl;
 
-import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.ClaimResponse;
+// import org.hl7.fhir.dstu3.model.Claim;
+// import org.hl7.fhir.dstu3.model.ClaimResponse;
+import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.module.insuranceclaims.api.client.ClaimHttpRequest;
 import org.openmrs.module.insuranceclaims.api.client.FHIRClient;
@@ -18,8 +20,7 @@ public class ClaimHttpRequestImpl implements ClaimHttpRequest {
     private FHIRInsuranceClaimService fhirInsuranceClaimService;
 
     @Override
-    public Claim getClaimRequest(String resourceUrl, String claimCode)
-            throws URISyntaxException {
+    public Claim getClaimRequest(String resourceUrl, String claimCode) throws URISyntaxException {
         String url = resourceUrl + "/" + claimCode;
         return fhirRequestClient.getObject(url, Claim.class);
     }

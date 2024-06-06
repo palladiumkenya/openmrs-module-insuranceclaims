@@ -2,10 +2,14 @@ package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hl7.fhir.dstu3.model.ClaimResponse;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
-import org.hl7.fhir.dstu3.model.Coding;
-import org.hl7.fhir.dstu3.model.Reference;
+// import org.hl7.fhir.dstu3.model.ClaimResponse;
+// import org.hl7.fhir.dstu3.model.CodeableConcept;
+// import org.hl7.fhir.dstu3.model.Coding;
+// import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.r4.model.ClaimResponse;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.Reference;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
 
@@ -39,7 +43,7 @@ public final class ClaimResponseUtil {
     public static InsuranceClaimStatus getClaimResponseStatus(ClaimResponse response, List<String> errors) {
         String codeString = response
                 .getOutcome()
-                .getText()
+                .getDisplay()
                 .toUpperCase(Locale.getDefault());
         return InsuranceClaimStatus.valueOf(codeString);
     }

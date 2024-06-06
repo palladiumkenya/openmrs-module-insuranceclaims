@@ -1,6 +1,7 @@
 package org.openmrs.module.insuranceclaims.api.service.request;
 
-import org.hl7.fhir.dstu3.model.ClaimResponse;
+// import org.hl7.fhir.dstu3.model.ClaimResponse;
+import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.Patient;
 import org.openmrs.module.insuranceclaims.api.client.impl.ClaimRequestWrapper;

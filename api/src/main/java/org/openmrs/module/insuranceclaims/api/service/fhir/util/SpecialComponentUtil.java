@@ -1,8 +1,11 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
-import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
-import org.hl7.fhir.dstu3.model.StringType;
+// import org.hl7.fhir.dstu3.model.Claim;
+// import org.hl7.fhir.dstu3.model.CodeableConcept;
+// import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.exceptions.FHIRException;
 
 import java.util.List;
@@ -13,16 +16,16 @@ import static org.openmrs.module.insuranceclaims.api.service.fhir.util.Identifie
 public final class SpecialComponentUtil {
 
     public static String getSpecialConditionComponentFromCategory(Claim claim, String category) throws FHIRException {
-        List<Claim.SpecialConditionComponent> information =
-                getConditionsByCategory(claim.getInformation(), category);
+        List<Claim.SupportingInformationComponent> information =
+                getConditionsByCategory(claim.getSupportingInfo(), category);
 
-        Claim.SpecialConditionComponent component = getUnambiguousElement(information);
+        Claim.SupportingInformationComponent component = getUnambiguousElement(information);
         return component != null ? component.getValueStringType().getValue() : null;
     }
 
     public static String getSpecialConditionComponentBySequenceNumber(Claim claim, int sequenceId) throws FHIRException {
-        List<Claim.SpecialConditionComponent> information = claim.getInformation();
-        Claim.SpecialConditionComponent requested = information.stream()
+        List<Claim.SupportingInformationComponent> information = claim.getSupportingInfo();
+        Claim.SupportingInformationComponent requested = information.stream()
                 .filter(c -> c.getSequence() == sequenceId)
                 .findFirst()
                 .orElse(null);
@@ -30,8 +33,8 @@ public final class SpecialComponentUtil {
         return requested == null ? null : requested.getValueStringType().getValue();
     }
 
-    public static Claim.SpecialConditionComponent createSpecialComponent(String value, String categoryName) {
-        Claim.SpecialConditionComponent information = new Claim.SpecialConditionComponent();
+    public static Claim.SupportingInformationComponent createSpecialComponent(String value, String categoryName) {
+        Claim.SupportingInformationComponent information = new Claim.SupportingInformationComponent();
         CodeableConcept category = new CodeableConcept();
 
         category.setText(categoryName);
@@ -40,8 +43,7 @@ public final class SpecialComponentUtil {
         return information;
     }
 
-    private static List<Claim.SpecialConditionComponent> getConditionsByCategory(
-            List<Claim.SpecialConditionComponent> componentList, String category) {
+    private static List<Claim.SupportingInformationComponent> getConditionsByCategory(List<Claim.SupportingInformationComponent> componentList, String category) {
 
         return componentList.stream()
                 .filter(c -> c.getCategory().getText() != null)

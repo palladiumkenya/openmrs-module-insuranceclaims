@@ -1,18 +1,26 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.impl;
 
-import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.IdType;
-import org.hl7.fhir.dstu3.model.Identifier;
-import org.hl7.fhir.dstu3.model.Money;
-import org.hl7.fhir.dstu3.model.Period;
-import org.hl7.fhir.dstu3.model.Reference;
+// import org.hl7.fhir.dstu3.model.Claim;
+// import org.hl7.fhir.dstu3.model.IdType;
+// import org.hl7.fhir.dstu3.model.Identifier;
+// import org.hl7.fhir.dstu3.model.Money;
+// import org.hl7.fhir.dstu3.model.Period;
+// import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.exceptions.FHIRException;
+
+import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.Identifier;
+import org.hl7.fhir.r4.model.IdType;
+import org.hl7.fhir.r4.model.Money;
+import org.hl7.fhir.r4.model.Period;
+
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.Provider;
 import org.openmrs.VisitType;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.fhir.api.util.BaseOpenMRSDataUtil;
+// import org.openmrs.module.fhir.api.util.BaseOpenMRSDataUtil;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.db.AttributeService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimDiagnosisService;
@@ -39,8 +47,8 @@ import static org.openmrs.module.insuranceclaims.api.service.fhir.util.Insurance
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimUtil.getClaimGuaranteeId;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimUtil.getClaimUuid;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.LocationUtil.buildLocationReference;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.PatientUtil.buildPatientReference;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.PractitionerUtil.buildPractitionerReference;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.PatientUtil;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.PractitionerUtil;
 
 public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService {
 
@@ -53,7 +61,9 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
     @Override
     public Claim generateClaim(InsuranceClaim omrsClaim) throws FHIRException {
         Claim claim = new Claim();
-        BaseOpenMRSDataUtil.setBaseExtensionFields(claim, omrsClaim);
+        PractitionerUtil practitionerUtil = new PractitionerUtil();
+        PatientUtil patientUtil = new PatientUtil();
+        // BaseOpenMRSDataUtil.setBaseExtensionFields(claim, omrsClaim);
 
         //Set Claim id to fhir Claim
         IdType claimId = new IdType();
@@ -61,13 +71,13 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         claim.setId(claimId);
 
         //Set provider
-        Reference providerReference = buildPractitionerReference(omrsClaim);
+        Reference providerReference = practitionerUtil.buildPractitionerReference(omrsClaim);
         claim.setProvider(providerReference);
         //Set enterer
         claim.setEnterer(providerReference);
 
         //Set patient
-        claim.setPatient(buildPatientReference(omrsClaim));
+        claim.setPatient(patientUtil.buildPatientReference(omrsClaim));
 
         //Set facility
         claim.setFacility(buildLocationReference(omrsClaim));
@@ -91,12 +101,12 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         claim.setCreated(omrsClaim.getDateCreated());
 
         //Set information
-        List<Claim.SpecialConditionComponent> claimInformation = new ArrayList<>();
+        List<Claim.SupportingInformationComponent> claimInformation = new ArrayList<>();
 
         claimInformation.add(createClaimGuaranteeIdInformation(omrsClaim));
         claimInformation.add(createClaimExplanationInformation(omrsClaim));
 
-        claim.setInformation(claimInformation);
+        claim.setSupportingInfo(claimInformation);
 
         //Set type
         claim.setType(createClaimVisitType(omrsClaim));
@@ -113,8 +123,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
     public InsuranceClaim generateOmrsClaim(Claim claim, List<String> errors) {
         InsuranceClaim omrsClaim = new InsuranceClaim();
 
-        BaseOpenMRSDataUtil.readBaseExtensionFields(omrsClaim, claim);
-        BaseOpenMRSDataUtil.setBaseExtensionFields(claim, omrsClaim);
+        // BaseOpenMRSDataUtil.readBaseExtensionFields(omrsClaim, claim);
+        // BaseOpenMRSDataUtil.setBaseExtensionFields(claim, omrsClaim);
 
         omrsClaim.setUuid(getClaimUuid(claim, errors));
 

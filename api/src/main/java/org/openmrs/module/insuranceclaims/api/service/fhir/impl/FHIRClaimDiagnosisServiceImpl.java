@@ -2,20 +2,34 @@ package org.openmrs.module.insuranceclaims.api.service.fhir.impl;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
-import org.hl7.fhir.dstu3.model.Coding;
+// import org.hl7.fhir.dstu3.model.Claim;
+// import org.hl7.fhir.dstu3.model.CodeableConcept;
+// import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.Concept;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.fhir.api.util.BaseOpenMRSDataUtil;
-import org.openmrs.module.fhir.api.util.FHIRConstants;
-import org.openmrs.module.fhir.api.util.FHIRUtils;
+// import org.openmrs.module.fhir.api.util.BaseOpenMRSDataUtil;
+// import org.openmrs.module.fhir.api.util.FHIRConstants;
+// import org.openmrs.module.fhir.api.util.FHIRUtils;
+import org.openmrs.module.insuranceclaims.util.OpenmrsUtils;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimDiagnosis;
 import org.openmrs.module.insuranceclaims.api.service.db.DiagnosisDbService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimDiagnosisService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants;
+import org.openmrs.module.fhir2.api.translators.CodingTranslator;
+import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
+import org.openmrs.module.fhir2.api.translators.impl.ConceptTranslatorImpl;
+import org.openmrs.module.fhir2.api.translators.impl.MedicationQuantityCodingTranslatorImpl;
+import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.CodeableConcept;
+
+import org.hl7.fhir.r4.model.Coding;
+import org.openmrs.module.fhir2.api.translators.CodingTranslator;
+import org.openmrs.module.fhir2.api.translators.impl.BaseCodingTranslator;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,15 +41,17 @@ import static org.openmrs.module.insuranceclaims.api.service.fhir.util.Identifie
 public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService {
 
     private DiagnosisDbService diagnosisDbService;
+    private ConceptTranslator conceptTranslator = new ConceptTranslatorImpl();
+    private CodingTranslator medicationCodingTranslator = new MedicationQuantityCodingTranslatorImpl();
 
     @Override
     public Claim.DiagnosisComponent generateClaimDiagnosisComponent(InsuranceClaimDiagnosis omrsClaimDiagnosis) {
         Claim.DiagnosisComponent newDiagnosis = new Claim.DiagnosisComponent();
 
         Concept diagnosisConcepts = omrsClaimDiagnosis.getConcept();
-        CodeableConcept diagnosis = FHIRUtils.createCodeableConcept(diagnosisConcepts);
+        CodeableConcept diagnosis = conceptTranslator.toFhirResource(diagnosisConcepts);
 
-        newDiagnosis.setId(FHIRUtils.extractUuid(omrsClaimDiagnosis.getUuid()));
+        newDiagnosis.setId(omrsClaimDiagnosis.getUuid());
         newDiagnosis.setDiagnosis(diagnosis);
 
         return newDiagnosis;
@@ -64,13 +80,12 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
     }
 
     @Override
-    public InsuranceClaimDiagnosis createOmrsClaimDiagnosis(
-            Claim.DiagnosisComponent claimDiagnosis, List<String> errors) {
+    public InsuranceClaimDiagnosis createOmrsClaimDiagnosis(Claim.DiagnosisComponent claimDiagnosis, List<String> errors) {
         InsuranceClaimDiagnosis diagnosis = new InsuranceClaimDiagnosis();
-        BaseOpenMRSDataUtil.readBaseExtensionFields(diagnosis, claimDiagnosis);
+        // BaseOpenMRSDataUtil.readBaseExtensionFields(diagnosis, claimDiagnosis);
 
         if (claimDiagnosis.getId() != null) {
-            diagnosis.setUuid(FHIRUtils.extractUuid(claimDiagnosis.getId()));
+            diagnosis.setUuid(extractUuid(claimDiagnosis.getId()));
         }
         try {
             validateDiagnosisCodingSystem(claimDiagnosis);
@@ -80,7 +95,12 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
         }
 
         return diagnosis;
-    }
+    } 
+    
+    public static String extractUuid(String uuid) {
+		return uuid.contains("/") ? uuid.substring(uuid.indexOf("/") + 1) : uuid;
+	}
+      
 
     public void setDiagnosisDbService(DiagnosisDbService diagnosisDao) {
         this.diagnosisDbService = diagnosisDao;
@@ -148,7 +168,8 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
         String systemName = coding.getSystem();
 
         Concept concept = null;
-        if (FHIRConstants.OPENMRS_URI.equals(systemName)) {
+        String baseUrl = OpenmrsUtils.getOpenmrsBaseUrl();
+        if (baseUrl.equals(systemName)) {
             concept = Context.getConceptService().getConceptByUuid(conceptCode);
         } else { if (StringUtils.isNotEmpty(systemName)) {
                 List<Concept> concepts =  Context.getConceptService().getConceptsByMapping(conceptCode, systemName);

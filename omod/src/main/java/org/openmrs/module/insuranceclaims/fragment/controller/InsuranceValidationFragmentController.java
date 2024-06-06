@@ -1,7 +1,7 @@
 package org.openmrs.module.insuranceclaims.fragment.controller;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.r4.model.Patient;
 import org.openmrs.Person;
 import org.openmrs.PersonAttribute;
 import org.openmrs.module.insuranceclaims.api.mapper.InsurancePolicyMapper;

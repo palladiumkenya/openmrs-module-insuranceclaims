@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Generic message conventer that use application/json type and allows all FHIR Models as response type
  */
-public class FhirMessageConventer extends AbstractHttpMessageConverter<IBaseResource> {
+public class FhirMessageConverter extends AbstractHttpMessageConverter<IBaseResource> {
 
     private static final String CHARSET = "UTF-8";
     private static final String TYPE = "application";
@@ -27,7 +27,7 @@ public class FhirMessageConventer extends AbstractHttpMessageConverter<IBaseReso
 
     private IParser parser = FhirContext.forDstu3().newJsonParser();
 
-    public FhirMessageConventer() {
+    public FhirMessageConverter() {
         super(new MediaType(TYPE, SUBTYPE_1, Charset.forName(CHARSET)));
     }
 

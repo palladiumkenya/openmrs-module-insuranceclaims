@@ -1,6 +1,7 @@
 package org.openmrs.module.insuranceclaims.api.service.impl;
 
-import org.hl7.fhir.dstu3.model.Money;
+// import org.hl7.fhir.dstu3.model.Money;
+import org.hl7.fhir.r4.model.Money;
 import org.openmrs.Concept;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItemStatus;

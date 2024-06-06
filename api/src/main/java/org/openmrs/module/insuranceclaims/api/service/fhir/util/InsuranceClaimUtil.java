@@ -1,11 +1,18 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
-import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.ClaimResponse;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
-import org.hl7.fhir.dstu3.model.Identifier;
-import org.hl7.fhir.dstu3.model.Period;
+// import org.hl7.fhir.dstu3.model.Claim;
+// import org.hl7.fhir.dstu3.model.ClaimResponse;
+// import org.hl7.fhir.dstu3.model.CodeableConcept;
+// import org.hl7.fhir.dstu3.model.Identifier;
+// import org.hl7.fhir.dstu3.model.Period;
+// import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.ClaimResponse;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Identifier;
+import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.exceptions.FHIRException;
+
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 
 import java.util.ArrayList;
@@ -103,11 +110,11 @@ public final class InsuranceClaimUtil {
         return created;
     }
 
-    public static Claim.SpecialConditionComponent createClaimExplanationInformation(InsuranceClaim omrsClaim) {
+    public static Claim.SupportingInformationComponent createClaimExplanationInformation(InsuranceClaim omrsClaim) {
         return createSpecialComponent(omrsClaim.getExplanation(), EXPLANATION_CATEGORY);
     }
 
-    public static Claim.SpecialConditionComponent createClaimGuaranteeIdInformation(InsuranceClaim omrsClaim) {
+    public static Claim.SupportingInformationComponent createClaimGuaranteeIdInformation(InsuranceClaim omrsClaim) {
         return createSpecialComponent(omrsClaim.getGuaranteeId(), GUARANTEE_ID_CATEGORY);
     }
 

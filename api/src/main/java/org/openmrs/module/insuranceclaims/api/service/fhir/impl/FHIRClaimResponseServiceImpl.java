@@ -1,15 +1,25 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.impl;
 
-import org.hl7.fhir.dstu3.model.ClaimResponse;
-import org.hl7.fhir.dstu3.model.IdType;
-import org.hl7.fhir.dstu3.model.Money;
-import org.openmrs.module.fhir.api.util.BaseOpenMRSDataUtil;
+// import org.hl7.fhir.dstu3.model.ClaimResponse;
+// import org.hl7.fhir.dstu3.model.IdType;
+// import org.hl7.fhir.dstu3.model.Money;
+import org.hl7.fhir.r4.model.ClaimResponse;
+import org.hl7.fhir.r4.model.ClaimResponse.RemittanceOutcome;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.IdType;
+import org.hl7.fhir.r4.model.Money;
+import org.hl7.fhir.r4.model.ClaimResponse.PaymentComponent;
+
+// import org.openmrs.module.fhir.api.util.BaseOpenMRSDataUtil;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimResponseService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.ClaimResponseUtil.buildClaimReference;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.ClaimResponseUtil.buildCommunicationRequestReference;
@@ -39,7 +49,7 @@ public class FHIRClaimResponseServiceImpl implements FHIRClaimResponseService {
         claim.setIdentifier(createClaimIdentifier(omrsClaim));
 
         //status
-        claim.setOutcome(getClaimResponseOutcome(omrsClaim));
+        claim.setOutcome(convertToRemittanceOutcome(getClaimResponseOutcome(omrsClaim)));
 
         //payment
         claim.setPayment(createPaymentComponent(omrsClaim));
@@ -50,7 +60,10 @@ public class FHIRClaimResponseServiceImpl implements FHIRClaimResponseService {
         //totalBenefit
         Money benefit = new Money();
         benefit.setValue(omrsClaim.getApprovedTotal());
-        claim.setTotalBenefit(benefit);
+        // claim.setTotalBenefit(benefit);
+        PaymentComponent paymentComponent = new PaymentComponent();
+        paymentComponent.setAmount(benefit);
+        claim.setPayment(paymentComponent);
 
         //date created
         claim.setCreated(omrsClaim.getDateProcessed());
@@ -78,8 +91,8 @@ public class FHIRClaimResponseServiceImpl implements FHIRClaimResponseService {
         InsuranceClaim omrsClaim = new InsuranceClaim();
 
         //id
-        BaseOpenMRSDataUtil.readBaseExtensionFields(omrsClaim, claim);
-        BaseOpenMRSDataUtil.setBaseExtensionFields(claim, omrsClaim);
+        // BaseOpenMRSDataUtil.readBaseExtensionFields(omrsClaim, claim);
+        // BaseOpenMRSDataUtil.setBaseExtensionFields(claim, omrsClaim);
 
         omrsClaim.setUuid(getClaimUuid(claim, errors));
 
@@ -94,7 +107,8 @@ public class FHIRClaimResponseServiceImpl implements FHIRClaimResponseService {
         omrsClaim.setAdjustment(claim.getPayment().getAdjustmentReason().getText());
 
         //approved total
-        omrsClaim.setApprovedTotal(claim.getTotalBenefit().getValue());
+        // omrsClaim.setApprovedTotal(claim.getTotalBenefit().getValue());
+        omrsClaim.setApprovedTotal(claim.getPayment().getAmount().getValue());
 
         //date processed
         //Use date or payment?
@@ -108,5 +122,26 @@ public class FHIRClaimResponseServiceImpl implements FHIRClaimResponseService {
 
     public void setItemService(FHIRClaimItemService itemService) {
         this.itemService = itemService;
+    }
+
+    public static RemittanceOutcome convertToRemittanceOutcome(CodeableConcept codeableConcept) throws IllegalArgumentException {
+        Map<String, RemittanceOutcome> outcomeMapping = new HashMap<>();
+
+        outcomeMapping.put("complete", RemittanceOutcome.COMPLETE);
+        outcomeMapping.put("error", RemittanceOutcome.ERROR);
+        outcomeMapping.put("partial", RemittanceOutcome.PARTIAL);
+
+        if (codeableConcept == null || codeableConcept.getCoding().isEmpty()) {
+            throw new IllegalArgumentException("Invalid CodeableConcept");
+        }
+
+        for (Coding coding : codeableConcept.getCoding()) {
+            String code = coding.getCode();
+            if (outcomeMapping.containsKey(code)) {
+                return outcomeMapping.get(code);
+            }
+        }
+
+        throw new IllegalArgumentException("No matching RemittanceOutcome for provided CodeableConcept");
     }
 }

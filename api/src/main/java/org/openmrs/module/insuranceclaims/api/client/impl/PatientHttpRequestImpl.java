@@ -1,7 +1,9 @@
 package org.openmrs.module.insuranceclaims.api.client.impl;
 
-import org.hl7.fhir.dstu3.model.Bundle;
-import org.hl7.fhir.dstu3.model.Patient;
+// import org.hl7.fhir.dstu3.model.Bundle;
+// import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.client.PatientHttpRequest;
 
@@ -19,7 +21,6 @@ public class PatientHttpRequestImpl implements PatientHttpRequest {
     public Patient getPatientByQuery(String resourceUrl, String query) throws URISyntaxException {
         String url = resourceUrl + "/" + query;
         return  client.getObject(url, Patient.class);
-
     }
 
     @Override

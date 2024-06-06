@@ -1,7 +1,8 @@
 package org.openmrs.module.insuranceclaims.api.client;
 
 
-import org.hl7.fhir.dstu3.model.Patient;
+// import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.r4.model.Patient;
 
 import java.net.URISyntaxException;
 import java.util.List;

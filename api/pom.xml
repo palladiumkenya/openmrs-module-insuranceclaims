@@ -12,20 +12,6 @@
     <name>Insurance Claims API</name>
     <description>API project for Insurance Claims</description>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <configuration>
-                    <rulesets>
-                        <ruleset>../pmd.xml</ruleset>
-                    </rulesets>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
             <groupId>org.openmrs.web</groupId>
@@ -41,7 +27,7 @@
 
         <dependency>
             <groupId>org.openmrs.module</groupId>
-            <artifactId>fhir-api</artifactId>
+            <artifactId>fhir2-api</artifactId>
         </dependency>
 
         <dependency>
@@ -76,12 +62,12 @@
 
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
-            <artifactId>hapi-fhir-structures-dstu3</artifactId>
+            <artifactId>hapi-fhir-structures-r4</artifactId>
         </dependency>
 
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
-            <artifactId>hapi-fhir-validation-resources-dstu3</artifactId>
+            <artifactId>hapi-fhir-validation-resources-r4</artifactId>
         </dependency>
 
         <dependency>

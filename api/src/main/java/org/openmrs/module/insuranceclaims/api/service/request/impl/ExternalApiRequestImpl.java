@@ -1,14 +1,32 @@
 package org.openmrs.module.insuranceclaims.api.service.request.impl;
 
-import org.hl7.fhir.dstu3.model.BooleanType;
-import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.ClaimResponse;
-import org.hl7.fhir.dstu3.model.EligibilityRequest;
-import org.hl7.fhir.dstu3.model.EligibilityResponse;
-import org.hl7.fhir.dstu3.model.Patient;
+// import org.hl7.fhir.dstu3.model.BooleanType;
+// import org.hl7.fhir.dstu3.model.Claim;
+// import org.hl7.fhir.dstu3.model.ClaimResponse;
+// import org.hl7.fhir.dstu3.model.EligibilityRequest;
+// import org.hl7.fhir.dstu3.model.EligibilityResponse;
+// import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.r4.model.BooleanType;
+import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.ClaimResponse;
+import org.hl7.fhir.r4.model.CoverageEligibilityRequest;
+import org.hl7.fhir.r4.model.CoverageEligibilityResponse;
+import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.Identifier;
+import org.hl7.fhir.r4.model.HumanName;
+import org.hl7.fhir.r4.model.StringType;
+import org.hl7.fhir.r4.model.Address;
+import org.hl7.fhir.r4.model.Enumerations;
+import org.apache.commons.lang3.StringUtils;
+
 import org.hl7.fhir.exceptions.FHIRException;
+import org.openmrs.PatientIdentifier;
+import org.openmrs.PatientIdentifierType;
+import org.openmrs.PersonAddress;
+import org.openmrs.PersonName;
+import org.openmrs.api.LocationService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.fhir.api.util.FHIRPatientUtil;
+// import org.openmrs.module.fhir.api.util.FHIRPatientUtil;
 import org.openmrs.module.insuranceclaims.api.client.ClaimHttpRequest;
 import org.openmrs.module.insuranceclaims.api.client.EligibilityHttpRequest;
 import org.openmrs.module.insuranceclaims.api.client.PatientHttpRequest;
@@ -36,12 +54,16 @@ import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
+
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import static org.mockito.Answers.valueOf;
 import static org.openmrs.module.insuranceclaims.api.client.ClientConstants.BASE_URL_PROPERTY;
 import static org.openmrs.module.insuranceclaims.api.client.ClientConstants.CLAIM_RESPONSE_SOURCE_URI;
 import static org.openmrs.module.insuranceclaims.api.client.ClientConstants.CLAIM_SOURCE_URI;
@@ -78,6 +100,16 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
     private InsurancePolicyService insurancePolicyService;
 
     private ItemDbService itemDbService;
+
+    public static final String REQUEST_ISSUE_LIST = "The request cannot be processed due to following issues \n";
+
+    private static final String FAMILY_PREFIX = "FAMILY_PREFIX";
+
+	private static final String PREFIX = "PREFIX";
+
+    public static final String MALE = "M";
+
+	public static final String FEMALE = "F";
 
     @Override
     public ClaimRequestWrapper getClaimFromExternalApi(String claimCode) throws URISyntaxException {
@@ -146,8 +178,8 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
     public InsurancePolicy getPatientPolicy(String policyNumber) throws EligibilityRequestException {
         try {
             setUrls();
-            EligibilityRequest eligibilityRequest = fhirEligibilityService.generateEligibilityRequest(policyNumber);
-            EligibilityResponse response =  eligibilityHttpRequest.sendEligibilityRequest(
+            CoverageEligibilityRequest eligibilityRequest = fhirEligibilityService.generateEligibilityRequest(policyNumber);
+            CoverageEligibilityResponse response =  eligibilityHttpRequest.sendEligibilityRequest(
                     this.eligibilityUrl, eligibilityRequest);
 
             if (response.getInsurance() == null) {
@@ -328,4 +360,255 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
     private String createPatientQuery(String patientId) {
         return "/" + patientId;
     }
+
+    public String extractUuid(String uuid) {
+		return uuid.contains("/") ? uuid.substring(uuid.indexOf("/") + 1) : uuid;
+	}
+
+    public org.openmrs.Patient generateOmrsPatient(Patient patient, List<String> errors) {
+		org.openmrs.Patient omrsPatient = new org.openmrs.Patient(); // add eror handli
+		// BaseOpenMRSDataUtil.readBaseExtensionFields(omrsPatient, patient);
+
+		if (patient.getId() != null) {
+			omrsPatient.setUuid(extractUuid(patient.getId()));
+		}
+
+		List<Identifier> fhirIdList = patient.getIdentifier();
+		Set<PatientIdentifier> idList = new TreeSet<PatientIdentifier>();
+
+		if (fhirIdList == null || fhirIdList.isEmpty()) {
+			errors.add("Identifiers cannot be empty");
+		}
+
+		for (Identifier fhirIdentifier : fhirIdList) {
+			PatientIdentifier identifier = generateOpenmrsIdentifier(fhirIdentifier, errors);
+			checkGeneratorErrorList(errors);
+			idList.add(identifier);
+		}
+		omrsPatient.setIdentifiers(idList);
+
+		if (patient.getName().size() == 0) {
+			errors.add("Name cannot be empty");
+		}
+		omrsPatient.setNames(buildOpenmrsNames(patient.getName()));
+		if (!validateOpenmrsNames(omrsPatient.getNames())) {
+			errors.add("Person should have at least one name with family name and given name");
+		}
+
+		omrsPatient.setAddresses(buildPersonAddresses(patient.getAddress()));
+
+		String gender = determineOpenmrsGender(patient.getGender());
+		if (StringUtils.isNotBlank(gender)) {
+			omrsPatient.setGender(gender);
+		} else {
+			errors.add("Gender cannot be empty");
+		}
+		omrsPatient.setBirthdate(patient.getBirthDate());
+
+		BooleanType Isdeceased = (BooleanType) patient.getDeceased();
+		omrsPatient.setDead(Isdeceased.getValue());
+
+		if (patient.getActive()) {
+			omrsPatient.setPersonVoided(false);
+		} else {
+			omrsPatient.setPersonVoided(true);
+			omrsPatient.setPersonVoidReason("Deleted from FHIR module"); // deleted reason is compulsory
+		}
+		return omrsPatient;
+	}
+
+    public void checkGeneratorErrorList(List<String> errors) {
+		if (!errors.isEmpty()) {
+			String errorMessage = generateErrorMessage(errors, REQUEST_ISSUE_LIST);
+			throw new UnprocessableEntityException(errorMessage);
+		}
+	}
+
+    public String generateErrorMessage(List<String> errors, String baseMessage) {
+		StringBuilder errorMessage = new StringBuilder(baseMessage);
+		for (int i = 0; i < errors.size(); i++) {
+			errorMessage.append(i + 1).append(" : ").append(errors.get(i)).append("\n");
+		}
+		return errorMessage.toString();
+	}
+
+    public PatientIdentifier generateOpenmrsIdentifier(Identifier fhirIdentifier, List<String> errors) {
+		PatientIdentifier patientIdentifier = new PatientIdentifier();
+		patientIdentifier.setIdentifier(fhirIdentifier.getValue());
+		if (String.valueOf(Identifier.IdentifierUse.USUAL).equalsIgnoreCase(fhirIdentifier.getUse().getDefinition())) {
+			patientIdentifier.setPreferred(true);
+		} else {
+			patientIdentifier.setPreferred(false);
+		}
+		PatientIdentifierType type = getPatientIdentifierType(fhirIdentifier);
+		if (type == null) {
+			errors.add(String.format("Missing the PatientIdentifierType with the name '%s' and the UUID '%s'",
+					fhirIdentifier.getSystem(), fhirIdentifier.getId()));
+		}
+		patientIdentifier.setIdentifierType(type);
+
+		if (type != null) {
+			PatientIdentifierType.LocationBehavior lb = type.getLocationBehavior();
+			if (lb == null || lb == PatientIdentifierType.LocationBehavior.REQUIRED) {
+				LocationService locationService = Context.getLocationService();
+				patientIdentifier.setLocation(locationService.getLocation(1));
+			}
+		}
+		patientIdentifier.setUuid(fhirIdentifier.getId());
+		return patientIdentifier;
+	}
+
+    private PatientIdentifierType getPatientIdentifierType(Identifier fhirIdentifier) {
+		String identifierTypeName = fhirIdentifier.getSystem();
+		PatientIdentifierType patientIdentifierType =  Context.getPatientService().getPatientIdentifierTypeByName(identifierTypeName);
+		if (patientIdentifierType == null) {
+			String identifierTypeUuid = fhirIdentifier.getId();
+			patientIdentifierType =  Context.getPatientService().getPatientIdentifierTypeByUuid(identifierTypeUuid);
+		}
+		return patientIdentifierType;
+	}
+
+    public Set<PersonName> buildOpenmrsNames(List<HumanName> humanNames) {
+		Set<PersonName> names = new TreeSet<PersonName>();
+		for (HumanName humanNameDt : humanNames) {
+			PersonName name = buildOpenmrsPersonName(humanNameDt);
+			names.add(name);
+		}
+		return names;
+	}
+
+    public PersonName buildOpenmrsPersonName(HumanName humanNameDt) {
+		PersonName personName = new PersonName();
+		if(StringUtils.isNotBlank(humanNameDt.getId())) {
+			personName.setUuid(humanNameDt.getId());
+		}
+		setOpenmrsNames(humanNameDt, personName);
+		buildOpenmrsNamePrefixes(humanNameDt, personName);
+		buildOpenmrsSuffix(humanNameDt, personName);
+		personName.setPreferred(determineIfPreferredName(humanNameDt));
+
+		return personName;
+	}
+
+    public void setOpenmrsNames(HumanName humanNameDt, PersonName personName) {
+		String familyName = humanNameDt.getFamily();
+		if (!StringUtils.isEmpty(familyName)) {
+			personName.setFamilyName(familyName);
+		}
+
+		List<StringType> names = humanNameDt.getGiven();
+		if (names.size() > 0) {
+			personName.setGivenName(String.valueOf(names.get(0)));
+		}
+		if (names.size() > 1) {
+			personName.setMiddleName(String.valueOf(names.get(1)));
+		}
+	}
+
+    public void buildOpenmrsNamePrefixes(HumanName humanNameDt, PersonName personName) {
+		if (humanNameDt.getPrefix() != null) {
+			List<StringType> prefixes = humanNameDt.getPrefix();
+			for(StringType prefix : prefixes) {
+				if (prefix.getId().equalsIgnoreCase(PREFIX)) {
+					personName.setPrefix(String.valueOf(prefix));
+				} else if (prefix.getId().equalsIgnoreCase(FAMILY_PREFIX)) {
+					personName.setFamilyNamePrefix(String.valueOf(prefix));
+				}
+			}
+		}
+	}
+
+    public void buildOpenmrsSuffix(HumanName humanNameDt, PersonName personName) {
+		if (humanNameDt.getSuffix() != null) {
+			List<StringType> suffixes = humanNameDt.getSuffix();
+			if (suffixes.size() > 0) {
+				StringType suffix = suffixes.get(0);
+				personName.setFamilyNameSuffix(String.valueOf(suffix));
+			}
+		}
+	}
+
+    public boolean determineIfPreferredName(HumanName humanNameDt) {
+		boolean preferred = false;
+		if (humanNameDt.getUse() != null) {
+			String getUse = humanNameDt.getUse().toCode();
+			if (String.valueOf(HumanName.NameUse.OFFICIAL).equalsIgnoreCase(getUse)
+					|| String.valueOf(HumanName.NameUse.USUAL).equalsIgnoreCase(getUse)) {
+				preferred = true;
+			}
+			if (String.valueOf(HumanName.NameUse.OLD).equalsIgnoreCase(getUse)) {
+				preferred = false;
+			}
+		}
+		return preferred;
+	}
+
+    public boolean validateOpenmrsNames(Set<PersonName> names) {
+		boolean valid = false;
+		for (PersonName name : names) {
+			if (org.apache.commons.lang.StringUtils.isNotBlank(name.getGivenName())
+					&& org.apache.commons.lang.StringUtils.isNotBlank(name.getFamilyName())) {
+				valid = true;
+				break;
+			}
+		}
+		return valid;
+	}
+
+    public Set<PersonAddress> buildPersonAddresses(List<Address> fhirAddresses) {
+		Set<PersonAddress> addresses = new TreeSet<PersonAddress>();
+		for (Address fhirAddress : fhirAddresses) {
+			PersonAddress address = buildPersonAddress(fhirAddress);
+			addresses.add(address);
+		}
+		return addresses;
+	}
+
+    public PersonAddress buildPersonAddress(Address fhirAddress) {
+		PersonAddress address = new PersonAddress();
+		if(StringUtils.isNotBlank(fhirAddress.getId())) {
+			address.setUuid(fhirAddress.getId());
+		}
+		address.setCityVillage(fhirAddress.getCity());
+		address.setCountry(fhirAddress.getCountry());
+		address.setStateProvince(fhirAddress.getState());
+		address.setPostalCode(fhirAddress.getPostalCode());
+		List<StringType> addressStrings = fhirAddress.getLine();
+
+		if (addressStrings != null) {
+			for (int i = 0; i < addressStrings.size(); i++) {
+				if (i == 0) {
+					address.setAddress1(String.valueOf(addressStrings.get(0)));
+				} else if (i == 1) {
+					address.setAddress2(String.valueOf(addressStrings.get(1)));
+				} else if (i == 2) {
+					address.setAddress3(String.valueOf(addressStrings.get(2)));
+				} else if (i == 3) {
+					address.setAddress4(String.valueOf(addressStrings.get(3)));
+				} else if (i == 4) {
+					address.setAddress5(String.valueOf(addressStrings.get(4)));
+				}
+			}
+		}
+
+		if (String.valueOf(Address.AddressUse.HOME.toCode()).equalsIgnoreCase(fhirAddress.getUse().toCode())) {
+			address.setPreferred(true);
+		}
+		if (String.valueOf(Address.AddressUse.OLD.toCode()).equalsIgnoreCase(fhirAddress.getUse().toCode())) {
+			address.setPreferred(false);
+		}
+		return address;
+	}
+
+    public static String determineOpenmrsGender(Enumerations.AdministrativeGender fhirGender) {
+		String gender = null;
+		if (fhirGender != null) {
+			if (fhirGender.toCode().equalsIgnoreCase(Enumerations.AdministrativeGender.MALE.toCode())) {
+				gender = MALE;
+			} else if (fhirGender.toCode().equalsIgnoreCase(String.valueOf(Enumerations.AdministrativeGender.FEMALE))) {
+				gender = FEMALE;
+			}
+		}
+		return gender;
+	}
 }

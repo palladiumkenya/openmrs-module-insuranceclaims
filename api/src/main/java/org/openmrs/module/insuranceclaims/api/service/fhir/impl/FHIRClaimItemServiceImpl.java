@@ -2,12 +2,18 @@ package org.openmrs.module.insuranceclaims.api.service.fhir.impl;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.ClaimResponse;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
-import org.hl7.fhir.dstu3.model.Money;
-import org.hl7.fhir.dstu3.model.PositiveIntType;
-import org.hl7.fhir.dstu3.model.StringType;
+// import org.hl7.fhir.dstu3.model.Claim;
+// import org.hl7.fhir.dstu3.model.ClaimResponse;
+// import org.hl7.fhir.dstu3.model.CodeableConcept;
+// import org.hl7.fhir.dstu3.model.Money;
+// import org.hl7.fhir.dstu3.model.PositiveIntType;
+// import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.ClaimResponse;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Money;
+import org.hl7.fhir.r4.model.PositiveIntType;
+import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.Concept;
 import org.openmrs.api.context.Context;
@@ -52,15 +58,15 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
         List<Claim.ItemComponent> fhirItems = generateClaimItemComponent(insuranceClaimItems);
 
         fhirClaim.setItem(fhirItems);
-        int initialNumberOnClaimInformation = fhirClaim.getInformation().size();
+        int initialNumberOnClaimInformation = fhirClaim.getSupportingInfo().size();
         for (int itemIndex = 0; itemIndex < insuranceClaimItems.size(); itemIndex++) {
             InsuranceClaimItem nextMrsItem = insuranceClaimItems.get(itemIndex);
             Claim.ItemComponent correspondingFhirItem = fhirItems.get(itemIndex);
-            Claim.SpecialConditionComponent itemInformation = createItemExplanationInformation(nextMrsItem);
+            Claim.SupportingInformationComponent itemInformation = createItemExplanationInformation(nextMrsItem);
 
             itemInformation.setSequence(++initialNumberOnClaimInformation);
-            fhirClaim.addInformation(itemInformation);
-            correspondingFhirItem.setInformationLinkId(Collections.singletonList(itemInformation.getSequenceElement()));
+            fhirClaim.addSupportingInfo(itemInformation);
+            correspondingFhirItem.setInformationSequence(Collections.singletonList(itemInformation.getSequenceElement()));
         }
 
         return fhirClaim;
@@ -81,7 +87,7 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             next.setCategory(getItemCategory(item));
             next.setQuantity(getItemQuantity(item));
             next.setUnitPrice(getItemUnitPrice(item));
-            next.setService(createFhirItemService(item));
+            next.setProductOrService(createFhirItemService(item));
             newItemComponent.add(next);
         }
         return newItemComponent;
@@ -100,7 +106,7 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
                 insuranceClaimItems.add(item);
             } catch (FHIRException e) {
                 error.add("Could not found explanation linked to item with code "
-                        + component.getService().getText());
+                        + component.getProductOrService().getText());
             }
 
         }
@@ -120,7 +126,7 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             //Rejection Reason
             nextItem.addAdjudication(createRejectionReasonAdjudication(insuranceClaimItem));
 
-            nextItem.setSequenceLinkId(sequence);
+            nextItem.setItemSequence(sequence);
             nextItem.addNoteNumber(sequence);
             sequence += NEXT_SEQUENCE;
 
@@ -136,7 +142,7 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             InsuranceClaimItem nextItem = new InsuranceClaimItem();
             try {
                 //Item
-                List<String> itemCodes = getItemCodeBySequence(claim, item.getSequenceLinkId());
+                List<String> itemCodes = getItemCodeBySequence(claim, item.getItemSequence());
                 nextItem.setItem(generateProvidedItem(itemCodes));
             } catch (FHIRException exception) {
                 error.add(exception.getMessage());
@@ -202,7 +208,7 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
 
     private InsuranceClaimItem generateOmrsClaimItem(Claim.ItemComponent item) throws FHIRException {
         InsuranceClaimItem omrsItem = new InsuranceClaimItem();
-        String itemCode = item.getService().getText();
+        String itemCode = item.getProductOrService().getText();
         ProvidedItem providedItem = generateProvidedItem(Collections.singletonList(itemCode));
         omrsItem.setQuantityProvided(getItemQuantity(item));
         omrsItem.setItem(providedItem);
@@ -217,8 +223,8 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
     }
 
     private Integer getItemComponentInformationLinkId(Claim.ItemComponent item) {
-       return CollectionUtils.isEmpty(item.getInformationLinkId()) ?
-               null : getUnambiguousElement(item.getInformationLinkId()).getValue();
+       return CollectionUtils.isEmpty(item.getInformationSequence()) ?
+               null : getUnambiguousElement(item.getInformationSequence()).getValue();
     }
 
     private Integer getFirstItemNoteNumber(ClaimResponse.ItemComponent item) {
@@ -236,8 +242,8 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
         return approved != null ? approved.getValue() : null;
     }
 
-    private Claim.SpecialConditionComponent createItemExplanationInformation(InsuranceClaimItem item) {
-        Claim.SpecialConditionComponent itemInformation = new Claim.SpecialConditionComponent();
+    private Claim.SupportingInformationComponent createItemExplanationInformation(InsuranceClaimItem item) {
+        Claim.SupportingInformationComponent itemInformation = new Claim.SupportingInformationComponent();
 
         itemInformation.setCategory(new CodeableConcept().setText(ITEM_EXPLANATION_CATEGORY));
         itemInformation.setValue(new StringType(item.getExplanation()));
