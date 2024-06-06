@@ -42,7 +42,7 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
 
     private DiagnosisDbService diagnosisDbService;
     private ConceptTranslator conceptTranslator = new ConceptTranslatorImpl();
-    private CodingTranslator medicationCodingTranslator = new MedicationQuantityCodingTranslatorImpl();
+    // private CodingTranslator medicationCodingTranslator = new MedicationQuantityCodingTranslatorImpl();
 
     @Override
     public Claim.DiagnosisComponent generateClaimDiagnosisComponent(InsuranceClaimDiagnosis omrsClaimDiagnosis) {

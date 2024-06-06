@@ -63,7 +63,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import static org.mockito.Answers.valueOf;
 import static org.openmrs.module.insuranceclaims.api.client.ClientConstants.BASE_URL_PROPERTY;
 import static org.openmrs.module.insuranceclaims.api.client.ClientConstants.CLAIM_RESPONSE_SOURCE_URI;
 import static org.openmrs.module.insuranceclaims.api.client.ClientConstants.CLAIM_SOURCE_URI;
@@ -208,7 +207,7 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
     public org.openmrs.Patient getPatient(String patientId) throws PatientRequestException {
         try {
             Patient fhirPatient = getFhirPatient(patientId);
-            org.openmrs.Patient patient = FHIRPatientUtil.generateOmrsPatient(fhirPatient, new ArrayList<>());
+            org.openmrs.Patient patient = generateOmrsPatient(fhirPatient, new ArrayList<>());
             patient.setIdentifiers(new TreeSet<>());
 
             String identifier = IdentifierUtil.getPatientIdentifierValueBySystemCode(fhirPatient, ACCESSION_ID);
@@ -231,8 +230,7 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
 
             return fhirPatient;
         } catch (URISyntaxException uriSyntaxException) {
-            String exceptionMessage = "Exception occured during processing request: "
-                    + "Message:" + uriSyntaxException.getMessage();
+            String exceptionMessage = "Exception occured during processing request: " + "Message:" + uriSyntaxException.getMessage();
             throw new PatientRequestException(exceptionMessage);
         }
     }

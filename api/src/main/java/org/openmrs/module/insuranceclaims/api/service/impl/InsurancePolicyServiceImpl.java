@@ -6,9 +6,13 @@ import org.hibernate.Criteria;
 import org.hibernate.NullPrecedence;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+// import org.hl7.fhir.dstu3.model.EligibilityResponse;
+// import org.hl7.fhir.dstu3.model.Money;
+// import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.r4.model.CoverageEligibilityResponse;
+import org.hl7.fhir.r4.model.Money;
+import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
-import org.hl7.fhir.dstu3.model.Money;
-import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.exceptions.FHIRException;
 
 import org.openmrs.Patient;
@@ -23,10 +27,18 @@ import org.openmrs.module.insuranceclaims.api.model.dto.InsurancePolicyDTO;
 import org.openmrs.module.insuranceclaims.api.service.InsurancePolicyService;
 import org.openmrs.module.insuranceclaims.util.ConstantValues;
 
+import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.CONTRACT_DATE_PATTERN;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.CONTRACT_EXPIRE_DATE_ORDINAL;
@@ -39,8 +51,8 @@ public class InsurancePolicyServiceImpl extends BaseOpenmrsDataService<Insurance
     private InsurancePolicyMapper insurancePolicyMapper;
 
     @Override
-    public InsurancePolicy generateInsurancePolicy(EligibilityResponse response) throws FHIRException {
-        Reference contract = response.getInsuranceFirstRep().getContract();
+    public InsurancePolicy generateInsurancePolicy(CoverageEligibilityResponse response) throws FHIRException {
+        Reference contract = response.getInsuranceFirstRep().getCoverage();
         InsurancePolicy policy = new InsurancePolicy();
         Date expireDate = getExpireDateFromContractReference(contract);
 
@@ -63,7 +75,94 @@ public class InsurancePolicyServiceImpl extends BaseOpenmrsDataService<Insurance
     public Date getExpireDateFromContractReference(Reference contract) {
         String dateString = getElementFromContract(contract.getReference(), CONTRACT_EXPIRE_DATE_ORDINAL);
         String[] patterns = CONTRACT_DATE_PATTERN.toArray(new String[0]);
-        return DateUtils.parseDate(dateString,patterns);
+        return parseDate(dateString, patterns);
+    }
+
+    /**
+     * Parses a date value.  The formats used for parsing the date value are retrieved from
+     * the default http params.
+     *
+     * @param dateValue the date value to parse
+     *
+     * @return the parsed date or null if input could not be parsed
+     */
+    public static Date parseDate(final String dateValue) {
+        return parseDate(dateValue, null, null);
+    }
+
+    /**
+     * Parses the date value using the given date formats.
+     *
+     * @param dateValue the date value to parse
+     * @param dateFormats the date formats to use
+     *
+     * @return the parsed date or null if input could not be parsed
+     */
+    public static Date parseDate(final String dateValue, final String[] dateFormats) {
+        return parseDate(dateValue, dateFormats, null);
+    }
+
+    /**
+     * Parses the date value using the given date formats.
+     *
+     * @param dateValue the date value to parse
+     * @param dateFormats the date formats to use
+     * @param startDate During parsing, two digit years will be placed in the range
+     * {@code startDate} to {@code startDate + 100 years}. This value may
+     * be {@code null}. When {@code null} is given as a parameter, year
+     * {@code 2000} will be used.
+     *
+     * @return the parsed date or null if input could not be parsed
+     */
+    public static Date parseDate(
+            final String dateValue,
+            final String[] dateFormats,
+            final Date startDate) {
+
+        final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
+        final String PATTERN_RFC1036 = "EEE, dd-MMM-yy HH:mm:ss zzz";
+        final String PATTERN_ASCTIME = "EEE MMM d HH:mm:ss yyyy";
+
+        final String[] DEFAULT_PATTERNS = new String[] {
+            PATTERN_RFC1123,
+            PATTERN_RFC1036,
+            PATTERN_ASCTIME
+        };
+
+        final TimeZone GMT = TimeZone.getTimeZone("GMT");
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(GMT);
+        calendar.set(2000, Calendar.JANUARY, 1, 0, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        final Date DEFAULT_TWO_DIGIT_YEAR_START = calendar.getTime();
+
+        notNull(dateValue, "Date value");
+        final String[] localDateFormats = dateFormats != null ? dateFormats : DEFAULT_PATTERNS;
+        final Date localStartDate = startDate != null ? startDate : DEFAULT_TWO_DIGIT_YEAR_START;
+        String v = dateValue;
+        // trim single quotes around date if present
+        // see issue #5279
+        if (v.length() > 1 && v.startsWith("'") && v.endsWith("'")) {
+            v = v.substring (1, v.length() - 1);
+        }
+
+        for (final String dateFormat : localDateFormats) {
+            final SimpleDateFormat dateParser = DateFormatHolder.formatFor(dateFormat);
+            dateParser.set2DigitYearStart(localStartDate);
+            final ParsePosition pos = new ParsePosition(0);
+            final Date result = dateParser.parse(v, pos);
+            if (pos.getIndex() != 0) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    public static <T> T notNull(final T argument, final String name) {
+        if (argument == null) {
+            throw new IllegalArgumentException(name + " may not be null");
+        }
+        return argument;
     }
 
     @Override
@@ -169,15 +268,101 @@ public class InsurancePolicyServiceImpl extends BaseOpenmrsDataService<Insurance
         return policyExpireDate.after(today);
     }
 
-    private BigDecimal getAllowedMoney(EligibilityResponse response) throws FHIRException {
-        EligibilityResponse.BenefitsComponent benefit = response.getInsuranceFirstRep().getBenefitBalanceFirstRep();
-        Money allowedMoney = benefit.getFinancialFirstRep().getAllowedMoney();
-        return allowedMoney.getValue();
+    private BigDecimal getAllowedMoney(CoverageEligibilityResponse response) throws FHIRException {
+        // CoverageEligibilityResponse.BenefitsComponent benefit = response.getInsuranceFirstRep().getBenefitBalanceFirstRep();
+        // Money allowedMoney = benefit.getFinancialFirstRep().getAllowedMoney();
+        // return allowedMoney.getValue();
+        BigDecimal ret = new BigDecimal(0);
+
+        // Iterate through the insurance items to find financial details
+        for (CoverageEligibilityResponse.InsuranceComponent insurance : response.getInsurance()) {
+            for (CoverageEligibilityResponse.ItemsComponent item : insurance.getItem()) {
+                for (CoverageEligibilityResponse.BenefitComponent benefit : item.getBenefit()) {
+                    Money allowedMoney = benefit.getAllowedMoney();
+                    if (allowedMoney != null) {
+                        ret = ret.add(allowedMoney.getValue());
+                    }
+                }
+            }
+        }
+
+        return(ret);
     }
 
-    private BigDecimal getUsedMoney(EligibilityResponse response) throws FHIRException {
-        EligibilityResponse.BenefitsComponent benefit = response.getInsuranceFirstRep().getBenefitBalanceFirstRep();
-        Money usedMoney = benefit.getFinancialFirstRep().getUsedMoney();
-        return usedMoney.getValue();
+    private BigDecimal getUsedMoney(CoverageEligibilityResponse response) throws FHIRException {
+        // CoverageEligibilityResponse.BenefitComponent benefit = response.getInsuranceFirstRep().getBenefitPeriod();
+        // Money usedMoney = benefit.getFinancialFirstRep().getUsedMoney();
+        // return usedMoney.getValue();
+        BigDecimal ret = new BigDecimal(0);
+
+        // Iterate through the insurance items to find financial details
+        for (CoverageEligibilityResponse.InsuranceComponent insurance : response.getInsurance()) {
+            for (CoverageEligibilityResponse.ItemsComponent item : insurance.getItem()) {
+                for (CoverageEligibilityResponse.BenefitComponent benefit : item.getBenefit()) {
+                    Money usedMoney = benefit.getUsedMoney();
+                    if (usedMoney != null) {
+                        ret = ret.add(usedMoney.getValue());
+                    }
+                }
+            }
+        }
+
+        return(ret);
+    }
+
+    /**
+     * A factory for {@link SimpleDateFormat}s. The instances are stored in a
+     * threadlocal way because SimpleDateFormat is not threadsafe as noted in
+     * {@link SimpleDateFormat its javadoc}.
+     *
+     */
+    final static class DateFormatHolder {
+
+        private static final ThreadLocal<SoftReference<Map<String, SimpleDateFormat>>>
+            THREADLOCAL_FORMATS = new ThreadLocal<SoftReference<Map<String, SimpleDateFormat>>>() {
+
+            @Override
+            protected SoftReference<Map<String, SimpleDateFormat>> initialValue() {
+                return new SoftReference<Map<String, SimpleDateFormat>>(
+                        new HashMap<String, SimpleDateFormat>());
+            }
+
+        };
+
+        /**
+         * creates a {@link SimpleDateFormat} for the requested format string.
+         *
+         * @param pattern
+         *            a non-{@code null} format String according to
+         *            {@link SimpleDateFormat}. The format is not checked against
+         *            {@code null} since all paths go through
+         *            {@link DateUtils}.
+         * @return the requested format. This simple dateformat should not be used
+         *         to {@link SimpleDateFormat#applyPattern(String) apply} to a
+         *         different pattern.
+         */
+        public static SimpleDateFormat formatFor(final String pattern) {
+            final SoftReference<Map<String, SimpleDateFormat>> ref = THREADLOCAL_FORMATS.get();
+            Map<String, SimpleDateFormat> formats = ref.get();
+            if (formats == null) {
+                formats = new HashMap<String, SimpleDateFormat>();
+                THREADLOCAL_FORMATS.set(
+                        new SoftReference<Map<String, SimpleDateFormat>>(formats));
+            }
+
+            SimpleDateFormat format = formats.get(pattern);
+            if (format == null) {
+                format = new SimpleDateFormat(pattern, Locale.US);
+                format.setTimeZone(TimeZone.getTimeZone("GMT"));
+                formats.put(pattern, format);
+            }
+
+            return format;
+        }
+
+        public static void clearThreadLocal() {
+            THREADLOCAL_FORMATS.remove();
+        }
+
     }
 }

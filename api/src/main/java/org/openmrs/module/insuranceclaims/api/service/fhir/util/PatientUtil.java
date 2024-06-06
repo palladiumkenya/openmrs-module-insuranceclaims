@@ -40,7 +40,7 @@ public final class PatientUtil {
         return patientReference;
     }
 
-    public static boolean isSamePatient(Patient omrsPatient, org.hl7.fhir.dstu3.model.Patient fhirPatient) {
+    public static boolean isSamePatient(Patient omrsPatient, org.hl7.fhir.r4.model.Patient fhirPatient) {
         String fhirGivenName = fhirPatient.getNameFirstRep().getGivenAsSingleString();
         String fhirFamilyName = fhirPatient.getNameFirstRep().getFamily();
         return omrsPatient.getGivenName().equals(fhirGivenName)
@@ -48,9 +48,9 @@ public final class PatientUtil {
                 && omrsPatient.getBirthdate().compareTo(fhirPatient.getBirthDate()) == 0;
     }
 
-    public static boolean isPatientInList(Patient omrsPatient, List<org.hl7.fhir.dstu3.model.Patient> fhirPatients) {
+    public static boolean isPatientInList(Patient omrsPatient, List<org.hl7.fhir.r4.model.Patient> fhirPatients) {
         boolean isInList = false;
-        for (org.hl7.fhir.dstu3.model.Patient fhirPatient: fhirPatients) {
+        for (org.hl7.fhir.r4.model.Patient fhirPatient: fhirPatients) {
             isInList = isInList || isSamePatient(omrsPatient, fhirPatient);
         }
         return isInList;

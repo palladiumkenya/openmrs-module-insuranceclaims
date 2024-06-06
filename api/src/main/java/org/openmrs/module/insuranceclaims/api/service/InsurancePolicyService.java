@@ -1,7 +1,9 @@
 package org.openmrs.module.insuranceclaims.api.service;
 
-import org.hl7.fhir.dstu3.model.EligibilityResponse;
-import org.hl7.fhir.dstu3.model.Reference;
+// import org.hl7.fhir.dstu3.model.EligibilityResponse;
+// import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.r4.model.CoverageEligibilityResponse;
+import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.module.insuranceclaims.api.model.InsurancePolicy;
 import org.openmrs.module.insuranceclaims.api.model.dto.InsurancePolicyDTO;
@@ -11,7 +13,7 @@ import java.util.List;
 
 public interface InsurancePolicyService extends OpenmrsDataService<InsurancePolicy> {
 
-    InsurancePolicy generateInsurancePolicy(EligibilityResponse response) throws FHIRException;
+    InsurancePolicy generateInsurancePolicy(CoverageEligibilityResponse response) throws FHIRException;
 
     String getPolicyIdFromContractReference(Reference contract);
 
