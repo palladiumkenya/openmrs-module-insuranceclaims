@@ -18,21 +18,27 @@
             <artifactId>openmrs-web</artifactId>
         </dependency>
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.web</groupId>
             <artifactId>openmrs-web</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>fhir2-api</artifactId>
         </dependency>
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>htmlformentry-api-1.10</artifactId>
+            <scope>provided</scope>
+        </dependency> -->
+
+        <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>htmlformentry-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -42,11 +48,11 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>uiframework-api</artifactId>
             <scope>provided</scope>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>org.openmrs</groupId>
@@ -70,12 +76,12 @@
             <artifactId>hapi-fhir-validation-resources-r4</artifactId>
         </dependency>
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.api</groupId>
             <artifactId>openmrs-api</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>org.openmrs.test</groupId>

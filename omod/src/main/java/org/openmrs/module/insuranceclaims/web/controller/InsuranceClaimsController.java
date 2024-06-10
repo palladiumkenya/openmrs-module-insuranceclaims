@@ -3,8 +3,6 @@ package org.openmrs.module.insuranceclaims.web.controller;
 import org.openmrs.User;
 import org.openmrs.api.APIException;
 import org.openmrs.api.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -22,11 +20,6 @@ import javax.servlet.http.HttpSession;
 @Controller("${rootrootArtifactId}.InsuranceClaimsController")
 @RequestMapping(value = "module/insuranceclaims/insuranceclaims.form")
 public class InsuranceClaimsController {
-
-	/**
-	 * Logger for this class and subclasses
-	 */
-	private static final Logger LOG = LoggerFactory.getLogger(InsuranceClaimsController.class);
 
 	@Autowired
 	private UserService userService;
@@ -59,7 +52,7 @@ public class InsuranceClaimsController {
 			BindingResult errors) {
 
 		if (errors.hasErrors()) {
-			LOG.error("The error view should be return.");
+			System.err.println("The error view should be return.");
 			// return error view
 		}
 

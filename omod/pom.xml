@@ -33,28 +33,28 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>uiframework-api</artifactId>
             <scope>provided</scope>
-        </dependency>
+        </dependency> -->
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>uicommons-omod</artifactId>
             <scope>provided</scope>
-        </dependency>
+        </dependency> -->
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>appframework-api</artifactId>
-        </dependency>
+        </dependency> -->
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>appui-omod</artifactId>
             <type>jar</type>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>org.openmrs.module</groupId>
@@ -92,12 +92,12 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.api</groupId>
             <artifactId>openmrs-api</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
-        </dependency>
+        </dependency> -->
     </dependencies>
 
     <build>
