@@ -8,16 +8,12 @@ import org.openmrs.module.DaemonToken;
 import org.openmrs.module.insuranceclaims.api.service.exceptions.ConsumedItemException;
 import org.openmrs.module.insuranceclaims.api.strategies.consumed.ConsumedItemStrategyUtil;
 import org.openmrs.module.insuranceclaims.api.strategies.consumed.GenericConsumedItemStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 
 public class ItemConsumedEventListener implements EventListener {
-
-    private static final Logger LOG = LoggerFactory.getLogger(InsuranceClaimsActivator.class);
 
     private DaemonToken daemonToken;
 
@@ -45,9 +41,9 @@ public class ItemConsumedEventListener implements EventListener {
             Obs newObs = Context.getObsService().getObsByUuid(obsUuid);
             consumedItemStrategy.addProvidedItems(newObs);
         } catch (JMSException e) {
-            LOG.error("Insurance claim: Exception during objectifying: " + e);
+            System.err.println("Insurance claim: Exception during objectifying: " + e);
         } catch (ConsumedItemException e) {
-            LOG.error("Insurance claim: Error during creating provided item: " + e);
+            System.err.println("Insurance claim: Error during creating provided item: " + e);
         }
     }
 }

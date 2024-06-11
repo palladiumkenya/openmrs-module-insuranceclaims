@@ -23,27 +23,17 @@
         <require_module version="${appframeworkVersion}">
             org.openmrs.module.appframework
         </require_module>
-        <require_module version="${uiframeworkVersion}">
-            org.openmrs.module.uiframework
-        </require_module>
-        <require_module version="${uicommonsModuleVersion}">
-            org.openmrs.module.uicommons
-        </require_module>
-        <require_module version="${appuiVersion}">
-            org.openmrs.module.appui
-        </require_module>
+
         <require_module version="${fhir2Version}">
             org.openmrs.module.fhir2
-        </require_module>
-        <require_module version="${htmlformentryModuleVersion}">
-            org.openmrs.module.htmlformentry
-        </require_module>
-        <require_module version="${htmlformentryuiVersion}">
-            org.openmrs.module.htmlformentryui
         </require_module>
 
         <require_module version="${metadatamappingVersion}">
             org.openmrs.module.metadatamapping
+        </require_module>
+
+        <require_module version="${eventModuleVersion}">
+            org.openmrs.event
         </require_module>
 
         <require_module version="${idgenModuleVersion}">
@@ -52,14 +42,14 @@
     </require_modules>
 
     <!-- Extensions -->
-    <extension>
+    <!-- <extension>
         <point>org.openmrs.admin.list</point>
         <class>org.openmrs.module.insuranceclaims.extension.html.AdminList</class>
-    </extension>
+    </extension> -->
 
     <aware_of_modules>
-        <aware_of_module>org.openmrs.module.legacyui</aware_of_module>
         <aware_of_module>org.openmrs.module.fhir2</aware_of_module>
+        <aware_of_module>org.openmrs.event</aware_of_module>
         <aware_of_module>org.openmrs.module.idgen</aware_of_module>
     </aware_of_modules>
 

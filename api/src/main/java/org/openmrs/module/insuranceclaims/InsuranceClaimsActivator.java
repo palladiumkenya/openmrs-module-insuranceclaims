@@ -10,24 +10,71 @@ import org.openmrs.event.EventListener;
 import org.openmrs.module.BaseModuleActivator;
 import org.openmrs.module.DaemonToken;
 import org.openmrs.module.DaemonTokenAware;
-import org.openmrs.module.htmlformentry.HtmlFormEntryService;
-import org.openmrs.module.htmlformentryui.HtmlFormUtil;
+// import org.openmrs.module.htmlformentry.HtmlFormEntryService;
+// import org.openmrs.module.htmlformentryui.HtmlFormUtil;
 import org.openmrs.module.insuranceclaims.activator.concept.ModuleConceptSetup;
 import org.openmrs.module.insuranceclaims.util.ConstantValues;
-import org.openmrs.ui.framework.resource.ResourceFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// import org.openmrs.ui.framework.resource.ResourceFactory;
 
 import java.io.IOException;
 
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.CONSUMED_ITEMS_FORM_UUID;
 
+import org.openmrs.module.ModuleActivator;
+
+/**
+ * This class contains the logic that is run every time this module is either started or stopped.
+ */
+// public class InsuranceClaimsActivator implements ModuleActivator {
+		
+// 	/**
+// 	 * @see ModuleActivator#willRefreshContext()
+// 	 */
+// 	public void willRefreshContext() {
+// 		System.err.println("Refreshing Insurance Claims Module");
+// 	}
+	
+// 	/**
+// 	 * @see ModuleActivator#contextRefreshed()
+// 	 */
+// 	public void contextRefreshed() {
+// 		System.err.println("Insurance Claims Module refreshed");
+// 	}
+	
+// 	/**
+// 	 * @see ModuleActivator#willStart()
+// 	 */
+// 	public void willStart() {
+// 		System.err.println("Starting Insurance Claims Module");
+// 	}
+	
+// 	/**
+// 	 * @see ModuleActivator#started()
+// 	 */
+// 	public void started() {
+// 		System.err.println("Insurance Claims Module started");
+// 	}
+	
+// 	/**
+// 	 * @see ModuleActivator#willStop()
+// 	 */
+// 	public void willStop() {
+// 		System.err.println("Stopping Insurance Claims Module");
+// 	}
+	
+// 	/**
+// 	 * @see ModuleActivator#stopped()
+// 	 */
+// 	public void stopped() {
+// 		System.err.println("Insurance Claims Module stopped");
+// 	}
+		
+// }
+
 /**
  * Contains the logic that is run every time this module is either started or stopped
  */
 public class InsuranceClaimsActivator extends BaseModuleActivator implements DaemonTokenAware {
-
-	private static final Logger LOG = LoggerFactory.getLogger(InsuranceClaimsActivator.class);
 
 	private static final String MODULE_START_MESSAGE = "Started Insurance Claims";
 	private static final String MODULE_STOP_MESSAGE  = "Stopped Insurance Claims";
@@ -45,20 +92,20 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	public void started() {
 		addConcepts();
 
-		HtmlFormEntryService service = Context.getService(HtmlFormEntryService.class);
-		if (service.getHtmlFormByUuid(CONSUMED_ITEMS_FORM_UUID) == null) {
-			try {
-				setupHtmlForms();
-			} catch (Exception e) {
-				LOG.error("Failed to load consumed item form. Caused by:  " + e.toString());
-			}
-		}
+		// HtmlFormEntryService service = Context.getService(HtmlFormEntryService.class);
+		// if (service.getHtmlFormByUuid(CONSUMED_ITEMS_FORM_UUID) == null) {
+		// 	try {
+		// 		setupHtmlForms();
+		// 	} catch (Exception e) {
+		// 		System.err.println("Failed to load consumed item form. Caused by:  " + e.toString());
+		// 	}
+		// }
 
 		createInsureNumberAttribute();
 
 		eventListener = getItemConsumedListener();
 		Event.subscribe(Obs.class, Event.Action.CREATED.name(), eventListener);
-		LOG.info(MODULE_START_MESSAGE);
+		System.err.println(MODULE_START_MESSAGE);
 	}
 
 	/**
@@ -67,7 +114,7 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	@Override
 	public void stopped() {
 		Event.unsubscribe(Obs.class, Event.Action.CREATED, eventListener);
-		LOG.info(MODULE_STOP_MESSAGE);
+		System.err.println(MODULE_STOP_MESSAGE);
 	}
 
 	@Override
@@ -83,14 +130,13 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 		return new ItemConsumedEventListener(daemonToken);
 	}
 
-	private void setupHtmlForms() throws IOException {
-		ResourceFactory resourceFactory = ResourceFactory.getInstance();
-		FormService formService = Context.getFormService();
-		HtmlFormEntryService htmlFormEntryService = Context.getService(HtmlFormEntryService.class);
+	// private void setupHtmlForms() throws IOException {
+	// 	ResourceFactory resourceFactory = ResourceFactory.getInstance();
+	// 	FormService formService = Context.getFormService();
+	// 	HtmlFormEntryService htmlFormEntryService = Context.getService(HtmlFormEntryService.class);
 
-		HtmlFormUtil.getHtmlFormFromUiResource(resourceFactory, formService,
-				htmlFormEntryService, PATH_TO_CONSUMED_ITEM_FORM_TEMPLATE);
-	}
+	// 	HtmlFormUtil.getHtmlFormFromUiResource(resourceFactory, formService, htmlFormEntryService, PATH_TO_CONSUMED_ITEM_FORM_TEMPLATE);
+	// }
 
 	private void createInsureNumberAttribute() {
 		PersonAttributeType attributeType = new PersonAttributeType();
