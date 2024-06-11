@@ -36,17 +36,17 @@
             <scope>provided</scope>
         </dependency> -->
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>htmlformentry-api</artifactId>
             <scope>provided</scope>
-        </dependency>
+        </dependency> -->
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>htmlformentryui-api</artifactId>
             <scope>provided</scope>
-        </dependency>
+        </dependency> -->
 
         <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
@@ -66,6 +66,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- ///////// -->
+
+        <!-- <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-base</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-structures-r4</artifactId>
@@ -75,6 +82,13 @@
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-validation-resources-r4</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-converter</artifactId>
+        </dependency> -->
+
+        <!-- ///////// -->
 
         <!-- <dependency>
             <groupId>org.openmrs.api</groupId>

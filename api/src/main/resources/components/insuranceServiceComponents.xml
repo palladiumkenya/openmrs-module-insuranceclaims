@@ -45,7 +45,7 @@
         <property name="dao" ref="insuranceclaims.InsurancePolicyDao"/>
         <property name="personService" ref="personService" />
         <property name="insurancePolicyMapper">
-            <ref local="insuranceclaims.insurancePolicyMapper" />
+            <ref bean="insuranceclaims.insurancePolicyMapper" />
         </property>
     </bean>
 

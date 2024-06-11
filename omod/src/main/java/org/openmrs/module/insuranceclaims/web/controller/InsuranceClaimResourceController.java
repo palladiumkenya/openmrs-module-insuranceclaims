@@ -43,8 +43,7 @@ public class InsuranceClaimResourceController {
 
     @RequestMapping(value = "/claims", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
-    public ResponseEntity<InsuranceClaim> createClaim(@RequestBody NewClaimForm form,
-                                               HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+    public ResponseEntity<InsuranceClaim> createClaim(@RequestBody NewClaimForm form, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
         InsuranceClaim claim = claimFormService.createClaim(form);
 
         ResponseEntity<InsuranceClaim> requestResponse = new ResponseEntity<>(claim, HttpStatus.ACCEPTED);
@@ -53,8 +52,7 @@ public class InsuranceClaimResourceController {
 
     @RequestMapping(value = "/bills", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
-    public ResponseEntity<Bill> createBill(@RequestBody NewClaimForm form,
-                                                 HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+    public ResponseEntity<Bill> createBill(@RequestBody NewClaimForm form, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
         Bill bill = claimFormService.createBill(form);
 
         ResponseEntity<Bill> requestResponse = new ResponseEntity<>(bill, HttpStatus.ACCEPTED);

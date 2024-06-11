@@ -23,16 +23,19 @@
             <artifactId>openmrs-web</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>org.openmrs.web</groupId>
             <artifactId>openmrs-web</artifactId>
             <scope>provided</scope>
             <classifier>tests</classifier>
         </dependency>
-        <dependency>
+
+        <!-- <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-        </dependency>
+        </dependency> -->
+
         <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>uiframework-api</artifactId>
@@ -56,10 +59,10 @@
             <type>jar</type>
         </dependency> -->
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>legacyui-omod</artifactId>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>org.openmrs.module</groupId>
@@ -71,7 +74,9 @@
             <artifactId>fhir2-api</artifactId>
         </dependency>
 
-        <dependency>
+        <!-- ///////// -->
+
+        <!-- <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-base</artifactId>
         </dependency>
@@ -85,6 +90,13 @@
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-validation-resources-r4</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-converter</artifactId>
+        </dependency> -->
+
+        <!-- ///////// -->
 
         <dependency>
             <groupId>org.openmrs.module</groupId>
