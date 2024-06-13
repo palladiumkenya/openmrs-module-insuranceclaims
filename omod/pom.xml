@@ -31,39 +31,6 @@
             <classifier>tests</classifier>
         </dependency>
 
-        <!-- <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-        </dependency> -->
-
-        <!-- <dependency>
-            <groupId>org.openmrs.module</groupId>
-            <artifactId>uiframework-api</artifactId>
-            <scope>provided</scope>
-        </dependency> -->
-
-        <!-- <dependency>
-            <groupId>org.openmrs.module</groupId>
-            <artifactId>uicommons-omod</artifactId>
-            <scope>provided</scope>
-        </dependency> -->
-
-        <!-- <dependency>
-            <groupId>org.openmrs.module</groupId>
-            <artifactId>appframework-api</artifactId>
-        </dependency> -->
-
-        <!-- <dependency>
-            <groupId>org.openmrs.module</groupId>
-            <artifactId>appui-omod</artifactId>
-            <type>jar</type>
-        </dependency> -->
-
-        <!-- <dependency>
-            <groupId>org.openmrs.module</groupId>
-            <artifactId>legacyui-omod</artifactId>
-        </dependency> -->
-
         <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>webservices.rest-omod-common</artifactId>
@@ -74,42 +41,12 @@
             <artifactId>fhir2-api</artifactId>
         </dependency>
 
-        <!-- ///////// -->
-
-        <!-- <dependency>
-            <groupId>ca.uhn.hapi.fhir</groupId>
-            <artifactId>hapi-fhir-base</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ca.uhn.hapi.fhir</groupId>
-            <artifactId>hapi-fhir-structures-r4</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ca.uhn.hapi.fhir</groupId>
-            <artifactId>hapi-fhir-validation-resources-r4</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ca.uhn.hapi.fhir</groupId>
-            <artifactId>hapi-fhir-converter</artifactId>
-        </dependency> -->
-
-        <!-- ///////// -->
-
         <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>idgen-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- <dependency>
-            <groupId>org.openmrs.api</groupId>
-            <artifactId>openmrs-api</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency> -->
     </dependencies>
 
     <build>

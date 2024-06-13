@@ -61,8 +61,7 @@ public class InsuranceClaimResourceController {
 
     @RequestMapping(value = "/claims", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    public ResponseEntity get(@RequestParam(value = "claimUuid") String claimUuid,
-                              HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+    public ResponseEntity get(@RequestParam(value = "claimUuid") String claimUuid, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
         InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
         ResponseEntity<InsuranceClaim> requestResponse = new ResponseEntity<>(claim, HttpStatus.ACCEPTED);
         return requestResponse;
@@ -77,9 +76,7 @@ public class InsuranceClaimResourceController {
      */
     @RequestMapping(value = "/claims/sendToExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    public ResponseEntity sendClaimToExternalId(
-            @RequestParam(value = "claimUuid", required = true) String claimUuid,
-            HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity sendClaimToExternalId(@RequestParam(value = "claimUuid", required = true) String claimUuid, HttpServletRequest request, HttpServletResponse response) {
         InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
 
         if (claim.getExternalId() != null) {
@@ -96,8 +93,7 @@ public class InsuranceClaimResourceController {
 
     @RequestMapping(value = "/claims/getFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    public ResponseEntity getClaimFromExternalId(@RequestParam(value = "claimExternalCode") String claimExternalCode,
-                                                 HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity getClaimFromExternalId(@RequestParam(value = "claimExternalCode") String claimExternalCode, HttpServletRequest request, HttpServletResponse response) {
         ResponseEntity requestResponse;
         try {
              ClaimRequestWrapper wrapper = externalApiRequest.getClaimFromExternalApi(claimExternalCode);
@@ -110,8 +106,7 @@ public class InsuranceClaimResourceController {
 
     @RequestMapping(value = "/getPolicyFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    public ResponseEntity getPolicyFromExternal(@RequestParam(value = "policyNumber") String policyNumber,
-                                                 HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity getPolicyFromExternal(@RequestParam(value = "policyNumber") String policyNumber, HttpServletRequest request, HttpServletResponse response) {
         ResponseEntity requestResponse;
         try {
              InsurancePolicy policy = externalApiRequest.getPatientPolicy(policyNumber);
@@ -131,8 +126,7 @@ public class InsuranceClaimResourceController {
      */
     @RequestMapping(value = "/claims/updateClaim", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    public ResponseEntity updateClaim(@RequestParam(value = "claimUuid") String claimUuid,
-                                      HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity updateClaim(@RequestParam(value = "claimUuid") String claimUuid, HttpServletRequest request, HttpServletResponse response) {
         InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
 
         if (claim.getExternalId() == null) {
