@@ -116,7 +116,7 @@
 
     <globalProperty>
         <property>${project.parent.artifactId}.baseInsuranceClaimUrl</property>
-        <defaultValue>localhost:8000</defaultValue>
+        <defaultValue>http://127.0.0.1:9432</defaultValue>
         <description>The URL of third party base server that use to retrieve claims
         </description>
     </globalProperty>
