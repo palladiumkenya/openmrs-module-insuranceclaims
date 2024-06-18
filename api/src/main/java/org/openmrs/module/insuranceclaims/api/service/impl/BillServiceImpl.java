@@ -3,6 +3,7 @@ package org.openmrs.module.insuranceclaims.api.service.impl;
 import org.openmrs.api.APIException;
 import org.openmrs.module.insuranceclaims.api.dao.BillDao;
 import org.openmrs.module.insuranceclaims.api.model.Bill;
+// import org.openmrs.module.kenyaemr.cashier.api.model.Bill;
 import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
 import org.openmrs.module.insuranceclaims.api.service.BillService;
 import org.openmrs.module.insuranceclaims.api.service.ProvidedItemService;

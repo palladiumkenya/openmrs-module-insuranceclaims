@@ -149,13 +149,19 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         String justification = formItems.getJustification();
 
         for (String nextItemUuid : formItems.getItems()) {
+            System.out.println("Insurance Claims: Search ITEM UUID: " + nextItemUuid);
             ProvidedItem provideditem = providedItemService.getByUuid(nextItemUuid);
-            InsuranceClaimItem nextInsuranceClaimItem = new InsuranceClaimItem();
-            nextInsuranceClaimItem.setItem(provideditem);
-            nextInsuranceClaimItem.setQuantityProvided(provideditem.getNumberOfConsumptions());
-            nextInsuranceClaimItem.setJustification(justification);
-            nextInsuranceClaimItem.setExplanation(explanation);
-            items.add(nextInsuranceClaimItem);
+            if(provideditem != null) {
+                System.out.println("Insurance Claims: ITEM found");
+                InsuranceClaimItem nextInsuranceClaimItem = new InsuranceClaimItem();
+                nextInsuranceClaimItem.setItem(provideditem);
+                nextInsuranceClaimItem.setQuantityProvided(provideditem.getNumberOfConsumptions());
+                nextInsuranceClaimItem.setJustification(justification);
+                nextInsuranceClaimItem.setExplanation(explanation);
+                items.add(nextInsuranceClaimItem);
+            } else {
+                System.out.println("Insurance Claims: ITEM NOT found");
+            }
         }
         return items;
     }

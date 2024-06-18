@@ -15,6 +15,7 @@ import org.openmrs.module.webservices.rest.web.response.ResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -43,6 +44,7 @@ public class InsuranceClaimResourceController {
     @Autowired
     private ExternalApiRequest externalApiRequest;
 
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<InsuranceClaim> createClaim(@RequestBody NewClaimForm form, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
@@ -53,6 +55,7 @@ public class InsuranceClaimResourceController {
         return requestResponse;
     }
 
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/bills", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Bill> createBill(@RequestBody NewClaimForm form, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
@@ -63,6 +66,7 @@ public class InsuranceClaimResourceController {
         return requestResponse;
     }
 
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity get(@RequestParam(value = "claimUuid") String claimUuid, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
@@ -79,6 +83,7 @@ public class InsuranceClaimResourceController {
      * @param claimUuid uuid of claim that will be send to external server
      * @return InsuranceClaim with updated values or error message that occured during processing request
      */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims/sendToExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity sendClaimToExternalId(@RequestParam(value = "claimUuid", required = true) String claimUuid, HttpServletRequest request, HttpServletResponse response) {
@@ -97,6 +102,7 @@ public class InsuranceClaimResourceController {
         }
     }
 
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims/getFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity getClaimFromExternalId(@RequestParam(value = "claimExternalCode") String claimExternalCode, HttpServletRequest request, HttpServletResponse response) {
@@ -111,6 +117,7 @@ public class InsuranceClaimResourceController {
         return requestResponse;
     }
 
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/getPolicyFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity getPolicyFromExternal(@RequestParam(value = "policyNumber") String policyNumber, HttpServletRequest request, HttpServletResponse response) {
@@ -132,6 +139,7 @@ public class InsuranceClaimResourceController {
      * @param claimUuid uuid claim which have to be updated witch external server values
      * @return InsuranceClaim with updated values
      */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims/updateClaim", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity updateClaim(@RequestParam(value = "claimUuid") String claimUuid, HttpServletRequest request, HttpServletResponse response) {
