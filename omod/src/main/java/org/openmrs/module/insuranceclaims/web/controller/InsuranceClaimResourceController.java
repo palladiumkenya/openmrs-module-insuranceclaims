@@ -1,7 +1,6 @@
 package org.openmrs.module.insuranceclaims.web.controller;
 
 import org.openmrs.module.insuranceclaims.api.client.impl.ClaimRequestWrapper;
-import org.openmrs.module.insuranceclaims.api.model.Bill;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsurancePolicy;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
@@ -44,6 +43,14 @@ public class InsuranceClaimResourceController {
     @Autowired
     private ExternalApiRequest externalApiRequest;
 
+    /**
+     * Create a claim
+     * @param form
+     * @param request
+     * @param response
+     * @return
+     * @throws ResponseException
+     */
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
@@ -55,17 +62,14 @@ public class InsuranceClaimResourceController {
         return requestResponse;
     }
 
-    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
-    @RequestMapping(value = "/bills", method = RequestMethod.POST, produces = "application/json")
-    @ResponseBody
-    public ResponseEntity<Bill> createBill(@RequestBody NewClaimForm form, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
-        System.out.println("Insurance Claims: REST - New Bill");
-        Bill bill = claimFormService.createBill(form);
-
-        ResponseEntity<Bill> requestResponse = new ResponseEntity<>(bill, HttpStatus.ACCEPTED);
-        return requestResponse;
-    }
-
+    /**
+     * Get a claim by its claim UUID
+     * @param claimUuid
+     * @param request
+     * @param response
+     * @return
+     * @throws ResponseException
+     */
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
@@ -102,6 +106,13 @@ public class InsuranceClaimResourceController {
         }
     }
 
+    /**
+     * Get a claim from external system
+     * @param claimExternalCode
+     * @param request
+     * @param response
+     * @return
+     */
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims/getFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
@@ -117,6 +128,13 @@ public class InsuranceClaimResourceController {
         return requestResponse;
     }
 
+    /**
+     * Get the insurance policy by its policy number
+     * @param policyNumber
+     * @param request
+     * @param response
+     * @return
+     */
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/getPolicyFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody

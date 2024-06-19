@@ -18,6 +18,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 
+import org.openmrs.module.kenyaemr.cashier.api.model.BillLineItem;
+
 /**
  * Model class that represents an insurance claim item.
  * Represents the relation between claim and item.
@@ -61,7 +63,7 @@ public class InsuranceClaimItem extends AbstractBaseOpenmrsData {
 	@ManyToOne
 	@Cascade(CascadeType.SAVE_UPDATE)
 	@JoinColumn(name = "item", nullable = false)
-	private ProvidedItem item;
+	private BillLineItem item;
 
 	@ManyToOne
 	@Cascade(CascadeType.SAVE_UPDATE)
@@ -131,11 +133,11 @@ public class InsuranceClaimItem extends AbstractBaseOpenmrsData {
 		this.rejectionReason = rejectionReason;
 	}
 
-	public ProvidedItem getItem() {
+	public BillLineItem getItem() {
 		return item;
 	}
 
-	public void setItem(ProvidedItem item) {
+	public void setItem(BillLineItem item) {
 		this.item = item;
 	}
 
