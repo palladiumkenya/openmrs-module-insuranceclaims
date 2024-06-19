@@ -5,6 +5,8 @@ import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.ProcessStatus;
+import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
+import org.openmrs.module.insuranceclaims.api.service.ProvidedItemService;
 import org.openmrs.module.insuranceclaims.api.service.exceptions.ConsumedItemException;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,8 @@ import static org.openmrs.module.insuranceclaims.api.service.fhir.util.Insurance
 @Component("DefaultConsumedItemStrategy")
 @Transactional
 public class ConsumedItemStrategy implements GenericConsumedItemStrategy {
+
+    private ProvidedItemService providedItemService;
 
     @Override
     public void addProvidedItems(Obs newObs) throws ConsumedItemException {
@@ -55,21 +59,21 @@ public class ConsumedItemStrategy implements GenericConsumedItemStrategy {
     }
 
     private void createProvidedItemForObservation(Obs consumedItem, BigDecimal price, int numberOfConsumptions) {
-        // ProvidedItem newProvidedItem = new ProvidedItem();
+        ProvidedItem newProvidedItem = new ProvidedItem();
 
-        // Concept consumedItemConcept = consumedItem.getValueCoded();
-        // newProvidedItem.setItem(consumedItemConcept);
+        Concept consumedItemConcept = consumedItem.getValueCoded();
+        newProvidedItem.setItem(consumedItemConcept);
 
-        // int patientId = consumedItem.getPerson().getPersonId();
-        // Patient patient = Context.getPatientService().getPatient(patientId);
-        // newProvidedItem.setPatient(patient);
+        int patientId = consumedItem.getPerson().getPersonId();
+        Patient patient = Context.getPatientService().getPatient(patientId);
+        newProvidedItem.setPatient(patient);
 
-        // newProvidedItem.setDateOfServed(consumedItem.getObsDatetime());
-        // newProvidedItem.setStatus(ProcessStatus.ENTERED);
-        // newProvidedItem.setNumberOfConsumptions(numberOfConsumptions);
-        // newProvidedItem.setPrice(price);
+        newProvidedItem.setDateOfServed(consumedItem.getObsDatetime());
+        newProvidedItem.setStatus(ProcessStatus.ENTERED);
+        newProvidedItem.setNumberOfConsumptions(numberOfConsumptions);
+        newProvidedItem.setPrice(price);
 
-        // providedItemService.saveOrUpdate(newProvidedItem);
+        providedItemService.saveOrUpdate(newProvidedItem);
     }
 
     private static BigDecimal getConceptPrice(Concept concept) throws ConsumedItemException {
@@ -85,4 +89,7 @@ public class ConsumedItemStrategy implements GenericConsumedItemStrategy {
         return new BigDecimal(value.toString());
     }
 
+    public void setProvidedItemService(ProvidedItemService providedItemService) {
+        this.providedItemService = providedItemService;
+    }
 }

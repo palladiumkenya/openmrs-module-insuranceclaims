@@ -23,8 +23,6 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.openmrs.module.kenyaemr.cashier.api.model.Bill;
-
 /**
  * Model class that represents an insurance claim.
  */

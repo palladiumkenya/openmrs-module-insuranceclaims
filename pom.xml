@@ -38,8 +38,7 @@
 		<eventModuleVersion>2.10.0</eventModuleVersion>
 		<idgenModuleVersion>4.10.0</idgenModuleVersion>
 		<webservices.restVersion>2.42.0</webservices.restVersion>
-		<cashierVersion>4.1.0-SNAPSHOT</cashierVersion>
-		<stockVersion>1.0.2-SNAPSHOT</stockVersion>
+		<cashierVersion>4.2.0</cashierVersion>
 	</properties>
 
 	<dependencyManagement>
@@ -57,22 +56,6 @@
                 <version>${cashierVersion}</version>
 				<scope>provided</scope>
             </dependency>
-
-			<dependency>
-				<groupId>org.openmrs.module</groupId>
-				<artifactId>stockmanagement-api</artifactId>
-				<version>${stockVersion}</version>
-				<type>jar</type>
-				<scope>provided</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.openmrs.module</groupId>
-				<artifactId>stockmanagement-omod</artifactId>
-				<version>${stockVersion}</version>
-				<type>jar</type>
-				<scope>provided</scope>
-			</dependency>
 
 			<dependency>
 				<groupId>org.openmrs.module</groupId>
