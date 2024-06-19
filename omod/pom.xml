@@ -43,17 +43,6 @@
 
         <dependency>
             <groupId>org.openmrs.module</groupId>
-            <artifactId>kenyaemr.cashier-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-			<groupId>org.openmrs.module</groupId>
-			<artifactId>stockmanagement-api</artifactId>
-		</dependency>
-
-        <dependency>
-            <groupId>org.openmrs.module</groupId>
             <artifactId>idgen-api</artifactId>
             <scope>provided</scope>
         </dependency>

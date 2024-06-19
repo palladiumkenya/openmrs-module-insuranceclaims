@@ -13,6 +13,126 @@
         for a list of supported elements and attributes
     -->
 
+    <changeSet id="insuranceclaims-27.10.2019:20:15" author="Dawid Ruchniewicz">
+        <preConditions>
+            <not>
+                <tableExists tableName="iclm_bill"/>
+            </not>
+        </preConditions>
+        <comment>
+            Creating the iclm_bill table
+        </comment>
+        <createTable tableName="iclm_bill">
+            <column name="iclm_bill_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" unique="true"/>
+            </column>
+            <column name="start_date" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_amount" type="decimal(10,2)"/>
+            <column name="payment_status" type="varchar(50)" defaultValue="ENTERED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_type" type="varchar(50)"/>
+            <column name="diagnosis" type="int"/>
+
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="creator" type="int"/>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_voided" type="datetime"/>
+            <column name="void_reason" type="varchar(255)"/>
+            <column name="voided" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="voided_by" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint constraintName="iclm_bill_diagnosis_fk"
+                                 baseTableName="iclm_bill" baseColumnNames="diagnosis"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint constraintName="iclm_bill_creator_fk"
+                                 baseTableName="iclm_bill" baseColumnNames="creator"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="iclm_bill_changed_by_fk"
+                                 baseTableName="iclm_bill" baseColumnNames="changed_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="iclm_bill_voided_by_fk"
+                                 baseTableName="iclm_bill" baseColumnNames="voided_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+    <changeSet id="insuranceclaims-27.10.2019:19:45" author="Dawid Ruchniewicz">
+        <preConditions>
+            <not>
+                <tableExists tableName="iclm_provided_item"/>
+            </not>
+        </preConditions>
+        <comment>
+            Creating the iclm_provided_item table
+        </comment>
+        <createTable tableName="iclm_provided_item">
+            <column name="iclm_provided_item_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" unique="true"/>
+            </column>
+            <column name="price" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_of_served" type="DATETIME"/>
+            <column name="item" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="patient" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bill" type="int"/>
+
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="creator" type="int"/>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_voided" type="datetime"/>
+            <column name="void_reason" type="varchar(255)"/>
+            <column name="voided" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="voided_by" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint constraintName="iclm_provided_item_item_fk"
+                                 baseTableName="iclm_provided_item" baseColumnNames="item"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint constraintName="iclm_provided_item_patient_fk"
+                                 baseTableName="iclm_provided_item" baseColumnNames="patient"
+                                 referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="iclm_provided_item_bill_fk"
+                                 baseTableName="iclm_provided_item" baseColumnNames="bill"
+                                 referencedTableName="iclm_bill" referencedColumnNames="iclm_bill_id"/>
+        <addForeignKeyConstraint constraintName="iclm_provided_item_creator_fk"
+                                 baseTableName="iclm_provided_item" baseColumnNames="creator"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="iclm_provided_item_changed_by_fk"
+                                 baseTableName="iclm_provided_item" baseColumnNames="changed_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="iclm_provided_item_voided_by_fk"
+                                 baseTableName="iclm_provided_item" baseColumnNames="voided_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
     <changeSet id="insuranceclaims-28.03.2019:11:04" author="Arkadiusz Lalo">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -81,6 +201,9 @@
         <addForeignKeyConstraint constraintName="iclm_claim_visit_type_fk"
                                  baseTableName="iclm_claim" baseColumnNames="visit_type"
                                  referencedTableName="visit_type" referencedColumnNames="visit_type_id"/>
+        <addForeignKeyConstraint constraintName="iclm_claim_bill_fk"
+                                 baseTableName="iclm_claim" baseColumnNames="bill"
+                                 referencedTableName="iclm_bill" referencedColumnNames="iclm_bill_id"/>
         <addForeignKeyConstraint constraintName="iclm_claim_creator_fk"
                                  baseTableName="iclm_claim" baseColumnNames="creator"
                                  referencedTableName="users" referencedColumnNames="user_id"/>
@@ -188,6 +311,10 @@
             </column>
             <column name="voided_by" type="int"/>
         </createTable>
+        <addForeignKeyConstraint constraintName="iclm_claim_item_item_fk"
+                                 baseTableName="iclm_claim_item" baseColumnNames="item"
+                                 referencedTableName="iclm_provided_item"
+                                 referencedColumnNames="iclm_provided_item_id"/>
         <addForeignKeyConstraint constraintName="iclm_claim_item_claim_fk"
                                  baseTableName="iclm_claim_item" baseColumnNames="claim"
                                  referencedTableName="iclm_claim" referencedColumnNames="iclm_claim_id"/>
@@ -404,6 +531,39 @@
             <column name="retired">0</column>
             <column name="uuid">1946c03b-6fbd-4e11-8c76-36d07b39e47c</column>
         </insert>
+    </changeSet>
+
+    <changeSet id="insuranceclaims-27.01.2020:16:30" author="Bartlomiej Kaminski">
+        <preConditions>
+            <tableExists tableName="iclm_bill"/>
+            <not>
+                <columnExists tableName="iclm_bill" columnName="patient"/>
+            </not>
+        </preConditions>
+        <comment>
+            Patient for Bill
+        </comment>
+        <addColumn tableName="iclm_bill">
+            <column name="patient" type="int"/>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="iclm_bill_patient_fk"
+                                 baseTableName="iclm_bill" baseColumnNames="patient"
+                                 referencedTableName="patient" referencedColumnNames="patient_id"/>
+    </changeSet>
+
+    <changeSet id="insuranceclaims-28.01.2020:15:40" author="Bartlomiej Kaminski">
+        <preConditions>
+            <tableExists tableName="iclm_provided_item"/>
+            <not>
+                <columnExists tableName="iclm_provided_item" columnName="number_of_consumptions"/>
+            </not>
+        </preConditions>
+        <comment>
+            Number of consumptions
+        </comment>
+        <addColumn tableName="iclm_provided_item">
+            <column name="number_of_consumptions" type="int"/>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

@@ -39,12 +39,11 @@ public class ItemConsumedEventListener implements EventListener {
         try {
             String obsUuid = mapMessage.getString("uuid");
             Obs newObs = Context.getObsService().getObsByUuid(obsUuid);
-            // consumedItemStrategy.addProvidedItems(newObs);
+            consumedItemStrategy.addProvidedItems(newObs);
         } catch (JMSException e) {
             System.err.println("Insurance claim: Exception during objectifying: " + e);
-        } 
-        // catch (ConsumedItemException e) {
-        //     System.err.println("Insurance claim: Error during creating provided item: " + e);
-        // }
+        } catch (ConsumedItemException e) {
+            System.err.println("Insurance claim: Error during creating provided item: " + e);
+        }
     }
 }
