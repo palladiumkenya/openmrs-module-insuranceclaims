@@ -8,7 +8,6 @@
 
     <bean id="DefaultConsumedItemStrategy"
           class="org.openmrs.module.insuranceclaims.api.strategies.consumed.ConsumedItemStrategy" >
-        <property name="providedItemService" ref="insuranceclaims.ProvidedItemService" />
     </bean>
 
 </beans>

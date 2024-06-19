@@ -1,7 +1,6 @@
 package org.openmrs.module.insuranceclaims.web.controller;
 
 import org.openmrs.module.insuranceclaims.api.client.impl.ClaimRequestWrapper;
-import org.openmrs.module.insuranceclaims.api.model.Bill;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsurancePolicy;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
@@ -10,10 +9,12 @@ import org.openmrs.module.insuranceclaims.api.service.exceptions.EligibilityRequ
 import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest;
 import org.openmrs.module.insuranceclaims.forms.ClaimFormService;
 import org.openmrs.module.insuranceclaims.forms.NewClaimForm;
+import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -29,7 +30,8 @@ import static org.openmrs.module.insuranceclaims.InsuranceClaimsOmodConstants.CL
 import static org.openmrs.module.insuranceclaims.InsuranceClaimsOmodConstants.CLAIM_NOT_SENT_MESSAGE;
 
 @RestController
-@RequestMapping(value = "insuranceclaims/rest/v1")
+// @RequestMapping(value = "insuranceclaims/rest/v1")
+@RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/insuranceclaims")
 public class InsuranceClaimResourceController {
 
     @Autowired
@@ -41,27 +43,38 @@ public class InsuranceClaimResourceController {
     @Autowired
     private ExternalApiRequest externalApiRequest;
 
+    /**
+     * Create a claim
+     * @param form
+     * @param request
+     * @param response
+     * @return
+     * @throws ResponseException
+     */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<InsuranceClaim> createClaim(@RequestBody NewClaimForm form, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+        System.out.println("Insurance Claims: REST - New Claim");
         InsuranceClaim claim = claimFormService.createClaim(form);
 
         ResponseEntity<InsuranceClaim> requestResponse = new ResponseEntity<>(claim, HttpStatus.ACCEPTED);
         return requestResponse;
     }
 
-    @RequestMapping(value = "/bills", method = RequestMethod.POST, produces = "application/json")
-    @ResponseBody
-    public ResponseEntity<Bill> createBill(@RequestBody NewClaimForm form, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
-        Bill bill = claimFormService.createBill(form);
-
-        ResponseEntity<Bill> requestResponse = new ResponseEntity<>(bill, HttpStatus.ACCEPTED);
-        return requestResponse;
-    }
-
+    /**
+     * Get a claim by its claim UUID
+     * @param claimUuid
+     * @param request
+     * @param response
+     * @return
+     * @throws ResponseException
+     */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity get(@RequestParam(value = "claimUuid") String claimUuid, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+        System.out.println("Insurance Claims: REST - Get Claim by UUID: " + claimUuid);
         InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
         ResponseEntity<InsuranceClaim> requestResponse = new ResponseEntity<>(claim, HttpStatus.ACCEPTED);
         return requestResponse;
@@ -74,9 +87,11 @@ public class InsuranceClaimResourceController {
      * @param claimUuid uuid of claim that will be send to external server
      * @return InsuranceClaim with updated values or error message that occured during processing request
      */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims/sendToExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity sendClaimToExternalId(@RequestParam(value = "claimUuid", required = true) String claimUuid, HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("Insurance Claims: REST - Get Claim from external by UUID: " + claimUuid);
         InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
 
         if (claim.getExternalId() != null) {
@@ -91,9 +106,18 @@ public class InsuranceClaimResourceController {
         }
     }
 
+    /**
+     * Get a claim from external system
+     * @param claimExternalCode
+     * @param request
+     * @param response
+     * @return
+     */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims/getFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity getClaimFromExternalId(@RequestParam(value = "claimExternalCode") String claimExternalCode, HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("Insurance Claims: REST - Get Claim from external by external code: " + claimExternalCode);
         ResponseEntity requestResponse;
         try {
              ClaimRequestWrapper wrapper = externalApiRequest.getClaimFromExternalApi(claimExternalCode);
@@ -104,9 +128,18 @@ public class InsuranceClaimResourceController {
         return requestResponse;
     }
 
+    /**
+     * Get the insurance policy by its policy number
+     * @param policyNumber
+     * @param request
+     * @param response
+     * @return
+     */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/getPolicyFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity getPolicyFromExternal(@RequestParam(value = "policyNumber") String policyNumber, HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("Insurance Claims: REST - Get Policy from external by policy number: " + policyNumber);
         ResponseEntity requestResponse;
         try {
              InsurancePolicy policy = externalApiRequest.getPatientPolicy(policyNumber);
@@ -124,9 +157,11 @@ public class InsuranceClaimResourceController {
      * @param claimUuid uuid claim which have to be updated witch external server values
      * @return InsuranceClaim with updated values
      */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims/updateClaim", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity updateClaim(@RequestParam(value = "claimUuid") String claimUuid, HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("Insurance Claims: REST - Get claim update from external to check approval by UUID: " + claimUuid);
         InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
 
         if (claim.getExternalId() == null) {

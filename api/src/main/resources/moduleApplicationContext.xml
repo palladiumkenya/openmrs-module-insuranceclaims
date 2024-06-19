@@ -41,15 +41,6 @@
     <bean parent="serviceContext">
         <property name="moduleService">
             <list>
-                <value>org.openmrs.module.insuranceclaims.api.service.BillService</value>
-                <ref bean="insuranceclaims.BillService"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean parent="serviceContext">
-        <property name="moduleService">
-            <list>
                 <value>org.openmrs.module.insuranceclaims.api.service.InsuranceClaimItemService</value>
                 <ref bean="insuranceclaims.InsuranceClaimItemService"/>
             </list>
@@ -61,24 +52,6 @@
             <list>
                 <value>org.openmrs.module.insuranceclaims.api.service.InsuranceClaimDiagnosisService</value>
                 <ref bean="insuranceclaims.InsuranceClaimDiagnosisService"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean parent="serviceContext">
-        <property name="moduleService">
-            <list>
-                <value>org.openmrs.module.insuranceclaims.api.service.ProvidedItemService</value>
-                <ref bean="insuranceclaims.ProvidedItemService"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean parent="serviceContext">
-        <property name="moduleService">
-            <list>
-                <value>org.openmrs.module.insuranceclaims.api.service.ProvidedItemService</value>
-                <ref bean="insuranceclaims.ProvidedItemService"/>
             </list>
         </property>
     </bean>

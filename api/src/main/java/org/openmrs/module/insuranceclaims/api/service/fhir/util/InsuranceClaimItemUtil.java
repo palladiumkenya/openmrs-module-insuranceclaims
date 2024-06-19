@@ -14,7 +14,8 @@ import org.openmrs.Concept;
 import org.openmrs.ConceptMap;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItemStatus;
-import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
+
+import org.openmrs.module.kenyaemr.cashier.api.model.BillLineItem;
 
 import java.util.Collection;
 import java.util.List;
@@ -41,21 +42,21 @@ public final class InsuranceClaimItemUtil {
     }
 
     public static CodeableConcept getItemCategory(InsuranceClaimItem item) {
-        ProvidedItem providedItem = item.getItem();
-        String category = getConceptCategory(providedItem.getItem());
+        BillLineItem providedItem = item.getItem();
+        String category = getConceptCategory(providedItem.getItem() != null ? providedItem.getItem().getConcept() : providedItem.getBillableService().getConcept());
         return new CodeableConcept().setText(category);
     }
 
     public static Money getItemUnitPrice(InsuranceClaimItem item) {
-        ProvidedItem providedItem = item.getItem();
+        BillLineItem providedItem = item.getItem();
         Money unitPrice = new Money();
-        unitPrice.setValue(getConceptUnitPrice(providedItem.getItem()));
+        unitPrice.setValue(providedItem.getPrice());
         return unitPrice;
     }
 
     public static CodeableConcept createFhirItemService(InsuranceClaimItem item) {
-        ProvidedItem providedItem = item.getItem();
-        String externalCode = getExternalCode(providedItem.getItem());
+        BillLineItem providedItem = item.getItem();
+        String externalCode = getExternalCode(providedItem.getItem() != null ? providedItem.getItem().getConcept() : providedItem.getBillableService().getConcept());
         Coding coding = new Coding();
         coding.setCode(externalCode);
         CodeableConcept serviceConcept = new CodeableConcept();

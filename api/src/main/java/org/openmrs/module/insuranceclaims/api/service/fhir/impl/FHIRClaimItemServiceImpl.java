@@ -38,9 +38,9 @@ import org.openmrs.Concept;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
-import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
 import org.openmrs.module.insuranceclaims.api.service.db.ItemDbService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
+import org.openmrs.module.kenyaemr.cashier.api.model.BillLineItem;
 
 public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
 
@@ -187,9 +187,10 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
         this.itemDbService = insuranceClaimItemDao;
     }
 
-    private ProvidedItem generateProvidedItem(List<String> itemCodes) {
-        ProvidedItem providedItem = new ProvidedItem();
-        providedItem.setItem(getConceptByExternalId(itemCodes));
+    private BillLineItem generateProvidedItem(List<String> itemCodes) {
+        BillLineItem providedItem = new BillLineItem();
+        // TODO : Create the item
+        // providedItem.setItem(getConceptByExternalId(itemCodes));
         return providedItem;
     }
 
@@ -203,7 +204,7 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
     private InsuranceClaimItem generateOmrsClaimItem(Claim.ItemComponent item) throws FHIRException {
         InsuranceClaimItem omrsItem = new InsuranceClaimItem();
         String itemCode = item.getProductOrService().getText();
-        ProvidedItem providedItem = generateProvidedItem(Collections.singletonList(itemCode));
+        BillLineItem providedItem = generateProvidedItem(Collections.singletonList(itemCode));
         omrsItem.setQuantityProvided(getItemQuantity(item));
         omrsItem.setItem(providedItem);
         if (providedItem.getItem() == null) {
