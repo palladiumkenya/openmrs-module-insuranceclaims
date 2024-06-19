@@ -90,6 +90,7 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	 */
 	@Override
 	public void started() {
+		System.err.println("Insurance Claims Module started");
 		addConcepts();
 
 		// HtmlFormEntryService service = Context.getService(HtmlFormEntryService.class);
@@ -113,6 +114,7 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	 */
 	@Override
 	public void stopped() {
+		System.err.println("Insurance Claims Module stopped");
 		Event.unsubscribe(Obs.class, Event.Action.CREATED, eventListener);
 		System.err.println(MODULE_STOP_MESSAGE);
 	}
@@ -153,5 +155,25 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 		if (actual == null) {
 			personService.savePersonAttributeType(attributeType);
 		}
+	}
+
+	@Override
+	public void willRefreshContext() {
+		System.err.println("Insurance Claims Module refreshing context");
+	}
+ 
+	@Override
+	public void willStart() {
+		System.err.println("Insurance Claims Module starting");
+	}
+ 
+	@Override
+	public void willStop() {
+		System.err.println("Insurance Claims Module stopping");
+	}
+
+	@Override
+	public void contextRefreshed() {
+		System.err.println("Insurance Claims Module refreshing context");
 	}
 }
