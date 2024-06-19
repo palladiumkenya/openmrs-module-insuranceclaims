@@ -38,7 +38,6 @@
 		<eventModuleVersion>2.10.0</eventModuleVersion>
 		<idgenModuleVersion>4.10.0</idgenModuleVersion>
 		<webservices.restVersion>2.42.0</webservices.restVersion>
-		<cashierVersion>4.2.0</cashierVersion>
 	</properties>
 
 	<dependencyManagement>
@@ -48,13 +47,6 @@
                 <artifactId>fhir2-api</artifactId>
                 <version>${fhir2Version}</version>
                 <scope>provided</scope>
-            </dependency>
-
-			<dependency>
-                <groupId>org.openmrs.module</groupId>
-                <artifactId>kenyaemr.cashier-api</artifactId>
-                <version>${cashierVersion}</version>
-				<scope>provided</scope>
             </dependency>
 
 			<dependency>
