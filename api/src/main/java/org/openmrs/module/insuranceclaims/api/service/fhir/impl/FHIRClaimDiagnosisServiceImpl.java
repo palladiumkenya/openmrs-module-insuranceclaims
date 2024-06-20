@@ -47,12 +47,17 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
     public Claim.DiagnosisComponent generateClaimDiagnosisComponent(InsuranceClaimDiagnosis omrsClaimDiagnosis) {
         Claim.DiagnosisComponent newDiagnosis = new Claim.DiagnosisComponent();
 
-        Concept diagnosisConcepts = omrsClaimDiagnosis.getConcept();
-        System.out.println("Diagnosis concept: " + diagnosisConcepts);
-        CodeableConcept diagnosis = conceptTranslator.toFhirResource(diagnosisConcepts);
+        try {
+            Concept diagnosisConcept = omrsClaimDiagnosis.getConcept();
+            System.out.println("Diagnosis concept: " + diagnosisConcept);
+            CodeableConcept diagnosis = conceptTranslator.toFhirResource(diagnosisConcept);
 
-        newDiagnosis.setId(omrsClaimDiagnosis.getUuid());
-        newDiagnosis.setDiagnosis(diagnosis);
+            newDiagnosis.setId(omrsClaimDiagnosis.getUuid());
+            newDiagnosis.setDiagnosis(diagnosis);
+        } catch(Exception ex) {
+            System.err.println("Diagnosis error: " + ex.getMessage());
+            ex.printStackTrace();
+        }
 
         return newDiagnosis;
     }
