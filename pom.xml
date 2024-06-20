@@ -35,7 +35,7 @@
 		<fhir2Version>2.1.0</fhir2Version>
 		<apiResourceDir>${basedir}/src/main/resources</apiResourceDir>
 		<metadatamappingVersion>1.6.0</metadatamappingVersion>
-		<eventModuleVersion>2.10.0</eventModuleVersion>
+		<!-- <eventModuleVersion>2.10.0</eventModuleVersion> -->
 		<idgenModuleVersion>4.10.0</idgenModuleVersion>
 		<webservices.restVersion>2.42.0</webservices.restVersion>
 	</properties>
@@ -57,13 +57,14 @@
 			</dependency>
 
 			<!-- Event module -->
-			<dependency>
+			<!-- <dependency>
 				<groupId>org.openmrs</groupId>
 				<artifactId>event-api</artifactId>
 				<version>${eventModuleVersion}</version>
 				<scope>provided</scope>
-			</dependency>
-			<dependency>
+			</dependency> -->
+
+			<!-- <dependency>
 				<groupId>org.openmrs</groupId>
 				<artifactId>event-api-1.x</artifactId>
 				<version>${eventModuleVersion}</version>
@@ -74,7 +75,7 @@
 				<artifactId>event-api-2.x</artifactId>
 				<version>${eventModuleVersion}</version>
 				<scope>provided</scope>
-			</dependency>
+			</dependency> -->
 
 			<!-- Identifiers module -->
 			<dependency>

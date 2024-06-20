@@ -86,6 +86,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="date_of_served" type="DATETIME"/>
+            <column name="origin_uuid" type="varchar(250)"/>
             <column name="item" type="int">
                 <constraints nullable="false"/>
             </column>
@@ -149,6 +150,9 @@
             </column>
             <column name="location" type="int"/>
             <column name="claim_code" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bill_number" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
             <column name="date_from" type="DATETIME">

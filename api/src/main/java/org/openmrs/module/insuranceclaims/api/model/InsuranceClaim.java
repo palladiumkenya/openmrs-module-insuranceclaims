@@ -7,6 +7,8 @@ import org.openmrs.Patient;
 import org.openmrs.Provider;
 import org.openmrs.VisitType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -40,11 +42,13 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 
 	@ManyToOne
 	@JoinColumn(name = "provider")
+	@JsonIgnore
 	private Provider provider;
 
 	@ManyToOne
 	@Cascade(CascadeType.SAVE_UPDATE)
 	@JoinColumn(name = "patient", nullable = false)
+	@JsonIgnore
 	private Patient patient;
 
 	@ManyToOne
@@ -54,6 +58,10 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	@Basic
 	@Column(name = "claim_code", length = 255, nullable = false)
 	private String claimCode;
+
+	@Basic
+	@Column(name = "bill_number", length = 255, nullable = false)
+	private String billNumber;
 
 	@Basic
 	@Column(name = "date_from", nullable = false)
@@ -107,6 +115,7 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	@ManyToOne
 	@Cascade(CascadeType.SAVE_UPDATE)
 	@JoinColumn(name = "bill", nullable = false)
+	@JsonIgnore
 	private Bill bill;
 
 	@Override
@@ -255,4 +264,13 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	public void setBill(Bill bill) {
 		this.bill = bill;
 	}
+
+	public String getBillNumber() {
+		return billNumber;
+	}
+
+	public void setBillNumber(String billNumber) {
+		this.billNumber = billNumber;
+	}
+	
 }

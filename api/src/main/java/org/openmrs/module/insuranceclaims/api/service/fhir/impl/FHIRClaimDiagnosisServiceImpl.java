@@ -40,12 +40,15 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
     private DiagnosisDbService diagnosisDbService;
     private ConceptTranslator conceptTranslator = new ConceptTranslatorImpl();
     // private CodingTranslator medicationCodingTranslator = new MedicationQuantityCodingTranslatorImpl();
+    // private ConceptTranslator conceptTranslator = Context.getRegisteredComponent("fhir2.ConceptTranslator", ConceptTranslator.class);
+    // private ConceptTranslator conceptTranslator = Context.getRegisteredComponent("conceptTranslator", ConceptTranslator.class);
 
     @Override
     public Claim.DiagnosisComponent generateClaimDiagnosisComponent(InsuranceClaimDiagnosis omrsClaimDiagnosis) {
         Claim.DiagnosisComponent newDiagnosis = new Claim.DiagnosisComponent();
 
         Concept diagnosisConcepts = omrsClaimDiagnosis.getConcept();
+        System.out.println("Diagnosis concept: " + diagnosisConcepts);
         CodeableConcept diagnosis = conceptTranslator.toFhirResource(diagnosisConcepts);
 
         newDiagnosis.setId(omrsClaimDiagnosis.getUuid());

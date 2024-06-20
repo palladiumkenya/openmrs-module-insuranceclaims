@@ -166,13 +166,20 @@ public final class InsuranceClaimItemUtil {
                 .anyMatch(value -> value.equals(sequenceLinkId));
     }
 
+    // TODO: check how concepts are categorized as services or items using attributes
     private static String getConceptCategory(Concept concept) {
         Boolean isService = (Boolean) getConceptAttributeValueByTypeUuid(concept, IS_SERVICE_CONCEPT_ATTRIBUTE_UUID);
-        return isService ? CATEGORY_SERVICE : CATEGORY_ITEM;
+        if(isService != null) {
+            return isService ? CATEGORY_SERVICE : CATEGORY_ITEM;
+        } else {
+            return CATEGORY_ITEM;
+        }
     }
 
+    // TODO: check how concepts are unit price is found using attributes
     private static float getConceptUnitPrice(Concept concept) {
-        return (Float) getConceptAttributeValueByTypeUuid(concept, CONCEPT_PRICE_ATTRIBUTE_UUID);
+        Float price = (Float) getConceptAttributeValueByTypeUuid(concept, CONCEPT_PRICE_ATTRIBUTE_UUID);
+        return price != null ? price : 1.00F;
     }
 
     private static boolean isExternalSystemReferenceSource(ConceptMap conceptMap) {
