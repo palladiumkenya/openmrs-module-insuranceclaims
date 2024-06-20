@@ -159,7 +159,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         String justification = formItems.getJustification();
 
         for (ItemDetails nextItemDetails : formItems.getItems()) {
-            System.out.println("Insurance Claims: Search ITEM UUID: " + nextItemDetails.getUuid());
+            // System.out.println("Insurance Claims: Search ITEM UUID: " + nextItemDetails.getUuid());
             ProvidedItem provideditem = new ProvidedItem();
             provideditem.setOriginUuid(nextItemDetails.getUuid());
             provideditem.setItem(Context.getConceptService().getConceptByUuid(nextItemDetails.getUuid()));
@@ -169,7 +169,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
             provideditem.setStatus(ProcessStatus.ENTERED);
             providedItemService.saveOrUpdate(provideditem);
             
-            System.out.println("Insurance Claims: ITEM created");
+            // System.out.println("Insurance Claims: ITEM created");
             InsuranceClaimItem nextInsuranceClaimItem = new InsuranceClaimItem();
             nextInsuranceClaimItem.setItem(provideditem);
             nextInsuranceClaimItem.setQuantityProvided(provideditem.getNumberOfConsumptions());
@@ -186,7 +186,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
 
         for (String uuid: diagnosesUuidList) {
             Concept diagnosisConcept = Context.getConceptService().getConceptByUuid(uuid);
-            testDiagnosis(diagnosisConcept);
+            // testDiagnosis(diagnosisConcept);
             InsuranceClaimDiagnosis nextDiagnosis = new InsuranceClaimDiagnosis(diagnosisConcept, claim);
             diagnoses.add(nextDiagnosis);
         }

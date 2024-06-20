@@ -38,10 +38,11 @@ import org.openmrs.module.insuranceclaims.util.OpenmrsUtils;
 public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService {
 
     private DiagnosisDbService diagnosisDbService;
-    private ConceptTranslator conceptTranslator = new ConceptTranslatorImpl();
+    // private ConceptTranslator conceptTranslator = new ConceptTranslatorImpl();
     // private CodingTranslator medicationCodingTranslator = new MedicationQuantityCodingTranslatorImpl();
     // private ConceptTranslator conceptTranslator = Context.getRegisteredComponent("fhir2.ConceptTranslator", ConceptTranslator.class);
     // private ConceptTranslator conceptTranslator = Context.getRegisteredComponent("conceptTranslator", ConceptTranslator.class);
+    private ConceptTranslator conceptTranslator;
 
     @Override
     public Claim.DiagnosisComponent generateClaimDiagnosisComponent(InsuranceClaimDiagnosis omrsClaimDiagnosis) {
@@ -252,6 +253,14 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
         this.diagnosisDbService = diagnosisDao;
     }
 
+    public ConceptTranslator getConceptTranslator() {
+        return conceptTranslator;
+    }
+
+    public void setConceptTranslator(ConceptTranslator conceptTranslator) {
+        this.conceptTranslator = conceptTranslator;
+    }
+
     private void addCodingToDiagnosis(List<Claim.DiagnosisComponent>  diagnosisComponents) throws FHIRException {
         for (Claim.DiagnosisComponent diagnosis: diagnosisComponents) {
             setDiagnosisPrimaryCoding(diagnosis);
@@ -269,9 +278,12 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
         List<Coding> diagnosisCoding = diagnosis.getDiagnosisCodeableConcept().getCoding();
 
         for (Coding c : diagnosisCoding) {
-            if (c.getSystem().equals(primaryCoding)) {
-                Collections.swap(diagnosisCoding, 0, diagnosisCoding.indexOf(c));
-                break;
+            String system = c.getSystem();
+            if(system != null) {
+                if (system.equals(primaryCoding)) {
+                    Collections.swap(diagnosisCoding, 0, diagnosisCoding.indexOf(c));
+                    break;
+                }
             }
         }
     }
