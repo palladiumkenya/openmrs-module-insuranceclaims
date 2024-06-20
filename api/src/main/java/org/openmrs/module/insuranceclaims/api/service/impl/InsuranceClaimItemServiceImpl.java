@@ -56,7 +56,7 @@ public class InsuranceClaimItemServiceImpl extends BaseOpenmrsDataService<Insura
     }
 
     private String getClaimItemCode(InsuranceClaimItem item) {
-        Concept itemConcept = item.getItem().getItem() != null ? item.getItem().getItem().getConcept() : item.getItem().getBillableService().getConcept();
+        Concept itemConcept = item.getItem().getItem();
         return InsuranceClaimItemUtil.getExternalCode(itemConcept);
     }
 

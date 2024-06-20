@@ -3,6 +3,10 @@ package org.openmrs.module.insuranceclaims.forms.impl;
 
 import ca.uhn.fhir.util.DateUtils;
 import org.openmrs.Concept;
+import org.openmrs.ConceptMap;
+import org.openmrs.ConceptMapType;
+import org.openmrs.ConceptReferenceTerm;
+import org.openmrs.ConceptSource;
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.VisitType;
@@ -11,11 +15,17 @@ import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimDiagnosis;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
+import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
 import org.openmrs.module.insuranceclaims.api.model.PaymentType;
+import org.openmrs.module.insuranceclaims.api.model.ProcessStatus;
+import org.openmrs.module.insuranceclaims.api.model.Bill;
+import org.openmrs.module.insuranceclaims.api.service.BillService;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimDiagnosisService;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimItemService;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
+import org.openmrs.module.insuranceclaims.api.service.ProvidedItemService;
 import org.openmrs.module.insuranceclaims.forms.ClaimFormService;
+import org.openmrs.module.insuranceclaims.forms.ItemDetails;
 import org.openmrs.module.insuranceclaims.forms.NewClaimForm;
 import org.openmrs.module.insuranceclaims.forms.ProvidedItemInForm;
 import org.springframework.http.HttpStatus;
@@ -36,18 +46,17 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
-import org.openmrs.module.kenyaemr.cashier.api.model.BillLineItem;
-import org.openmrs.module.kenyaemr.cashier.api.BillLineItemService;
-
 public class ClaimFormServiceImpl implements ClaimFormService {
+
+    private BillService billService;
+
+    private ProvidedItemService providedItemService;
 
     private InsuranceClaimService insuranceClaimService;
 
     private InsuranceClaimItemService insuranceClaimItemService;
 
     private InsuranceClaimDiagnosisService insuranceClaimDiagnosisService;
-
-    private BillLineItemService billLineItemService = Context.getService(BillLineItemService.class);;
 
     private static final String[] FORM_DATE_FORMAT = {"yyy-mm-dd"};
 
@@ -64,17 +73,26 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         VisitType visitType = Context.getVisitService().getVisitTypeByUuid(form.getVisitType());
         nextClaim.setVisitType(visitType);
 
+        System.out.println("Patient UUID : " + form.getPatient());
         Patient patient = Context.getPatientService().getPatientByUuid(form.getPatient());
+        System.out.println("Patient : " + patient.toString());
         nextClaim.setPatient(patient);
 
         nextClaim.setGuaranteeId(form.getGuaranteeId());
         nextClaim.setClaimCode(form.getClaimCode());
+        nextClaim.setBillNumber(form.getBillNumber());
         nextClaim.setStatus(InsuranceClaimStatus.ENTERED);
         nextClaim.setLocation(getClaimLocation(form));
 
         assignDatesFromFormToClaim(nextClaim, form);
 
-        List<InsuranceClaimItem> items = generateClaimItems(form.getProvidedItems());
+        List<InsuranceClaimItem> items = generateClaimItems(form.getProvidedItems(), patient);
+        List<ProvidedItem> claimProvidedItems = items.stream()
+                .map(item -> item.getItem())
+                .collect(Collectors.toList());
+
+        createClaimBill(nextClaim, claimProvidedItems);
+        nextClaim.getBill().setPaymentType(PaymentType.INSURANCE_CLAIM);
         insuranceClaimService.saveOrUpdate(nextClaim);
 
         List<InsuranceClaimDiagnosis> diagnoses = generateClaimDiagnoses(form.getDiagnoses(), nextClaim);
@@ -86,6 +104,30 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         });
 
         return nextClaim;
+    }
+
+    @Override
+    @Transactional
+    public Bill createBill(NewClaimForm form) {
+        // List<InsuranceClaimItem> items = generateClaimItems(form.getProvidedItems());
+        // List<ProvidedItem> claimProvidedItems = items.stream()
+        //         .map(item -> item.getItem())
+        //         .collect(Collectors.toList());
+
+        // Bill bill = billService.generateBill(claimProvidedItems);
+        // bill.setPaymentType(PaymentType.CASH);
+        // billService.saveOrUpdate(bill);
+        Bill bill = new Bill();
+
+        return bill;
+    }
+
+    public void setBillService(BillService billService) {
+        this.billService = billService;
+    }
+
+    public void setProvidedItemService(ProvidedItemService providedItemService) {
+        this.providedItemService = providedItemService;
     }
 
     public void setInsuranceClaimService(InsuranceClaimService insuranceClaimService) {
@@ -100,36 +142,41 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         this.insuranceClaimDiagnosisService = insuranceClaimDiagnosisService;
     }
 
-    private List<InsuranceClaimItem> generateClaimItems(Map<String, ProvidedItemInForm> allProvidedItems) {
+    private List<InsuranceClaimItem> generateClaimItems(Map<String, ProvidedItemInForm> allProvidedItems, Patient patient) {
         List<InsuranceClaimItem> consumptions = new ArrayList<>();
 
         for (ProvidedItemInForm itemConsumptions:  allProvidedItems.values()) {
-            List<InsuranceClaimItem> items = getConsumedItemsOfType(itemConsumptions);
+            List<InsuranceClaimItem> items = getConsumedItemsOfType(itemConsumptions, patient);
             consumptions.addAll(items);
         }
 
         return consumptions;
     }
 
-    private List<InsuranceClaimItem> getConsumedItemsOfType(ProvidedItemInForm formItems) {
+    private List<InsuranceClaimItem> getConsumedItemsOfType(ProvidedItemInForm formItems, Patient patient) {
         List<InsuranceClaimItem> items = new ArrayList<>();
         String explanation = formItems.getExplanation();
         String justification = formItems.getJustification();
 
-        for (String nextItemUuid : formItems.getItems()) {
-            System.out.println("Insurance Claims: Search ITEM UUID: " + nextItemUuid);
-            BillLineItem provideditem = billLineItemService.getByUuid(nextItemUuid);
-            if(provideditem != null) {
-                System.out.println("Insurance Claims: ITEM found");
-                InsuranceClaimItem nextInsuranceClaimItem = new InsuranceClaimItem();
-                nextInsuranceClaimItem.setItem(provideditem);
-                nextInsuranceClaimItem.setQuantityProvided(provideditem.getQuantity());
-                nextInsuranceClaimItem.setJustification(justification);
-                nextInsuranceClaimItem.setExplanation(explanation);
-                items.add(nextInsuranceClaimItem);
-            } else {
-                System.out.println("Insurance Claims: ITEM NOT found");
-            }
+        for (ItemDetails nextItemDetails : formItems.getItems()) {
+            // System.out.println("Insurance Claims: Search ITEM UUID: " + nextItemDetails.getUuid());
+            ProvidedItem provideditem = new ProvidedItem();
+            provideditem.setOriginUuid(nextItemDetails.getUuid());
+            provideditem.setItem(Context.getConceptService().getConceptByUuid(nextItemDetails.getUuid()));
+            provideditem.setPrice(nextItemDetails.getPrice());
+            provideditem.setNumberOfConsumptions(nextItemDetails.getQuantity());
+            provideditem.setPatient(patient);
+            provideditem.setStatus(ProcessStatus.ENTERED);
+            providedItemService.saveOrUpdate(provideditem);
+            
+            // System.out.println("Insurance Claims: ITEM created");
+            InsuranceClaimItem nextInsuranceClaimItem = new InsuranceClaimItem();
+            nextInsuranceClaimItem.setItem(provideditem);
+            nextInsuranceClaimItem.setQuantityProvided(provideditem.getNumberOfConsumptions());
+            nextInsuranceClaimItem.setJustification(justification);
+            nextInsuranceClaimItem.setExplanation(explanation);
+            items.add(nextInsuranceClaimItem);
+            
         }
         return items;
     }
@@ -139,10 +186,30 @@ public class ClaimFormServiceImpl implements ClaimFormService {
 
         for (String uuid: diagnosesUuidList) {
             Concept diagnosisConcept = Context.getConceptService().getConceptByUuid(uuid);
+            // testDiagnosis(diagnosisConcept);
             InsuranceClaimDiagnosis nextDiagnosis = new InsuranceClaimDiagnosis(diagnosisConcept, claim);
             diagnoses.add(nextDiagnosis);
         }
         return diagnoses;
+    }
+
+    public void testDiagnosis(Concept input) {
+        try {
+            for (ConceptMap mapping : input.getConceptMappings()) {
+                if (mapping.getConceptMapType() != null) {
+                    ConceptMapType mapType = mapping.getConceptMapType();
+                    boolean sameAs = mapType.getUuid() != null && mapType.getUuid().equals(ConceptMapType.SAME_AS_MAP_TYPE_UUID);
+                    sameAs = sameAs || (mapType.getName() != null && mapType.getName().equalsIgnoreCase("SAME-AS"));
+                    ConceptReferenceTerm crt = mapping.getConceptReferenceTerm();
+                    ConceptSource source = crt.getConceptSource();
+                    System.err.println("Good Diagnosis source: " + source);
+                    System.err.println("Good Diagnosis source code: " + source.getHl7Code());
+                }
+            }
+        } catch (Exception ex) {
+            System.err.println("Diagnosis problem: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 
     private void assignDatesFromFormToClaim(InsuranceClaim claim, NewClaimForm form) {
@@ -151,6 +218,12 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         claim.setDateFrom(startDate);
         claim.setDateTo(endDate);
         claim.setProvider(Context.getProviderService().getProviderByUuid(form.getProvider()));
+    }
+
+    private void createClaimBill(InsuranceClaim claim, List<ProvidedItem> claimProvidedItems) {
+        Bill bill = billService.generateBill(claimProvidedItems);
+        claim.setBill(bill);
+        claim.setClaimedTotal(claim.getBill().getTotalAmount());
     }
 
     private Location getClaimLocation(NewClaimForm form) throws HttpServerErrorException {

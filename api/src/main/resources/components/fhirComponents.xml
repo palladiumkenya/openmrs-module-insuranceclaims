@@ -9,6 +9,8 @@
     <bean id="insuranceclaims.FHIRClaimDiagnosisService"
           class="org.openmrs.module.insuranceclaims.api.service.fhir.impl.FHIRClaimDiagnosisServiceImpl">
         <property name="diagnosisDbService" ref="insuranceclaims.DiagnosisDbService"/>
+        <!-- <property name="conceptTranslator" ref="insuranceclaims.ConceptTranslator"/> -->
+        <property name="conceptTranslator" ref="conceptTranslatorImpl"/>
     </bean>
 
     <bean id="insuranceclaims.FHIRClaimItemService"

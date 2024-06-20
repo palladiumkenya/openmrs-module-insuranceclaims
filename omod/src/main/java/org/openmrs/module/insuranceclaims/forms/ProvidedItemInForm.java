@@ -3,11 +3,11 @@ package org.openmrs.module.insuranceclaims.forms;
 import java.util.List;
 
 public class ProvidedItemInForm {
-    private List<String> items;
+    private List<ItemDetails> items;
     private String explanation;
     private String justification;
 
-    public List<String> getItems() {
+    public List<ItemDetails> getItems() {
         return items;
     }
 
@@ -19,7 +19,7 @@ public class ProvidedItemInForm {
         return justification;
     }
 
-    public void setItems(List<String> items) {
+    public void setItems(List<ItemDetails> items) {
         this.items = items;
     }
 

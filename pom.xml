@@ -35,11 +35,9 @@
 		<fhir2Version>2.1.0</fhir2Version>
 		<apiResourceDir>${basedir}/src/main/resources</apiResourceDir>
 		<metadatamappingVersion>1.6.0</metadatamappingVersion>
-		<eventModuleVersion>2.10.0</eventModuleVersion>
+		<!-- <eventModuleVersion>2.10.0</eventModuleVersion> -->
 		<idgenModuleVersion>4.10.0</idgenModuleVersion>
 		<webservices.restVersion>2.42.0</webservices.restVersion>
-		<cashierVersion>4.1.0-SNAPSHOT</cashierVersion>
-		<stockVersion>1.0.2-SNAPSHOT</stockVersion>
 	</properties>
 
 	<dependencyManagement>
@@ -52,29 +50,6 @@
             </dependency>
 
 			<dependency>
-                <groupId>org.openmrs.module</groupId>
-                <artifactId>kenyaemr.cashier-api</artifactId>
-                <version>${cashierVersion}</version>
-				<scope>provided</scope>
-            </dependency>
-
-			<dependency>
-				<groupId>org.openmrs.module</groupId>
-				<artifactId>stockmanagement-api</artifactId>
-				<version>${stockVersion}</version>
-				<type>jar</type>
-				<scope>provided</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.openmrs.module</groupId>
-				<artifactId>stockmanagement-omod</artifactId>
-				<version>${stockVersion}</version>
-				<type>jar</type>
-				<scope>provided</scope>
-			</dependency>
-
-			<dependency>
 				<groupId>org.openmrs.module</groupId>
 				<artifactId>metadatamapping-api</artifactId>
 				<version>${metadatamappingVersion}</version>
@@ -82,13 +57,14 @@
 			</dependency>
 
 			<!-- Event module -->
-			<dependency>
+			<!-- <dependency>
 				<groupId>org.openmrs</groupId>
 				<artifactId>event-api</artifactId>
 				<version>${eventModuleVersion}</version>
 				<scope>provided</scope>
-			</dependency>
-			<dependency>
+			</dependency> -->
+
+			<!-- <dependency>
 				<groupId>org.openmrs</groupId>
 				<artifactId>event-api-1.x</artifactId>
 				<version>${eventModuleVersion}</version>
@@ -99,7 +75,7 @@
 				<artifactId>event-api-2.x</artifactId>
 				<version>${eventModuleVersion}</version>
 				<scope>provided</scope>
-			</dependency>
+			</dependency> -->
 
 			<!-- Identifiers module -->
 			<dependency>

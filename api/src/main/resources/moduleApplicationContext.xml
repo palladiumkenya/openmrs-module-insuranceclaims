@@ -14,8 +14,18 @@
             http://www.springframework.org/schema/util/spring-util-2.5.xsd">
 
     <context:component-scan base-package="org.openmrs.module.insuranceclaims"/>
+    <!-- <context:component-scan base-package="org.openmrs.module.fhir2.api.translators.impl"/>
+    <context:component-scan base-package="org.openmrs.module.fhir2.api.impl"/> -->
+    <!-- <context:component-scan base-package="org.openmrs.module.fhir2.api.translators"/>
+    <context:component-scan base-package="org.openmrs.module.fhir2"/> -->
 
     <bean id="insuranceclaims.DateUtil" class="org.openmrs.module.insuranceclaims.util.DateUtil" />
+
+    <!-- <bean id="practitionerTranslator" class="org.openmrs.module.fhir2.api.translators.impl.PractitionerTranslatorProviderImpl"/> -->
+    <!-- <bean id="locationTypeTranslator" class="org.openmrs.module.fhir2.api.translators.impl.LocationTypeTranslatorImpl"/> -->
+    <!-- <bean id="insuranceclaims.ConceptTranslator" class="org.openmrs.module.fhir2.api.translators.impl.ConceptTranslatorImpl"/> -->
+    <bean id="conceptTranslatorImpl" class="org.openmrs.module.fhir2.api.translators.impl.ConceptTranslatorImpl"/>
+    <!-- <bean id="fhirConceptSourceService" class="org.openmrs.module.fhir2.api.impl.FhirConceptSourceServiceImpl"/> -->
 
     <import resource="classpath:components/daoComponents.xml" />
     <import resource="classpath:components/insuranceServiceComponents.xml" />
@@ -41,6 +51,15 @@
     <bean parent="serviceContext">
         <property name="moduleService">
             <list>
+                <value>org.openmrs.module.insuranceclaims.api.service.BillService</value>
+                <ref bean="insuranceclaims.BillService"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
                 <value>org.openmrs.module.insuranceclaims.api.service.InsuranceClaimItemService</value>
                 <ref bean="insuranceclaims.InsuranceClaimItemService"/>
             </list>
@@ -52,6 +71,24 @@
             <list>
                 <value>org.openmrs.module.insuranceclaims.api.service.InsuranceClaimDiagnosisService</value>
                 <ref bean="insuranceclaims.InsuranceClaimDiagnosisService"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
+                <value>org.openmrs.module.insuranceclaims.api.service.ProvidedItemService</value>
+                <ref bean="insuranceclaims.ProvidedItemService"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
+                <value>org.openmrs.module.insuranceclaims.api.service.ProvidedItemService</value>
+                <ref bean="insuranceclaims.ProvidedItemService"/>
             </list>
         </property>
     </bean>

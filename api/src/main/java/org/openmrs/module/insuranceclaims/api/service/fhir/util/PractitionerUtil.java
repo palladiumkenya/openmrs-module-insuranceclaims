@@ -40,7 +40,8 @@ public final class PractitionerUtil {
     }
 
     public PractitionerUtil() {
-        this.practitionerTranslator = Context.getRegisteredComponent("fhirPractitionerTranslator", PractitionerTranslator.class);
+        // TODO: check how to register the practitioner translator in the mobile application context
+        this.practitionerTranslator = Context.getRegisteredComponent("practitionerTranslatorProviderImpl", PractitionerTranslator.class);
     }
 
     public Reference createPractitionerReference(Provider provider) {

@@ -14,8 +14,7 @@ import org.openmrs.Concept;
 import org.openmrs.ConceptMap;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItemStatus;
-
-import org.openmrs.module.kenyaemr.cashier.api.model.BillLineItem;
+import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
 
 import java.util.Collection;
 import java.util.List;
@@ -42,21 +41,21 @@ public final class InsuranceClaimItemUtil {
     }
 
     public static CodeableConcept getItemCategory(InsuranceClaimItem item) {
-        BillLineItem providedItem = item.getItem();
-        String category = getConceptCategory(providedItem.getItem() != null ? providedItem.getItem().getConcept() : providedItem.getBillableService().getConcept());
+        ProvidedItem providedItem = item.getItem();
+        String category = getConceptCategory(providedItem.getItem());
         return new CodeableConcept().setText(category);
     }
 
     public static Money getItemUnitPrice(InsuranceClaimItem item) {
-        BillLineItem providedItem = item.getItem();
+        ProvidedItem providedItem = item.getItem();
         Money unitPrice = new Money();
-        unitPrice.setValue(providedItem.getPrice());
+        unitPrice.setValue(getConceptUnitPrice(providedItem.getItem()));
         return unitPrice;
     }
 
     public static CodeableConcept createFhirItemService(InsuranceClaimItem item) {
-        BillLineItem providedItem = item.getItem();
-        String externalCode = getExternalCode(providedItem.getItem() != null ? providedItem.getItem().getConcept() : providedItem.getBillableService().getConcept());
+        ProvidedItem providedItem = item.getItem();
+        String externalCode = getExternalCode(providedItem.getItem());
         Coding coding = new Coding();
         coding.setCode(externalCode);
         CodeableConcept serviceConcept = new CodeableConcept();
@@ -167,13 +166,20 @@ public final class InsuranceClaimItemUtil {
                 .anyMatch(value -> value.equals(sequenceLinkId));
     }
 
+    // TODO: check how concepts are categorized as services or items using attributes
     private static String getConceptCategory(Concept concept) {
         Boolean isService = (Boolean) getConceptAttributeValueByTypeUuid(concept, IS_SERVICE_CONCEPT_ATTRIBUTE_UUID);
-        return isService ? CATEGORY_SERVICE : CATEGORY_ITEM;
+        if(isService != null) {
+            return isService ? CATEGORY_SERVICE : CATEGORY_ITEM;
+        } else {
+            return CATEGORY_ITEM;
+        }
     }
 
+    // TODO: check how concepts are unit price is found using attributes
     private static float getConceptUnitPrice(Concept concept) {
-        return (Float) getConceptAttributeValueByTypeUuid(concept, CONCEPT_PRICE_ATTRIBUTE_UUID);
+        Float price = (Float) getConceptAttributeValueByTypeUuid(concept, CONCEPT_PRICE_ATTRIBUTE_UUID);
+        return price != null ? price : 1.00F;
     }
 
     private static boolean isExternalSystemReferenceSource(ConceptMap conceptMap) {
