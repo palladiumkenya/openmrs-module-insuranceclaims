@@ -3,6 +3,10 @@ package org.openmrs.module.insuranceclaims.forms.impl;
 
 import ca.uhn.fhir.util.DateUtils;
 import org.openmrs.Concept;
+import org.openmrs.ConceptMap;
+import org.openmrs.ConceptMapType;
+import org.openmrs.ConceptReferenceTerm;
+import org.openmrs.ConceptSource;
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.VisitType;
@@ -155,7 +159,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         String justification = formItems.getJustification();
 
         for (ItemDetails nextItemDetails : formItems.getItems()) {
-            System.out.println("Insurance Claims: Search ITEM UUID: " + nextItemDetails.getUuid());
+            // System.out.println("Insurance Claims: Search ITEM UUID: " + nextItemDetails.getUuid());
             ProvidedItem provideditem = new ProvidedItem();
             provideditem.setOriginUuid(nextItemDetails.getUuid());
             provideditem.setItem(Context.getConceptService().getConceptByUuid(nextItemDetails.getUuid()));
@@ -165,7 +169,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
             provideditem.setStatus(ProcessStatus.ENTERED);
             providedItemService.saveOrUpdate(provideditem);
             
-            System.out.println("Insurance Claims: ITEM created");
+            // System.out.println("Insurance Claims: ITEM created");
             InsuranceClaimItem nextInsuranceClaimItem = new InsuranceClaimItem();
             nextInsuranceClaimItem.setItem(provideditem);
             nextInsuranceClaimItem.setQuantityProvided(provideditem.getNumberOfConsumptions());
@@ -182,10 +186,30 @@ public class ClaimFormServiceImpl implements ClaimFormService {
 
         for (String uuid: diagnosesUuidList) {
             Concept diagnosisConcept = Context.getConceptService().getConceptByUuid(uuid);
+            // testDiagnosis(diagnosisConcept);
             InsuranceClaimDiagnosis nextDiagnosis = new InsuranceClaimDiagnosis(diagnosisConcept, claim);
             diagnoses.add(nextDiagnosis);
         }
         return diagnoses;
+    }
+
+    public void testDiagnosis(Concept input) {
+        try {
+            for (ConceptMap mapping : input.getConceptMappings()) {
+                if (mapping.getConceptMapType() != null) {
+                    ConceptMapType mapType = mapping.getConceptMapType();
+                    boolean sameAs = mapType.getUuid() != null && mapType.getUuid().equals(ConceptMapType.SAME_AS_MAP_TYPE_UUID);
+                    sameAs = sameAs || (mapType.getName() != null && mapType.getName().equalsIgnoreCase("SAME-AS"));
+                    ConceptReferenceTerm crt = mapping.getConceptReferenceTerm();
+                    ConceptSource source = crt.getConceptSource();
+                    System.err.println("Good Diagnosis source: " + source);
+                    System.err.println("Good Diagnosis source code: " + source.getHl7Code());
+                }
+            }
+        } catch (Exception ex) {
+            System.err.println("Diagnosis problem: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 
     private void assignDatesFromFormToClaim(InsuranceClaim claim, NewClaimForm form) {

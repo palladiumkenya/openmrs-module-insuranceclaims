@@ -52,8 +52,9 @@ public class FhirRequestClient implements FHIRClient {
 
     private void setRequestHeaders() {
         headers = new HttpHeaders();
-        String username = Context.getAdministrationService().getGlobalProperty("api.login.property");
-        String password = Context.getAdministrationService().getGlobalProperty("api.password.property");
+        String username = Context.getAdministrationService().getGlobalProperty("insuranceclaims.externalApiLogin");
+        String password = Context.getAdministrationService().getGlobalProperty("insuranceclaims.externalApiPassword");
+        // System.err.println("User: " + username + " Password: " + password);
 
         String auth = username + ":" + password;
         byte[] encodedAuth = Base64Utils.encode(auth.getBytes(StandardCharsets.UTF_8));
