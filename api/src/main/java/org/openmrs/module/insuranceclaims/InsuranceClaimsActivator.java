@@ -5,8 +5,8 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.api.FormService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
-import org.openmrs.event.Event;
-import org.openmrs.event.EventListener;
+// import org.openmrs.event.Event;
+// import org.openmrs.event.EventListener;
 import org.openmrs.module.BaseModuleActivator;
 import org.openmrs.module.DaemonToken;
 import org.openmrs.module.DaemonTokenAware;
@@ -83,7 +83,7 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 
 	private DaemonToken daemonToken;
 
-	private EventListener eventListener;
+	// private EventListener eventListener;
 
 	/**
 	 * @see #started()
@@ -104,8 +104,8 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 
 		createInsureNumberAttribute();
 
-		eventListener = getItemConsumedListener();
-		Event.subscribe(Obs.class, Event.Action.CREATED.name(), eventListener);
+		// eventListener = getItemConsumedListener();
+		// Event.subscribe(Obs.class, Event.Action.CREATED.name(), eventListener);
 		System.err.println(MODULE_START_MESSAGE);
 	}
 
@@ -115,7 +115,7 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	@Override
 	public void stopped() {
 		System.err.println("Insurance Claims Module stopped");
-		Event.unsubscribe(Obs.class, Event.Action.CREATED, eventListener);
+		// Event.unsubscribe(Obs.class, Event.Action.CREATED, eventListener);
 		System.err.println(MODULE_STOP_MESSAGE);
 	}
 
@@ -128,9 +128,9 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 		Context.getService(ModuleConceptSetup.class).createConcepts();
 	}
 
-	private EventListener getItemConsumedListener() {
-		return new ItemConsumedEventListener(daemonToken);
-	}
+	// private EventListener getItemConsumedListener() {
+	// 	return new ItemConsumedEventListener(daemonToken);
+	// }
 
 	// private void setupHtmlForms() throws IOException {
 	// 	ResourceFactory resourceFactory = ResourceFactory.getInstance();

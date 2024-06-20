@@ -48,6 +48,10 @@ public class ProvidedItem extends AbstractBaseOpenmrsData {
     private Date dateOfServed;
 
     @Basic
+    @Column(name = "origin_uuid")
+    private String originUuid;
+
+    @Basic
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private ProcessStatus status;
@@ -142,6 +146,14 @@ public class ProvidedItem extends AbstractBaseOpenmrsData {
 
     public void setNumberOfConsumptions(Integer numberOfConsumptions) {
         this.numberOfConsumptions = numberOfConsumptions;
+    }
+
+    public String getOriginUuid() {
+        return originUuid;
+    }
+
+    public void setOriginUuid(String originUuid) {
+        this.originUuid = originUuid;
     }
 
     @Override
