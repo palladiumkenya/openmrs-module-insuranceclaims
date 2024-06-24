@@ -6,6 +6,7 @@ import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.exceptions.FHIRException;
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.IdentifierUtil.getUnambiguousElement;
@@ -35,6 +36,11 @@ public final class SpecialComponentUtil {
         CodeableConcept category = new CodeableConcept();
 
         category.setText(categoryName);
+        // Create instance of Random class
+        Random random = new Random();
+        // Generate random number within range
+        int randomNum = random.nextInt((9999999 - 1000000) + 1) + 1000000;
+        information.setSequence(randomNum);
         information.setValue(new StringType(value));
         information.setCategory(category);
         return information;
