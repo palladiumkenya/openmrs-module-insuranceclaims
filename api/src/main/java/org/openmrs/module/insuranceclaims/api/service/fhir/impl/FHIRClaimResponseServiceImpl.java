@@ -147,7 +147,7 @@ public class FHIRClaimResponseServiceImpl implements FHIRClaimResponseService {
     }
 
     public static void setBaseOpenMRSData(BaseOpenmrsData openMRSData, Extension extension) {
-        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/stu3/StructureDefinition/resource-date-created";
+        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/r4/StructureDefinition/resource-date-created";
         final String CREATOR_URL = "https://purl.org/elab/fhir/StructureDefinition/Creator-crew-version1";
         final String CHANGED_BY_URL = "changedBy";
         final String DATE_CHANGED_URL = "dateChanged";
@@ -193,7 +193,7 @@ public class FHIRClaimResponseServiceImpl implements FHIRClaimResponseService {
 
     public static void setBaseOpenMRSMetadata(BaseOpenmrsMetadata openmrsMetadata, Extension extension) {
 
-        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/stu3/StructureDefinition/resource-date-created";
+        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/r4/StructureDefinition/resource-date-created";
         final String CREATOR_URL = "https://purl.org/elab/fhir/StructureDefinition/Creator-crew-version1";
         final String CHANGED_BY_URL = "changedBy";
         final String DATE_CHANGED_URL = "dateChanged";
@@ -270,7 +270,7 @@ public class FHIRClaimResponseServiceImpl implements FHIRClaimResponseService {
 	}
 
     public static Extension createDateCreatedExtension(Date dateCreated) {
-        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/stu3/StructureDefinition/resource-date-created";
+        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/r4/StructureDefinition/resource-date-created";
 		return createExtension(DATE_CREATED_URL, new DateTimeType(dateCreated));
 	}
 

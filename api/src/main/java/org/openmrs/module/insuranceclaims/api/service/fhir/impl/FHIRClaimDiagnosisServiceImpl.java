@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -27,7 +28,6 @@ import org.openmrs.Concept;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
-import org.openmrs.module.fhir2.api.translators.impl.ConceptTranslatorImpl;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimDiagnosis;
 import org.openmrs.module.insuranceclaims.api.service.db.DiagnosisDbService;
@@ -38,10 +38,6 @@ import org.openmrs.module.insuranceclaims.util.OpenmrsUtils;
 public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService {
 
     private DiagnosisDbService diagnosisDbService;
-    // private ConceptTranslator conceptTranslator = new ConceptTranslatorImpl();
-    // private CodingTranslator medicationCodingTranslator = new MedicationQuantityCodingTranslatorImpl();
-    // private ConceptTranslator conceptTranslator = Context.getRegisteredComponent("fhir2.ConceptTranslator", ConceptTranslator.class);
-    // private ConceptTranslator conceptTranslator = Context.getRegisteredComponent("conceptTranslator", ConceptTranslator.class);
     private ConceptTranslator conceptTranslator;
 
     @Override
@@ -54,6 +50,11 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
             CodeableConcept diagnosis = conceptTranslator.toFhirResource(diagnosisConcept);
 
             newDiagnosis.setId(omrsClaimDiagnosis.getUuid());
+            // Create instance of Random class
+            Random random = new Random();
+            // Generate random number within range
+            int randomNum = random.nextInt((9999999 - 1000000) + 1) + 1000000;
+            newDiagnosis.setSequence(randomNum);
             newDiagnosis.setDiagnosis(diagnosis);
         } catch(Exception ex) {
             System.err.println("Diagnosis error: " + ex.getMessage());
@@ -122,7 +123,7 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
     }
 
     public static void setBaseOpenMRSData(BaseOpenmrsData openMRSData, Extension extension) {
-        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/stu3/StructureDefinition/resource-date-created";
+        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/r4/StructureDefinition/resource-date-created";
         final String CREATOR_URL = "https://purl.org/elab/fhir/StructureDefinition/Creator-crew-version1";
         final String CHANGED_BY_URL = "changedBy";
         final String DATE_CHANGED_URL = "dateChanged";
@@ -168,7 +169,7 @@ public class FHIRClaimDiagnosisServiceImpl implements FHIRClaimDiagnosisService 
 
     public static void setBaseOpenMRSMetadata(BaseOpenmrsMetadata openmrsMetadata, Extension extension) {
 
-        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/stu3/StructureDefinition/resource-date-created";
+        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/r4/StructureDefinition/resource-date-created";
         final String CREATOR_URL = "https://purl.org/elab/fhir/StructureDefinition/Creator-crew-version1";
         final String CHANGED_BY_URL = "changedBy";
         final String DATE_CHANGED_URL = "dateChanged";

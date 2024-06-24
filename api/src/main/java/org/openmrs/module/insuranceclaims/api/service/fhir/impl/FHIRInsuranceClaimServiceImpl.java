@@ -1,12 +1,17 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.r4.model.Claim.ClaimStatus;
+import org.hl7.fhir.r4.model.Claim.InsuranceComponent;
+import org.hl7.fhir.r4.model.Claim.Use;
 import org.hl7.fhir.exceptions.FHIRException;
 
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.DomainResource;
 import org.hl7.fhir.r4.model.Element;
@@ -82,6 +87,61 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         //Set patient
         claim.setPatient(patientUtil.buildPatientReference(omrsClaim));
 
+        //Set status
+        claim.setStatus(ClaimStatus.ACTIVE);
+
+        //Set use
+        claim.setUse(Use.CLAIM);
+
+        // Set type
+            // Create a new CodeableConcept
+            CodeableConcept claimTypeConcept = new CodeableConcept();       
+            // Create a new Coding
+            Coding typeCoding = new Coding();
+            // Set the system, code, and display values
+            typeCoding.setSystem("http://terminology.hl7.org/CodeSystem/claim-type");
+            typeCoding.setCode("institutional");
+            typeCoding.setDisplay("Institutional");
+            // Add the Coding to the CodeableConcept
+            claimTypeConcept.addCoding(typeCoding);
+            // Optionally, set the text value
+            claimTypeConcept.setText("Institutional Claim Type");
+        claim.setType(claimTypeConcept);
+
+        // Set Priority
+            // Create a new CodeableConcept
+            CodeableConcept claimPriorityConcept = new CodeableConcept();
+            // Create a new Coding
+            Coding priorityCoding = new Coding();
+            // Set the system, code, and display values
+            priorityCoding.setSystem("http://terminology.hl7.org/CodeSystem/processpriority");
+            priorityCoding.setCode("normal");
+            priorityCoding.setDisplay("Normal");
+            // Add the Coding to the CodeableConcept
+            claimPriorityConcept.addCoding(priorityCoding);
+            // Optionally, set the text value
+            claimPriorityConcept.setText("Normal Priority");
+        claim.setPriority(claimPriorityConcept);
+
+        // Set Insurance
+        List<InsuranceComponent> insuranceList = new ArrayList<>();
+        InsuranceComponent insuranceComponent = new InsuranceComponent();
+        // Set the sequence (order of the insurance in case of multiple insurances)
+        insuranceComponent.setSequence(1);
+        // Set whether this insurance is focal (i.e., primary insurance)
+        insuranceComponent.setFocal(true);
+        // Set the coverage (reference to the Coverage resource)
+        Reference coverageReference = new Reference();
+        coverageReference.setReference("Coverage/12345"); // Adjust the reference as necessary
+        insuranceComponent.setCoverage(coverageReference);
+        // Set the business identifier for the insurance
+        Identifier identifier = new Identifier();
+        identifier.setSystem("http://example.org/insurance-identifier");
+        identifier.setValue("ABC12345"); // Example identifier, adjust as necessary
+        insuranceComponent.setIdentifier(identifier);
+        insuranceList.add(insuranceComponent);
+        claim.setInsurance(insuranceList);
+
         //Set facility
         claim.setFacility(buildLocationReference(omrsClaim));
 
@@ -112,7 +172,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         claim.setSupportingInfo(claimInformation);
 
         //Set type
-        claim.setType(createClaimVisitType(omrsClaim));
+        // claim.setType(createClaimVisitType(omrsClaim));
+
         //Set items
         claimItemService.assignItemsWithInformationToClaim(claim, omrsClaim);
 
@@ -186,7 +247,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
     }
 
     public static void setBaseOpenMRSData(BaseOpenmrsData openMRSData, Extension extension) {
-        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/stu3/StructureDefinition/resource-date-created";
+        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/r4/StructureDefinition/resource-date-created";
         final String CREATOR_URL = "https://purl.org/elab/fhir/StructureDefinition/Creator-crew-version1";
         final String CHANGED_BY_URL = "changedBy";
         final String DATE_CHANGED_URL = "dateChanged";
@@ -232,7 +293,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
     public static void setBaseOpenMRSMetadata(BaseOpenmrsMetadata openmrsMetadata, Extension extension) {
 
-        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/stu3/StructureDefinition/resource-date-created";
+        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/r4/StructureDefinition/resource-date-created";
         final String CREATOR_URL = "https://purl.org/elab/fhir/StructureDefinition/Creator-crew-version1";
         final String CHANGED_BY_URL = "changedBy";
         final String DATE_CHANGED_URL = "dateChanged";
@@ -415,7 +476,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 	}
 
     public static Extension createDateCreatedExtension(Date dateCreated) {
-        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/stu3/StructureDefinition/resource-date-created";
+        final String DATE_CREATED_URL = "http://fhir-es.transcendinsights.com/r4/StructureDefinition/resource-date-created";
 		return createExtension(DATE_CREATED_URL, new DateTimeType(dateCreated));
 	}
 

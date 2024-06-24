@@ -88,6 +88,7 @@ public final class PatientUtil {
 		reference.setId(person.getUuid());
 		Identifier identifier = new Identifier();
 		identifier.setId(person.getUuid());
+        identifier.setValue("Patient");
 		reference.setIdentifier(identifier);
 		return reference;
 	}

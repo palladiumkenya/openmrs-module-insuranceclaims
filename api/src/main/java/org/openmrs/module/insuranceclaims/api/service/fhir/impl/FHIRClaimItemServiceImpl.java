@@ -31,6 +31,7 @@ import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.Money;
 import org.hl7.fhir.r4.model.PositiveIntType;
 import org.hl7.fhir.r4.model.StringType;
@@ -74,17 +75,39 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
 
     @Override
     public List<Claim.ItemComponent> generateClaimItemComponent(List<InsuranceClaimItem> insuranceClaimItems) {
-        List<Claim.ItemComponent> newItemComponent = new ArrayList<>();
+        List<Claim.ItemComponent> newItemComponents = new ArrayList<>();
+        int counter = 1;
         for (InsuranceClaimItem item: insuranceClaimItems) {
             Claim.ItemComponent next = new Claim.ItemComponent();
 
+            // Set the sequence
+            next.setSequence(counter);
+            counter++;
+            // Set product or service
+            // Create a CodeableConcept for the product or service
+                CodeableConcept productOrService = new CodeableConcept();
+                
+                // Create a Coding for the product or service
+                Coding coding = new Coding();
+                
+                // Set the system, code, and display values for the product or service
+                coding.setSystem("http://snomed.info/sct"); // Adjust system URL as necessary
+                coding.setCode("303646003"); // Example code, adjust as necessary
+                coding.setDisplay("Application of wound dressing"); // Example display text, adjust as necessary
+                
+                // Add the Coding to the CodeableConcept
+                productOrService.addCoding(coding);
+                
+                // Optionally, set the text value
+                productOrService.setText("Wound Dressing Service");
+            next.setProductOrService(productOrService);
             next.setCategory(getItemCategory(item));
             next.setQuantity(getItemQuantity(item));
             next.setUnitPrice(getItemUnitPrice(item));
-            next.setProductOrService(createFhirItemService(item));
-            newItemComponent.add(next);
+            // next.setProductOrService(createFhirItemService(item));
+            newItemComponents.add(next);
         }
-        return newItemComponent;
+        return newItemComponents;
     }
 
     @Override

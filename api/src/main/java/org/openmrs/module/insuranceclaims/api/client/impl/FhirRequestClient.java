@@ -29,21 +29,12 @@ public class FhirRequestClient implements FHIRClient {
     private HttpMessageConverter<IBaseResource> converter = new FhirMessageConverter();
 
     public <T extends IBaseResource> T getObject(String url, Class<T> objectClass) throws URISyntaxException {
-    // public <T extends Resource> T getObject(String url, Class<T> objectClass) throws URISyntaxException {
         prepareRestTemplate();
         setRequestHeaders();
         ClientHttpEntity clientHttpEntity = createClientHttpEntity(url, HttpMethod.GET, null);
         ResponseEntity<T> response = sendRequest(clientHttpEntity, objectClass);
         return response.getBody();
     }
-
-    // public <T extends Resource, K extends Resource> K postObject(String url, T object, Class<K> objectClass) throws URISyntaxException, HttpServerErrorException {
-    //     prepareRestTemplate();
-    //     setRequestHeaders();
-    //     ClientHttpEntity clientHttpEntity = createClientHttpEntity(url, HttpMethod.POST, object);
-    //     ResponseEntity<K> response = sendRequest(clientHttpEntity, objectClass);
-    //     return response.getBody();
-    // }
 
     private <L> ResponseEntity<L> sendRequest(ClientHttpEntity clientHttpEntity, Class<L> objectClass) {
         HttpEntity<Object> entity = new HttpEntity<>(clientHttpEntity.getBody(), headers);
