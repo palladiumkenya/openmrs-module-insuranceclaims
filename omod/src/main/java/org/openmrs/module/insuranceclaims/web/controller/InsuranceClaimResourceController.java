@@ -48,7 +48,7 @@ public class InsuranceClaimResourceController {
     @Autowired
     private ExternalApiRequest externalApiRequest;
 
-    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+    @CrossOrigin(origins = "*", methods = {RequestMethod.POST, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<String> createClaim(@RequestBody NewClaimForm form, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
@@ -64,7 +64,13 @@ public class InsuranceClaimResourceController {
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
             //Sending claim to external server
-            externalApiRequest.sendClaimToExternalApi(claim);
+            // Even if immediate sending fails, we can send later
+            try {
+                externalApiRequest.sendClaimToExternalApi(claim);
+            } catch (Exception ex) {
+                System.err.println("Insurance Claims Error: " + ex.getMessage());
+                ex.printStackTrace();
+            }
 
             // return new ResponseEntity<String>(convertObjectToJson(claim), responseHeaders, HttpStatus.ACCEPTED);
             String responseBody = "{\n" + //
@@ -101,7 +107,7 @@ public class InsuranceClaimResourceController {
         return jsonResult;
     }
 
-    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+    @CrossOrigin(origins = "*", methods = {RequestMethod.POST, RequestMethod.OPTIONS})
     @RequestMapping(value = "/bills", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Bill> createBill(@RequestBody NewClaimForm form, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
