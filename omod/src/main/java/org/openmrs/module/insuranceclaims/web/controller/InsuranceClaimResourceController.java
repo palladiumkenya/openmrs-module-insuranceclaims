@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import static org.openmrs.module.insuranceclaims.InsuranceClaimsOmodConstants.CLAIM_ALREADY_SENT_MESSAGE;
 import static org.openmrs.module.insuranceclaims.InsuranceClaimsOmodConstants.CLAIM_NOT_SENT_MESSAGE;
@@ -93,6 +94,11 @@ public class InsuranceClaimResourceController {
         // return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Convert an object to json
+     * @param obj
+     * @return
+     */
     public static String convertObjectToJson(Object obj) {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonResult = "";
@@ -107,6 +113,14 @@ public class InsuranceClaimResourceController {
         return jsonResult;
     }
 
+    /**
+     * Create a new Bill
+     * @param form
+     * @param request
+     * @param response
+     * @return
+     * @throws ResponseException
+     */
     @CrossOrigin(origins = "*", methods = {RequestMethod.POST, RequestMethod.OPTIONS})
     @RequestMapping(value = "/bills", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
@@ -118,6 +132,14 @@ public class InsuranceClaimResourceController {
         return requestResponse;
     }
 
+    /**
+     * Get Claim by its UUID
+     * @param claimUuid
+     * @param request
+     * @param response
+     * @return
+     * @throws ResponseException
+     */
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
@@ -154,6 +176,13 @@ public class InsuranceClaimResourceController {
         }
     }
 
+    /**
+     * Get a claim using its external code
+     * @param claimExternalCode
+     * @param request
+     * @param response
+     * @return
+     */
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/claims/getFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
@@ -169,6 +198,13 @@ public class InsuranceClaimResourceController {
         return requestResponse;
     }
 
+    /**
+     * Get a policy given its policy number
+     * @param policyNumber
+     * @param request
+     * @param response
+     * @return
+     */
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/getPolicyFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
@@ -210,6 +246,60 @@ public class InsuranceClaimResourceController {
             requestResponse =  new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
         }
 
+        return requestResponse;
+    }
+
+    /**
+     * Get All Claims
+     * @param claimUuid
+     * @param request
+     * @param response
+     * @return
+     * @throws ResponseException
+     */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+    @RequestMapping(value = "/getallclaims", method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<List<InsuranceClaim>> getAllClaims(HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+        System.out.println("Insurance Claims: REST - Get All Claims");
+        List<InsuranceClaim> claims = insuranceClaimService.getAll(false);
+        ResponseEntity<List<InsuranceClaim>> requestResponse = new ResponseEntity<>(claims, HttpStatus.ACCEPTED);
+        return requestResponse;
+    }
+
+    /**
+     * Get Claims by patient
+     * @param claimUuid
+     * @param request
+     * @param response
+     * @return
+     * @throws ResponseException
+     */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+    @RequestMapping(value = "/claimsbypatient", method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<List<InsuranceClaim>> getClaimsByPatient(@RequestParam(value = "patientUuid") String patientUuid, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+        System.out.println("Insurance Claims: REST - Get Claim by Patient: " + patientUuid);
+        List<InsuranceClaim> claims = insuranceClaimService.getAllInsuranceClaimsByPatient(patientUuid);
+        ResponseEntity<List<InsuranceClaim>> requestResponse = new ResponseEntity<>(claims, HttpStatus.ACCEPTED);
+        return requestResponse;
+    }
+
+    /**
+     * Get Claims by Cashier Bill
+     * @param claimUuid
+     * @param request
+     * @param response
+     * @return
+     * @throws ResponseException
+     */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+    @RequestMapping(value = "/claimsbycashierbill", method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<List<InsuranceClaim>> getClaimsByCashierBill(@RequestParam(value = "billUuid") String billUuid, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+        System.out.println("Insurance Claims: REST - Get Claim by Cashier Bill: " + billUuid);
+        List<InsuranceClaim> claims = insuranceClaimService.getAllInsuranceClaimsByCashierBill(billUuid);
+        ResponseEntity<List<InsuranceClaim>> requestResponse = new ResponseEntity<>(claims, HttpStatus.ACCEPTED);
         return requestResponse;
     }
 }
