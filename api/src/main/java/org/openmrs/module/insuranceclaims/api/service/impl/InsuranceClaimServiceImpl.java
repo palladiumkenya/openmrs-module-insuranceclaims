@@ -33,8 +33,14 @@ public class InsuranceClaimServiceImpl extends BaseOpenmrsDataService<InsuranceC
 
     @Transactional
     @Override
-    public List<InsuranceClaim> getAllInsuranceClaims(Integer patientId) throws APIException {
-        return this.insuranceClaimDao.getAllInsuranceClaims(patientId);
+    public List<InsuranceClaim> getAllInsuranceClaimsByPatient(Integer patientId) throws APIException {
+        return this.insuranceClaimDao.getAllInsuranceClaimsByPatient(patientId);
+    }
+
+    @Transactional
+    @Override
+    public List<InsuranceClaim> getAllInsuranceClaimsByPatient(String patientId) throws APIException {
+        return this.insuranceClaimDao.getAllInsuranceClaimsByPatient(patientId);
     }
 
     private void updateQuantityApproved(InsuranceClaim claimToUpdate, InsuranceClaim updatedClaim) {
@@ -45,5 +51,15 @@ public class InsuranceClaimServiceImpl extends BaseOpenmrsDataService<InsuranceC
         } else {
             claimToUpdate.setApprovedTotal(totalBenefit);
         }
+    }
+
+    @Override
+    public List<InsuranceClaim> getUnProcessedInsuranceClaims() {
+        return this.insuranceClaimDao.getUnProcessedInsuranceClaims();
+    }
+
+    @Override
+    public List<InsuranceClaim> getAllInsuranceClaimsByCashierBill(String billUuid) {
+        return this.insuranceClaimDao.getAllInsuranceClaimsByCashierBill(billUuid);
     }
 }
