@@ -7,7 +7,13 @@
   		    http://www.springframework.org/schema/context
   		    http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
+    <context:annotation-config/>
+
     <context:component-scan base-package="org.openmrs.module.insuranceclaims.web.controller"/>
+    <context:component-scan base-package="org.openmrs.module.insuranceclaims.web.resource"/>
+    <context:component-scan base-package="org.openmrs.module.insuranceclaims"/>
+
+    <bean id="org.openmrs.module.insuranceclaims.web.resource.ClaimResource" class="org.openmrs.module.insuranceclaims.web.resource.ClaimResource"/>
 
     <bean class="org.openmrs.ui.framework.StandardModuleUiConfiguration">
         <property name="moduleId" value="${project.parent.artifactId}"/>
