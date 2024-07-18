@@ -22,6 +22,7 @@ import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.annotation.Resource;
 import org.openmrs.module.webservices.rest.web.representation.DefaultRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.FullRepresentation;
+import org.openmrs.module.webservices.rest.web.representation.RefRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 import org.openmrs.module.webservices.rest.web.resource.api.PageableResult;
 import org.openmrs.module.webservices.rest.web.resource.impl.DataDelegatingCrudResource;
@@ -35,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * REST resource representing a {@link InsuranceClaim}.
  */
 @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
-@Resource(name = RestConstants.VERSION_1 +  "/claimsearch", supportedClass = InsuranceClaim.class, supportedOpenmrsVersions = {"2.0 - 2.*"})
+@Resource(name = RestConstants.VERSION_1 +  "/claim", supportedClass = InsuranceClaim.class, supportedOpenmrsVersions = {"2.0 - 2.*"})
 public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
 	@Override
     public InsuranceClaim getByUniqueId(String uniqueId) {
@@ -71,7 +72,10 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
     @Override
     public DelegatingResourceDescription getRepresentationDescription(Representation representation) {
         DelegatingResourceDescription description = new DelegatingResourceDescription();
-        if (representation instanceof DefaultRepresentation) {
+        if (representation instanceof RefRepresentation) {
+            description.addProperty("uuid");
+            description.addSelfLink();
+        } else if (representation instanceof DefaultRepresentation) {
             description.addProperty("uuid");
             description.addProperty("claimCode");
             description.addProperty("billNumber");
@@ -80,6 +84,10 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("claimedTotal");
             description.addProperty("approvedTotal");
             description.addProperty("status");
+            description.addProperty("provider", Representation.REF);
+            description.addProperty("patient", Representation.REF);
+            description.addProperty("location", Representation.REF);
+            description.addProperty("visitType", Representation.REF);
             description.addSelfLink();
         } else if (representation instanceof FullRepresentation) {
             description.addProperty("uuid");
@@ -96,6 +104,10 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("guaranteeId");
             description.addProperty("externalId");
             description.addProperty("dateProcessed");
+            description.addProperty("provider", Representation.FULL);
+            description.addProperty("patient", Representation.FULL);
+            description.addProperty("location", Representation.FULL);
+            description.addProperty("visitType", Representation.FULL);
             description.addSelfLink();
             description.addLink("full", ".?v=" + RestConstants.REPRESENTATION_FULL);
         }
@@ -104,6 +116,7 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
 
     @Override
     protected PageableResult doGetAll(RequestContext context) {
+        System.out.println("Getting all claims");
         return new NeedsPaging<>(Context.getService(InsuranceClaimService.class).getAll(false), context);
     }
 }

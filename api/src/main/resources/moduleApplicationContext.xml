@@ -13,6 +13,8 @@
             http://www.springframework.org/schema/util
             http://www.springframework.org/schema/util/spring-util-2.5.xsd">
 
+    <context:annotation-config/>
+
     <context:component-scan base-package="org.openmrs.module.insuranceclaims"/>
 
     <bean id="insuranceclaims.DateUtil" class="org.openmrs.module.insuranceclaims.util.DateUtil" />
