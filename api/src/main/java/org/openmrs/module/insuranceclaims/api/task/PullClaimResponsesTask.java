@@ -1,22 +1,18 @@
 package org.openmrs.module.insuranceclaims.api.task;
 
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Date;
+import java.util.List;
+
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
-import org.openmrs.module.insuranceclaims.api.service.exceptions.ClaimRequestException;
 import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest;
 import org.openmrs.scheduler.tasks.AbstractTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Prepares payload and performs remote login to CHAI system
