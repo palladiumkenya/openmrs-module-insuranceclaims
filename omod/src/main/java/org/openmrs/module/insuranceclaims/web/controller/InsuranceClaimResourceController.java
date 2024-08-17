@@ -3,6 +3,7 @@ package org.openmrs.module.insuranceclaims.web.controller;
 import static org.openmrs.module.insuranceclaims.InsuranceClaimsOmodConstants.CLAIM_ALREADY_SENT_MESSAGE;
 import static org.openmrs.module.insuranceclaims.InsuranceClaimsOmodConstants.CLAIM_NOT_SENT_MESSAGE;
 
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.util.Base64;
@@ -76,10 +77,14 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.glassfish.json.JsonProviderImpl;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.CoverageEligibilityRequest;
 import org.hl7.fhir.r4.model.CoverageEligibilityResponse;
+import org.hl7.fhir.r4.model.CoverageEligibilityResponse.BenefitComponent;
 import org.hl7.fhir.r4.model.CoverageEligibilityResponse.InsuranceComponent;
 import org.hl7.fhir.r4.model.CoverageEligibilityResponse.ItemsComponent;
+import org.hl7.fhir.r4.model.Money;
 
 @RestController
 @Authorized
@@ -421,12 +426,25 @@ public class InsuranceClaimResourceController {
         //         CoverageEligibilityResponse fhirResponse = objectMapper.readValue(reply, CoverageEligibilityResponse.class);
         //         //Extract what we need from the response
         //         System.err.println("Insurance Claims: CoverageEligibilityRequest : Server replied: " + reply);
-        //         List<InsuranceComponent> insurance = fhirResponse.getInsurance(); //getAuthorizationRequiredElement();
+        //         List<InsuranceComponent> insurance = fhirResponse.getInsurance(); 
         //         for(InsuranceComponent insuranceComponent : insurance) {
         //             boolean inForce = insuranceComponent.getInforce();
         //             List<ItemsComponent> items = insuranceComponent.getItem();
         //             for(ItemsComponent itemsComponent : items) {
         //                 boolean preAuthRequired = itemsComponent.getAuthorizationRequired();
+        //                 CodeableConcept category = itemsComponent.getCategory();
+        //                 Coding categoryCoding = category.getCodingFirstRep();
+        //                 String packageCode = categoryCoding.getCode();
+        //                 String packageName = categoryCoding.getDisplay();
+        //                 CodeableConcept intervention = itemsComponent.getProductOrService();
+        //                 Coding interventionCoding = intervention.getCodingFirstRep();
+        //                 String interventionCode = interventionCoding.getCode();
+        //                 String interventionName = interventionCoding.getDisplay();
+        //                 BenefitComponent benefit = itemsComponent.getBenefitFirstRep(); // Yearly benefit
+        //                 Money allowedMoney = benefit.getAllowedMoney();
+        //                 Money usedMoney = benefit.getUsedMoney();
+        //                 BigDecimal remainingBalance = allowedMoney.getValue().subtract(usedMoney.getValue());
+
 
         //             }
         //         }
@@ -451,30 +469,39 @@ public class InsuranceClaimResourceController {
         //     return responseEntity;
         // }
 
+        JSONArray coreArray = new JSONArray();
+        JSONObject insuranceObject = new JSONObject();
+        
         JSONArray jsonArray = new JSONArray();
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("shaPackageCode", "SHA-001");
-        jsonObject.put("shaPackageName", "Eye Care");
-        jsonObject.put("shaInterventionCode", "SHA-001-01");
-        jsonObject.put("shaInterventionName", "");
-        jsonObject.put("shaInterventionTariff", 50000);
+        jsonObject.put("packageCode", "SHA-001");
+        jsonObject.put("packageName", "Eye Care");
+        jsonObject.put("interventionCode", "SHA-001-01");
+        jsonObject.put("interventionName", "");
+        jsonObject.put("interventionTariff", 50000);
         jsonObject.put("requirePreauth", true);
         jsonObject.put("status", "Pending");
 
         jsonArray.add(jsonObject);
 
         jsonObject = new JSONObject();
-        jsonObject.put("shaPackageCode", "SHA-002");
-        jsonObject.put("shaPackageName", "Stomach Ache");
-        jsonObject.put("shaInterventionCode", "SHA-001-02");
-        jsonObject.put("shaInterventionName", "");
-        jsonObject.put("shaInterventionTariff", 70000);
+        jsonObject.put("packageCode", "SHA-002");
+        jsonObject.put("packageName", "Stomach Ache");
+        jsonObject.put("interventionCode", "SHA-001-02");
+        jsonObject.put("interventionName", "");
+        jsonObject.put("interventionTariff", 70000);
         jsonObject.put("requirePreauth", false);
         jsonObject.put("status", "Pending");
 
         jsonArray.add(jsonObject);
 
-        ResponseEntity<JSONArray> requestResponse = new ResponseEntity<>(jsonArray, HttpStatus.ACCEPTED);
+        insuranceObject.put("insurer", "SHAX001");
+        insuranceObject.put("inforce", true);
+        insuranceObject.put("benefits", jsonArray);
+
+        coreArray.add(insuranceObject);
+
+        ResponseEntity<JSONArray> requestResponse = new ResponseEntity<>(coreArray, HttpStatus.ACCEPTED);
         return requestResponse;
     }
 }
