@@ -48,6 +48,14 @@ public class ProvidedItem extends AbstractBaseOpenmrsData {
     private Date dateOfServed;
 
     @Basic
+    @Column
+    private String intervention_package;
+
+    @Basic
+    @Column
+    private String intervention_code;
+
+    @Basic
     @Column(name = "origin_uuid")
     private String originUuid;
 
@@ -155,6 +163,23 @@ public class ProvidedItem extends AbstractBaseOpenmrsData {
     public void setOriginUuid(String originUuid) {
         this.originUuid = originUuid;
     }
+
+    public String getInterventionPackage() {
+        return intervention_package;
+    }
+
+    public void setInterventionPackage(String intervention_package) {
+        this.intervention_package = intervention_package;
+    }
+
+    public String getInterventionCode() {
+        return intervention_code;
+    }
+
+    public void setInterventionCode(String intervention_code) {
+        this.intervention_code = intervention_code;
+    }
+
 
     @Override
     public boolean equals(Object o) {

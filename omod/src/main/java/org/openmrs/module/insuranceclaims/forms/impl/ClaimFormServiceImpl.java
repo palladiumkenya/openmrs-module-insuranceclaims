@@ -163,12 +163,14 @@ public class ClaimFormServiceImpl implements ClaimFormService {
             ProvidedItem provideditem = new ProvidedItem();
             provideditem.setOriginUuid(nextItemDetails.getUuid());
             provideditem.setItem(Context.getConceptService().getConceptByUuid(nextItemDetails.getUuid()));
+            provideditem.setInterventionPackage(nextItemDetails.getInterventionPackage());
+            provideditem.setInterventionCode(nextItemDetails.getInterventionCode());
             provideditem.setPrice(nextItemDetails.getPrice());
             provideditem.setNumberOfConsumptions(nextItemDetails.getQuantity());
             provideditem.setPatient(patient);
             provideditem.setStatus(ProcessStatus.ENTERED);
             providedItemService.saveOrUpdate(provideditem);
-            
+
             // System.out.println("Insurance Claims: ITEM created");
             InsuranceClaimItem nextInsuranceClaimItem = new InsuranceClaimItem();
             nextInsuranceClaimItem.setItem(provideditem);
@@ -176,7 +178,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
             nextInsuranceClaimItem.setJustification(justification);
             nextInsuranceClaimItem.setExplanation(explanation);
             items.add(nextInsuranceClaimItem);
-            
+
         }
         return items;
     }
