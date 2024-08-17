@@ -14,6 +14,7 @@
 package org.openmrs.module.insuranceclaims.web.resource;
 
 
+import org.openmrs.annotation.Authorized;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
@@ -35,8 +36,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 /**
  * REST resource representing a {@link InsuranceClaim}.
  */
-@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
+@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.OPTIONS})
 @Resource(name = RestConstants.VERSION_1 +  "/claim", supportedClass = InsuranceClaim.class, supportedOpenmrsVersions = {"2.0 - 2.*"})
+@Authorized
 public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
 	@Override
     public InsuranceClaim getByUniqueId(String uniqueId) {
@@ -71,11 +73,15 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
 
     @Override
     public DelegatingResourceDescription getRepresentationDescription(Representation representation) {
-        DelegatingResourceDescription description = new DelegatingResourceDescription();
+        
         if (representation instanceof RefRepresentation) {
+            DelegatingResourceDescription description = new DelegatingResourceDescription();
             description.addProperty("uuid");
             description.addSelfLink();
+
+            return description;
         } else if (representation instanceof DefaultRepresentation) {
+            DelegatingResourceDescription description = new DelegatingResourceDescription();
             description.addProperty("uuid");
             description.addProperty("claimCode");
             description.addProperty("billNumber");
@@ -89,7 +95,10 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("location", Representation.REF);
             description.addProperty("visitType", Representation.REF);
             description.addSelfLink();
+
+            return description;
         } else if (representation instanceof FullRepresentation) {
+            DelegatingResourceDescription description = new DelegatingResourceDescription();
             description.addProperty("uuid");
             description.addProperty("claimCode");
             description.addProperty("billNumber");
@@ -110,8 +119,11 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("visitType", Representation.FULL);
             description.addSelfLink();
             description.addLink("full", ".?v=" + RestConstants.REPRESENTATION_FULL);
+
+            return description;
         }
-        return description;
+
+        return null;
     }
 
     @Override
