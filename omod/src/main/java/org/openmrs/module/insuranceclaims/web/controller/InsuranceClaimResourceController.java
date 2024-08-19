@@ -362,116 +362,116 @@ public class InsuranceClaimResourceController {
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.OPTIONS})
     @RequestMapping(value = "/CoverageEligibilityRequest", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
-    public ResponseEntity<JSONArray> getCoverageEligibilityRequest(@RequestBody String payload, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+    public ResponseEntity<JSONArray> getCoverageEligibilityRequestPOST(@RequestBody String payload, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
 
         System.out.println("Insurance Claims: the CoverageEligibilityRequest is: " + payload);
-        // String NATIONAL_UNIQUE_PATIENT_IDENTIFIER = "f85081e2-b4be-4e48-b3a4-7994b69bb101";
-        // FHIREligibilityService fhirEligibilityService = Context.getService(FHIREligibilityService.class);
+        String NATIONAL_UNIQUE_PATIENT_IDENTIFIER = "f85081e2-b4be-4e48-b3a4-7994b69bb101";
+        FHIREligibilityService fhirEligibilityService = Context.getService(FHIREligibilityService.class);
 
-        // try {
+        try {
 
-        //     // parse the payload
-        //     JSONParser parser = new JSONParser();
-        //     JSONObject responseObj = (JSONObject) parser.parse(payload);
-        //     JSONObject patientUuid = (JSONObject) responseObj.get("patientUuid");
-        //     JSONObject providerUuid = (JSONObject) responseObj.get("providerUuid");
-        //     JSONObject facilityUuid = (JSONObject) responseObj.get("facilityUuid");
-        //     JSONObject packageUuid = (JSONObject) responseObj.get("packageUuid");
-        //     JSONObject isRefered = (JSONObject) responseObj.get("isRefered");
-        //     JSONObject diagnosisUuids = (JSONObject) responseObj.get("diagnosisUuids");
-        //     JSONObject intervensions = (JSONObject) responseObj.get("intervensions");
+            // parse the payload
+            JSONParser parser = new JSONParser();
+            JSONObject responseObj = (JSONObject) parser.parse(payload);
+            JSONObject patientUuid = (JSONObject) responseObj.get("patientUuid");
+            JSONObject providerUuid = (JSONObject) responseObj.get("providerUuid");
+            JSONObject facilityUuid = (JSONObject) responseObj.get("facilityUuid");
+            JSONObject packageUuid = (JSONObject) responseObj.get("packageUuid");
+            JSONObject isRefered = (JSONObject) responseObj.get("isRefered");
+            JSONObject diagnosisUuids = (JSONObject) responseObj.get("diagnosisUuids");
+            JSONObject intervensions = (JSONObject) responseObj.get("intervensions");
 
-        //     // Search for patient NUPI
-        //     PatientService patientService = Context.getPatientService();
-        //     Patient patient = patientService.getPatientByUuid(patientUuid.toString());
+            // Search for patient NUPI
+            PatientService patientService = Context.getPatientService();
+            Patient patient = patientService.getPatientByUuid(patientUuid.toString());
 
-        //     PatientIdentifierType nupiIdentifierType = MetadataUtils.existing(PatientIdentifierType.class, NATIONAL_UNIQUE_PATIENT_IDENTIFIER);
-        //     PatientIdentifier nupiObject = patient.getPatientIdentifier(nupiIdentifierType);
+            PatientIdentifierType nupiIdentifierType = MetadataUtils.existing(PatientIdentifierType.class, NATIONAL_UNIQUE_PATIENT_IDENTIFIER);
+            PatientIdentifier nupiObject = patient.getPatientIdentifier(nupiIdentifierType);
 
-        //     String nupiNumber = nupiObject.getIdentifier();
-        //     System.out.println("Insurance Claims: Got Patient NUPI number as: " + nupiNumber);
+            String nupiNumber = nupiObject.getIdentifier();
+            System.out.println("Insurance Claims: Got Patient NUPI number as: " + nupiNumber);
 
-        //     CoverageEligibilityRequest coverageEligibilityRequest = fhirEligibilityService.generateEligibilityRequest(nupiNumber);
+            CoverageEligibilityRequest coverageEligibilityRequest = fhirEligibilityService.generateEligibilityRequest(nupiNumber);
 
-        //     //Connect to remote server and send FHIR resource
-        //     String baseUrl = Context.getAdministrationService().getGlobalProperty(ClientConstants.BASE_URL_PROPERTY);
-        //     String Url = baseUrl + "/CoverageEligibilityRequest";
-        //     String username = Context.getAdministrationService().getGlobalProperty(ClientConstants.API_LOGIN_PROPERTY);
-        //     String password = Context.getAdministrationService().getGlobalProperty(ClientConstants.API_PASSWORD_PROPERTY);
-        //     String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+            //Connect to remote server and send FHIR resource
+            String baseUrl = Context.getAdministrationService().getGlobalProperty(ClientConstants.BASE_URL_PROPERTY);
+            String Url = baseUrl + "/CoverageEligibilityRequest";
+            String username = Context.getAdministrationService().getGlobalProperty(ClientConstants.API_LOGIN_PROPERTY);
+            String password = Context.getAdministrationService().getGlobalProperty(ClientConstants.API_PASSWORD_PROPERTY);
+            String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
 
-        //     SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
-        //         SSLContexts.createDefault(),
-        //         new String[]{"TLSv1.2"},
-        //         null,
-        //         SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+                SSLContexts.createDefault(),
+                new String[]{"TLSv1.2"},
+                null,
+                SSLConnectionSocketFactory.getDefaultHostnameVerifier());
             
-        //     CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
-        //     HttpPost postRequest = new HttpPost(Url);
-        //     postRequest.setHeader("Authorization", "Basic " + auth);
-        //     String preparedFHIRPayload = coverageEligibilityRequest.toString();
-        //     System.err.println("Insurance Claims: Sending to server: " + preparedFHIRPayload);
-        //     StringEntity userEntity = new StringEntity(preparedFHIRPayload);
-        //     postRequest.setEntity(userEntity);
+            CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+            HttpPost postRequest = new HttpPost(Url);
+            postRequest.setHeader("Authorization", "Basic " + auth);
+            String preparedFHIRPayload = coverageEligibilityRequest.toString();
+            System.err.println("Insurance Claims: Sending to server: " + preparedFHIRPayload);
+            StringEntity userEntity = new StringEntity(preparedFHIRPayload);
+            postRequest.setEntity(userEntity);
 
-        //     HttpResponse postResponse = httpClient.execute(postRequest);
-        //     //verify the valid error code first
-        //     int responseCode = postResponse.getStatusLine().getStatusCode();
-        //     // int responseCode = connection.getResponseCode();
-        //     if (responseCode == HttpURLConnection.HTTP_OK) { //success
-        //         System.err.println("Insurance Claims: CoverageEligibilityRequest : Success: We connected");
-        //         // We process the response
-        //         String reply = EntityUtils.toString(postResponse.getEntity(), "UTF-8");
-        //         ObjectMapper objectMapper = new ObjectMapper();
-        //         CoverageEligibilityResponse fhirResponse = objectMapper.readValue(reply, CoverageEligibilityResponse.class);
-        //         //Extract what we need from the response
-        //         System.err.println("Insurance Claims: CoverageEligibilityRequest : Server replied: " + reply);
-        //         List<InsuranceComponent> insurance = fhirResponse.getInsurance(); 
-        //         for(InsuranceComponent insuranceComponent : insurance) {
-        //             boolean inForce = insuranceComponent.getInforce();
-        //             List<ItemsComponent> items = insuranceComponent.getItem();
-        //             for(ItemsComponent itemsComponent : items) {
-        //                 boolean preAuthRequired = itemsComponent.getAuthorizationRequired();
-        //                 CodeableConcept category = itemsComponent.getCategory();
-        //                 Coding categoryCoding = category.getCodingFirstRep();
-        //                 String packageCode = categoryCoding.getCode();
-        //                 String packageName = categoryCoding.getDisplay();
-        //                 CodeableConcept intervention = itemsComponent.getProductOrService();
-        //                 Coding interventionCoding = intervention.getCodingFirstRep();
-        //                 String interventionCode = interventionCoding.getCode();
-        //                 String interventionName = interventionCoding.getDisplay();
-        //                 BenefitComponent benefit = itemsComponent.getBenefitFirstRep(); // Yearly benefit
-        //                 Money allowedMoney = benefit.getAllowedMoney();
-        //                 Money usedMoney = benefit.getUsedMoney();
-        //                 BigDecimal remainingBalance = allowedMoney.getValue().subtract(usedMoney.getValue());
+            HttpResponse postResponse = httpClient.execute(postRequest);
+            //verify the valid error code first
+            int responseCode = postResponse.getStatusLine().getStatusCode();
+            // int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) { //success
+                System.err.println("Insurance Claims: CoverageEligibilityRequest : Success: We connected");
+                // We process the response
+                String reply = EntityUtils.toString(postResponse.getEntity(), "UTF-8");
+                ObjectMapper objectMapper = new ObjectMapper();
+                CoverageEligibilityResponse fhirResponse = objectMapper.readValue(reply, CoverageEligibilityResponse.class);
+                //Extract what we need from the response
+                System.err.println("Insurance Claims: CoverageEligibilityRequest : Server replied: " + reply);
+                List<InsuranceComponent> insurance = fhirResponse.getInsurance(); 
+                for(InsuranceComponent insuranceComponent : insurance) {
+                    boolean inForce = insuranceComponent.getInforce();
+                    List<ItemsComponent> items = insuranceComponent.getItem();
+                    for(ItemsComponent itemsComponent : items) {
+                        boolean preAuthRequired = itemsComponent.getAuthorizationRequired();
+                        CodeableConcept category = itemsComponent.getCategory();
+                        Coding categoryCoding = category.getCodingFirstRep();
+                        String packageCode = categoryCoding.getCode();
+                        String packageName = categoryCoding.getDisplay();
+                        CodeableConcept intervention = itemsComponent.getProductOrService();
+                        Coding interventionCoding = intervention.getCodingFirstRep();
+                        String interventionCode = interventionCoding.getCode();
+                        String interventionName = interventionCoding.getDisplay();
+                        BenefitComponent benefit = itemsComponent.getBenefitFirstRep(); // Yearly benefit
+                        Money allowedMoney = benefit.getAllowedMoney();
+                        Money usedMoney = benefit.getUsedMoney();
+                        BigDecimal remainingBalance = allowedMoney.getValue().subtract(usedMoney.getValue());
 
 
-        //             }
-        //         }
-        //     } else {
-        //         System.err.println("Insurance Claims: CoverageEligibilityRequest: Error: We failed to connect: " + responseCode);
-        //         String ret = "{\"status\": \"CoverageEligibilityRequest Error: " + responseCode + "\"}";
-        //         JSONArray jsonArray = new JSONArray();
-        //         JSONObject jsonObject = new JSONObject();
-        //         jsonObject.put("status", ret);
-        //         jsonArray.add(jsonObject);
-        //         ResponseEntity<JSONArray> responseEntity = ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(jsonArray);
-        //         return responseEntity;
-        //     }
-        // } catch (Exception e) {
-        //     System.err.println("Insurance Claims: CoverageEligibilityRequest Error: " + e.getMessage());
-        //     String ret = "{\"status\": \"CoverageEligibilityRequest General Error: \"}";
-        //     JSONArray jsonArray = new JSONArray();
-        //     JSONObject jsonObject = new JSONObject();
-        //     jsonObject.put("status", ret);
-        //     jsonArray.add(jsonObject);
-        //     ResponseEntity<JSONArray> responseEntity = ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(jsonArray);
-        //     return responseEntity;
-        // }
+                    }
+                }
+            } else {
+                System.err.println("Insurance Claims: CoverageEligibilityRequest: Error: We failed to connect: " + responseCode);
+                String ret = "{\"status\": \"CoverageEligibilityRequest Error: " + responseCode + "\"}";
+                JSONArray jsonArray = new JSONArray();
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("status", ret);
+                jsonArray.add(jsonObject);
+                ResponseEntity<JSONArray> responseEntity = ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(jsonArray);
+                return responseEntity;
+            }
+        } catch (Exception e) {
+            System.err.println("Insurance Claims: CoverageEligibilityRequest Error: " + e.getMessage());
+            String ret = "{\"status\": \"CoverageEligibilityRequest General Error: \"}";
+            JSONArray jsonArray = new JSONArray();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("status", ret);
+            jsonArray.add(jsonObject);
+            ResponseEntity<JSONArray> responseEntity = ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(jsonArray);
+            return responseEntity;
+        }
 
         JSONArray coreArray = new JSONArray();
         JSONObject insuranceObject = new JSONObject();
-        
+
         JSONArray jsonArray = new JSONArray();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("packageCode", "SHA-001");
@@ -504,4 +504,47 @@ public class InsuranceClaimResourceController {
         ResponseEntity<JSONArray> requestResponse = new ResponseEntity<>(coreArray, HttpStatus.ACCEPTED);
         return requestResponse;
     }
+
+    /**
+     * Get Eligibility 
+     * @param claimUuid
+     * @param request
+     * @param response
+     * @return
+     * @throws ResponseException
+     */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+    @RequestMapping(value = "/CoverageEligibilityRequest", method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<JSONArray> getCoverageEligibilityRequestGET(@RequestParam(value = "patientUuid") String patientUuid, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+        System.out.println("Insurance Claims: REST - Get Eligibility per patient: " + patientUuid);
+        
+        JSONArray coreArray = new JSONArray();
+
+        JSONObject insuranceObject = new JSONObject();
+        insuranceObject.put("insurer", "SHAX001");
+        insuranceObject.put("inforce", true);
+        insuranceObject.put("start", "2024-01-01");
+        insuranceObject.put("end", "2024-12-31");
+
+        JSONObject insuranceObject1 = new JSONObject();
+        insuranceObject1.put("insurer", "UAP");
+        insuranceObject1.put("inforce", false);
+        insuranceObject.put("start", "2024-01-01");
+        insuranceObject.put("end", "2024-12-31");
+
+        JSONObject insuranceObject2 = new JSONObject();
+        insuranceObject2.put("insurer", "BRITAM");
+        insuranceObject2.put("inforce", false);
+        insuranceObject.put("start", "2024-01-01");
+        insuranceObject.put("end", "2024-12-31");
+
+        coreArray.add(insuranceObject);
+        coreArray.add(insuranceObject1);
+        coreArray.add(insuranceObject2);
+
+        ResponseEntity<JSONArray> requestResponse = new ResponseEntity<>(coreArray, HttpStatus.ACCEPTED);
+        return requestResponse;
+    }
+
 }
