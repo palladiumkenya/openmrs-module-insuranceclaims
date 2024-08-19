@@ -365,7 +365,7 @@ public class InsuranceClaimResourceController {
     public ResponseEntity<JSONArray> getCoverageEligibilityRequestPOST(@RequestBody String payload, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
 
         System.out.println("Insurance Claims: the CoverageEligibilityRequest is: " + payload);
-        String NATIONAL_UNIQUE_PATIENT_IDENTIFIER = "f85081e2-b4be-4e48-b3a4-7994b69bb101";
+        String SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER = "24aedd37-b5be-4e08-8311-3721b8d5100d";
         FHIREligibilityService fhirEligibilityService = Context.getService(FHIREligibilityService.class);
 
         try {
@@ -385,13 +385,13 @@ public class InsuranceClaimResourceController {
             PatientService patientService = Context.getPatientService();
             Patient patient = patientService.getPatientByUuid(patientUuid.toString());
 
-            PatientIdentifierType nupiIdentifierType = MetadataUtils.existing(PatientIdentifierType.class, NATIONAL_UNIQUE_PATIENT_IDENTIFIER);
-            PatientIdentifier nupiObject = patient.getPatientIdentifier(nupiIdentifierType);
+            PatientIdentifierType shaIdentifierType = MetadataUtils.existing(PatientIdentifierType.class, SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER);
+            PatientIdentifier shaObject = patient.getPatientIdentifier(shaIdentifierType);
 
-            String nupiNumber = nupiObject.getIdentifier();
-            System.out.println("Insurance Claims: Got Patient NUPI number as: " + nupiNumber);
+            String shaNumber = shaObject.getIdentifier();
+            System.out.println("Insurance Claims: Got Patient SHA ID number as: " + shaNumber);
 
-            CoverageEligibilityRequest coverageEligibilityRequest = fhirEligibilityService.generateEligibilityRequest(nupiNumber);
+            CoverageEligibilityRequest coverageEligibilityRequest = fhirEligibilityService.generateEligibilityRequest(shaNumber);
 
             //Connect to remote server and send FHIR resource
             String baseUrl = Context.getAdministrationService().getGlobalProperty(ClientConstants.BASE_URL_PROPERTY);
