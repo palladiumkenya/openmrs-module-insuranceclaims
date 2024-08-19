@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
-                  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+<databaseChangeLog 
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
     <!--
     	See http://wiki.openmrs.org/display/docs/Module+liquibase+File for
@@ -594,8 +595,18 @@
             <column name="uuid" value="d8b63743-f9c7-4746-93fb-b5afe40d468e" />
         </insert>
     </changeSet>
+
+    <!-- add intervention_code and intervention_package for tracking per claim item-->
     <changeSet id="insuranceclaims-1250082024" author="injiri">
-<!--        add intervention_code and intervention_package for tracking per claim item-->
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_provided_item"/>
+            <not>
+                <columnExists columnName="mflintervention_package" tableName="iclm_provided_item"/>
+            </not>
+            <not>
+                <columnExists columnName="intervention_code" tableName="iclm_provided_item"/>
+            </not>
+        </preConditions>
         <addColumn tableName="iclm_provided_item">
             <column name="intervention_package" type="varchar(255)">
                 <constraints nullable="true"/>
@@ -604,7 +615,61 @@
                 <constraints nullable="true"/>
             </column>
         </addColumn>
-
     </changeSet>
+
+    <!-- Add a table to store CoverageEligibilityRequest -->
+    <!-- <changeSet id="insuranceclaims-17082024-143021" author="pwaweru">
+        <preConditions>
+            <not>
+                <tableExists tableName="iclm_coverage_eligibility"/>
+            </not>
+        </preConditions>
+        <comment>
+            Creating the iclm_coverage_eligibility table
+        </comment>
+        <createTable tableName="iclm__coverage_eligibility">
+            <column name="iclm__coverage_eligibility_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" unique="true"/>
+            </column>
+            <column name="date_fetched" type="DATETIME"/>
+            <column name="origin_uuid" type="varchar(250)"/>
+            <column name="patient" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="insurer" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="inforce" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="creator" type="int"/>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_voided" type="datetime"/>
+            <column name="void_reason" type="varchar(255)"/>
+            <column name="voided" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="voided_by" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint constraintName="iclm_coverage_eligibility_patient_fk"
+                                 baseTableName="iclm_coverage_eligibility" baseColumnNames="patient"
+                                 referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="iclm_coverage_eligibility_creator_fk"
+                                 baseTableName="iclm_coverage_eligibility" baseColumnNames="creator"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="iclm_coverage_eligibility_changed_by_fk"
+                                 baseTableName="iclm_coverage_eligibility" baseColumnNames="changed_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="iclm_coverage_eligibility_voided_by_fk"
+                                 baseTableName="iclm_coverage_eligibility" baseColumnNames="voided_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet> -->
 
 </databaseChangeLog>
