@@ -13,6 +13,8 @@ import org.openmrs.module.insuranceclaims.api.service.exceptions.PatientRequestE
 import java.net.URISyntaxException;
 import java.util.List;
 
+import org.json.simple.JSONArray;
+
 public interface ExternalApiRequest {
     ClaimRequestWrapper getClaimFromExternalApi(String claimCode) throws URISyntaxException;
 
@@ -29,4 +31,6 @@ public interface ExternalApiRequest {
     List<org.hl7.fhir.r4.model.Patient> getPatientsByIdentifier(String patientIdentifier) throws PatientRequestException;
 
     Patient importPatient(String patientID) throws PatientRequestException;
+
+    JSONArray postCoverageEligibilityRequest(String payload);
 }
