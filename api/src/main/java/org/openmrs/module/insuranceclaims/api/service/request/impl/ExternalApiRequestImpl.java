@@ -277,7 +277,6 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
     public JSONArray postCoverageEligibilityRequest(String payload) {
         JSONArray coreArray = new JSONArray();
         String SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER = "24aedd37-b5be-4e08-8311-3721b8d5100d";
-        FHIREligibilityService fhirEligibilityService = Context.getService(FHIREligibilityService.class);
 
         try {
 
