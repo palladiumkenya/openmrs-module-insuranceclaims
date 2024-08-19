@@ -376,6 +376,7 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
             jsonObject.put("status", ret);
             jsonArray.add(jsonObject);
             ResponseEntity<JSONArray> responseEntity = ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(jsonArray);
+            e.printStackTrace();
             // return responseEntity;
         }
 
