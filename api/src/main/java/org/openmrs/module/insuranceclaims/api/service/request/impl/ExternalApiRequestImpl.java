@@ -277,7 +277,7 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
     @Override
     public JSONArray postCoverageEligibilityRequest(String payload) {
         JSONArray coreArray = new JSONArray();
-        String SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER = "52c3c0c3-05b8-4b26-930e-2a6a54e14c90";
+        String SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER = "24aedd37-b5be-4e08-8311-3721b8d5100d";
 
         try {
 
