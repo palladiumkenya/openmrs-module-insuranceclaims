@@ -3,20 +3,33 @@ package org.openmrs.module.insuranceclaims.api.service.request.impl;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.ClaimResponse;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.CoverageEligibilityRequest;
 import org.hl7.fhir.r4.model.CoverageEligibilityResponse;
+import org.hl7.fhir.r4.model.CoverageEligibilityResponse.BenefitComponent;
+import org.hl7.fhir.r4.model.CoverageEligibilityResponse.InsuranceComponent;
+import org.hl7.fhir.r4.model.CoverageEligibilityResponse.ItemsComponent;
 import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.DomainResource;
 import org.hl7.fhir.r4.model.Element;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Identifier;
+import org.hl7.fhir.r4.model.Money;
 import org.hl7.fhir.r4.model.HumanName;
 import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.Address;
 import org.hl7.fhir.r4.model.Enumerations;
 import org.hl7.fhir.r4.model.Extension;
 import org.apache.commons.lang3.StringUtils;
-
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContexts;
+import org.apache.http.util.EntityUtils;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.BaseOpenmrsData;
 import org.openmrs.BaseOpenmrsMetadata;
@@ -26,8 +39,10 @@ import org.openmrs.PersonAddress;
 import org.openmrs.PersonName;
 import org.openmrs.User;
 import org.openmrs.api.LocationService;
+import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.client.ClaimHttpRequest;
+import org.openmrs.module.insuranceclaims.api.client.ClientConstants;
 import org.openmrs.module.insuranceclaims.api.client.EligibilityHttpRequest;
 import org.openmrs.module.insuranceclaims.api.client.PatientHttpRequest;
 import org.openmrs.module.insuranceclaims.api.client.impl.ClaimRequestWrapper;
@@ -51,13 +66,20 @@ import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRInsuranceClaimSer
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.IdentifierUtil;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimUtil;
 import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 
+import java.math.BigDecimal;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -70,6 +92,14 @@ import static org.openmrs.module.insuranceclaims.api.client.ClientConstants.CLAI
 import static org.openmrs.module.insuranceclaims.api.client.ClientConstants.ELIGIBILITY_SOURCE_URI;
 import static org.openmrs.module.insuranceclaims.api.client.ClientConstants.PATIENT_SOURCE_URI;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.ACCESSION_ID;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONAware;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+import org.openmrs.module.metadatadeploy.MetadataUtils;
+import ca.uhn.fhir.context.FhirContext;
 
 public class ExternalApiRequestImpl implements ExternalApiRequest {
     private String claimResponseUrl;
@@ -242,6 +272,135 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
         Context.getPatientService().savePatient(patient);
         Context.getPatientService().unvoidPatient(patient);
         return patient;
+    }
+
+    @Override
+    public JSONArray postCoverageEligibilityRequest(String payload) {
+        JSONArray coreArray = new JSONArray();
+        String SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER = "24aedd37-b5be-4e08-8311-3721b8d5100d";
+
+        try {
+
+            // parse the payload
+            JSONParser parser = new JSONParser();
+            JSONObject responseObj = (JSONObject) parser.parse(payload);
+            String patientUuid = (String) responseObj.get("patientUuid");
+            String providerUuid = (String) responseObj.get("providerUuid");
+            String facilityUuid = (String) responseObj.get("facilityUuid");
+            String packageUuid = (String) responseObj.get("packageUuid");
+            Boolean isRefered = (Boolean) responseObj.get("isRefered");
+            JSONArray diagnosisUuids = (JSONArray) responseObj.get("diagnosisUuids");
+            JSONArray intervensions = (JSONArray) responseObj.get("intervensions");
+
+            // Search for patient NUPI
+            PatientService patientService = Context.getPatientService();
+            org.openmrs.Patient patient = patientService.getPatientByUuid(patientUuid.toString());
+
+            if(patient != null) {
+
+                PatientIdentifierType shaIdentifierType = Context.getPatientService().getPatientIdentifierTypeByUuid(SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER);
+                if(shaIdentifierType != null) {
+                    PatientIdentifier shaObject = patient.getPatientIdentifier(shaIdentifierType);
+
+                    if(shaObject != null) {
+                        String shaNumber = shaObject.getIdentifier();
+                        System.out.println("Insurance Claims: Got Patient SHA ID number as: " + shaNumber);
+
+                        CoverageEligibilityRequest coverageEligibilityRequest = fhirEligibilityService.generateEligibilityRequest(shaNumber);
+
+                        //Connect to remote server and send FHIR resource
+                        String baseUrl = Context.getAdministrationService().getGlobalProperty(ClientConstants.BASE_URL_PROPERTY);
+                        String Url = baseUrl + "/CoverageEligibilityRequest";
+                        String username = Context.getAdministrationService().getGlobalProperty(ClientConstants.API_LOGIN_PROPERTY);
+                        String password = Context.getAdministrationService().getGlobalProperty(ClientConstants.API_PASSWORD_PROPERTY);
+                        String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+
+                        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+                            SSLContexts.createDefault(),
+                            new String[]{"TLSv1.2"},
+                            null,
+                            SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+                        
+                        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+                        HttpPost postRequest = new HttpPost(Url);
+                        postRequest.setHeader("Authorization", "Basic " + auth);
+
+                        // Create a FhirContext for R4
+                        FhirContext fhirContext = FhirContext.forR4();
+
+                        // Convert the CoverageEligibilityRequest object to a JSON string
+                        String preparedFHIRPayload = fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(coverageEligibilityRequest);
+
+                        System.err.println("Insurance Claims: CoverageEligibilityRequest : Sending to server: " + preparedFHIRPayload);
+                        StringEntity userEntity = new StringEntity(preparedFHIRPayload);
+                        postRequest.setEntity(userEntity);
+
+                        HttpResponse postResponse = httpClient.execute(postRequest);
+                        //verify the valid error code first
+                        int responseCode = postResponse.getStatusLine().getStatusCode();
+                        // int responseCode = connection.getResponseCode();
+                        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+                            System.err.println("Insurance Claims: CoverageEligibilityRequest : Success: We connected");
+                            // We process the response
+                            String reply = EntityUtils.toString(postResponse.getEntity(), "UTF-8");
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            CoverageEligibilityResponse fhirResponse = objectMapper.readValue(reply, CoverageEligibilityResponse.class);
+                            //Extract what we need from the response
+                            System.err.println("Insurance Claims: CoverageEligibilityRequest : Server replied: " + reply);
+                            List<InsuranceComponent> insurance = fhirResponse.getInsurance(); 
+                            for(InsuranceComponent insuranceComponent : insurance) {
+                                boolean inForce = insuranceComponent.getInforce();
+                                List<ItemsComponent> items = insuranceComponent.getItem();
+                                for(ItemsComponent itemsComponent : items) {
+                                    boolean preAuthRequired = itemsComponent.getAuthorizationRequired();
+                                    CodeableConcept category = itemsComponent.getCategory();
+                                    Coding categoryCoding = category.getCodingFirstRep();
+                                    String packageCode = categoryCoding.getCode();
+                                    String packageName = categoryCoding.getDisplay();
+                                    CodeableConcept intervention = itemsComponent.getProductOrService();
+                                    Coding interventionCoding = intervention.getCodingFirstRep();
+                                    String interventionCode = interventionCoding.getCode();
+                                    String interventionName = interventionCoding.getDisplay();
+                                    BenefitComponent benefit = itemsComponent.getBenefitFirstRep(); // Yearly benefit
+                                    Money allowedMoney = benefit.getAllowedMoney();
+                                    Money usedMoney = benefit.getUsedMoney();
+                                    BigDecimal remainingBalance = allowedMoney.getValue().subtract(usedMoney.getValue());
+
+                                    System.err.println("Insurance Claims: CoverageEligibilityRequest: Response: " + preAuthRequired + " : " + packageCode + " : " + packageName + " : " + packageName + " : " + interventionCode + " : " + interventionName + " : " + remainingBalance);
+                                }
+                            }
+                        } else {
+                            System.err.println("Insurance Claims: CoverageEligibilityRequest: Error: We failed to connect: " + responseCode);
+                            String ret = "{\"status\": \"CoverageEligibilityRequest Error: " + responseCode + "\"}";
+                            JSONArray jsonArray = new JSONArray();
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("status", ret);
+                            jsonArray.add(jsonObject);
+                            ResponseEntity<JSONArray> responseEntity = ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(jsonArray);
+                            // return responseEntity;
+                        }
+                    } else {
+                        System.err.println("Insurance Claims: CoverageEligibilityRequest: Error: Patient identifier not found");
+                    }
+                } else {
+                    System.err.println("Insurance Claims: CoverageEligibilityRequest: Error: Patient identifier type not found");
+                }
+            } else {
+                System.err.println("Insurance Claims: CoverageEligibilityRequest: Error: Patient not found");
+            }
+        } catch (Exception e) {
+            System.err.println("Insurance Claims: CoverageEligibilityRequest Error: " + e.getMessage());
+            String ret = "{\"status\": \"CoverageEligibilityRequest General Error: \"}";
+            JSONArray jsonArray = new JSONArray();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("status", ret);
+            jsonArray.add(jsonObject);
+            ResponseEntity<JSONArray> responseEntity = ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(jsonArray);
+            e.printStackTrace();
+            // return responseEntity;
+        }
+
+        return(coreArray);
     }
 
     private Patient getFhirPatient(String patientId) throws URISyntaxException {
@@ -751,4 +910,6 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
 		}
 		return gender;
 	}
+
+
 }
