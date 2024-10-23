@@ -1,6 +1,7 @@
 package org.openmrs.module.insuranceclaims.api.service.request.impl;
 
 import org.hl7.fhir.r4.model.BooleanType;
+import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.r4.model.CodeableConcept;
@@ -285,14 +286,8 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
             JSONParser parser = new JSONParser();
             JSONObject responseObj = (JSONObject) parser.parse(payload);
             String patientUuid = (String) responseObj.get("patientUuid");
-            String providerUuid = (String) responseObj.get("providerUuid");
-            String facilityUuid = (String) responseObj.get("facilityUuid");
-            String packageUuid = (String) responseObj.get("packageUuid");
-            Boolean isRefered = (Boolean) responseObj.get("isRefered");
-            JSONArray diagnosisUuids = (JSONArray) responseObj.get("diagnosisUuids");
-            JSONArray intervensions = (JSONArray) responseObj.get("intervensions");
 
-            // Search for patient NUPI
+            // Search for patient SHA
             PatientService patientService = Context.getPatientService();
             org.openmrs.Patient patient = patientService.getPatientByUuid(patientUuid.toString());
 
@@ -307,6 +302,7 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
                         System.out.println("Insurance Claims: Got Patient SHA ID number as: " + shaNumber);
 
                         CoverageEligibilityRequest coverageEligibilityRequest = fhirEligibilityService.generateEligibilityRequest(shaNumber);
+                        Bundle bundlePayload = fhirEligibilityService.generateEligibilityRequestBundle(coverageEligibilityRequest, patient);
 
                         //Connect to remote server and send FHIR resource
                         String baseUrl = Context.getAdministrationService().getGlobalProperty(ClientConstants.BASE_URL_PROPERTY);
@@ -329,7 +325,8 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
                         FhirContext fhirContext = FhirContext.forR4();
 
                         // Convert the CoverageEligibilityRequest object to a JSON string
-                        String preparedFHIRPayload = fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(coverageEligibilityRequest);
+//                        String preparedFHIRPayload = fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(coverageEligibilityRequest);
+                        String preparedFHIRPayload = fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundlePayload);
 
                         System.err.println("Insurance Claims: CoverageEligibilityRequest : Sending to server: " + preparedFHIRPayload);
                         StringEntity userEntity = new StringEntity(preparedFHIRPayload);

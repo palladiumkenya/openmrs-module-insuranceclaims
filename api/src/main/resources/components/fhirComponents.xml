@@ -31,6 +31,8 @@
     </bean>
 
     <bean id="insuranceclaims.FHIREligibilityService"
-          class="org.openmrs.module.insuranceclaims.api.service.fhir.impl.FHIREligibilityServiceImpl" />
+          class="org.openmrs.module.insuranceclaims.api.service.fhir.impl.FHIREligibilityServiceImpl" >
+        <property name="patientTranslator" ref="patientTranslatorImpl"/>
+    </bean>
 
 </beans>
