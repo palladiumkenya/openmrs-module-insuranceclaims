@@ -626,7 +626,7 @@
             </not>
         </preConditions>
         <comment>
-            Adds a column to store the use i.e claim | preauthorization | predetermination
+            Adds a column to store the use i.e claim, preauthorization and predetermination
         </comment>
         <addColumn tableName="iclm_claim" >
             <column name="usetype" type="varchar(64)">
