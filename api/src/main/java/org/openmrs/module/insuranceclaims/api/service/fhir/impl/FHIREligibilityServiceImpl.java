@@ -38,7 +38,6 @@ public class FHIREligibilityServiceImpl implements FHIREligibilityService {
     public static final String PATIENT = "Patient";
     public static final String INSURER = "Insurer";
 
-//    @Autowired
     private PatientTranslator patientTranslator;
 
     @Override

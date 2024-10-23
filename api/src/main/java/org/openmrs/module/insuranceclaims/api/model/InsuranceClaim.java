@@ -60,6 +60,10 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	private String claimCode;
 
 	@Basic
+	@Column(name = "usetype", length = 64, nullable = false)
+	private String use;
+
+	@Basic
 	@Column(name = "bill_number", length = 255, nullable = false)
 	private String billNumber;
 
@@ -272,5 +276,12 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	public void setBillNumber(String billNumber) {
 		this.billNumber = billNumber;
 	}
-	
+
+	public String getUse() {
+		return use;
+	}
+
+	public void setUse(String use) {
+		this.use = use;
+	}
 }

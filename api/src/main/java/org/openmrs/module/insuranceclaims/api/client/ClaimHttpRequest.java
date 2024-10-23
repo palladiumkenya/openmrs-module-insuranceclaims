@@ -1,5 +1,6 @@
 package org.openmrs.module.insuranceclaims.api.client;
 
+import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.exceptions.FHIRException;
@@ -12,6 +13,8 @@ public interface ClaimHttpRequest {
     ClaimResponse sendClaimRequest(String resourceUrl, InsuranceClaim insuranceClaim) throws URISyntaxException, FHIRException;
 
     Claim getClaimRequest(String resourceUrl, String claimCode) throws URISyntaxException;
+
+    Bundle sendClaimBundleRequest(String resourceUrl, InsuranceClaim insuranceClaim) throws URISyntaxException, FHIRException;
 
     ClaimResponse getClaimResponse(String baseUrl, String claimCode) throws URISyntaxException;
 }

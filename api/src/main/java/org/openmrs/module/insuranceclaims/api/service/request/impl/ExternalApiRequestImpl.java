@@ -160,7 +160,10 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
     public ClaimResponse sendClaimToExternalApi(InsuranceClaim claim) throws ClaimRequestException {
         try {
             setUrls();
-            ClaimResponse claimResponse = claimHttpRequest.sendClaimRequest(claimUrl, claim);
+//            ClaimResponse claimResponse = claimHttpRequest.sendClaimRequest(claimUrl, claim);
+            ClaimResponse claimResponse = new ClaimResponse();
+            System.err.println("Insurance Claims: Sending claims bundle to: " + claimUrl);
+            Bundle claimBundleResponse = claimHttpRequest.sendClaimBundleRequest(claimUrl, claim);
             String externalCode = InsuranceClaimUtil.getClaimResponseId(claimResponse);
             claim.setExternalId(externalCode);
             insuranceClaimService.saveOrUpdate(claim);
