@@ -23,6 +23,8 @@
         <property name="attributeService" ref="insuranceclaims.AttributeService"/>
         <property name="claimItemService" ref="insuranceclaims.FHIRClaimItemService"/>
         <property name="claimDiagnosisService" ref="insuranceclaims.FHIRClaimDiagnosisService"/>
+        <property name="patientTranslator" ref="patientTranslatorImpl"/>
+        <property name="practitionerTranslator" ref="practitionerTranslatorProviderImpl"/>
     </bean>
 
     <bean id="insuranceclaims.FHIRClaimResponseService"
@@ -31,6 +33,8 @@
     </bean>
 
     <bean id="insuranceclaims.FHIREligibilityService"
-          class="org.openmrs.module.insuranceclaims.api.service.fhir.impl.FHIREligibilityServiceImpl" />
+          class="org.openmrs.module.insuranceclaims.api.service.fhir.impl.FHIREligibilityServiceImpl" >
+        <property name="patientTranslator" ref="patientTranslatorImpl"/>
+    </bean>
 
 </beans>

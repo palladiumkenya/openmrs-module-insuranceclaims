@@ -81,6 +81,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         nextClaim.setGuaranteeId(form.getGuaranteeId());
         nextClaim.setClaimCode(form.getClaimCode());
         nextClaim.setBillNumber(form.getBillNumber());
+        nextClaim.setUse(form.getUse());
         nextClaim.setStatus(InsuranceClaimStatus.ENTERED);
         nextClaim.setLocation(getClaimLocation(form));
 

@@ -22,6 +22,7 @@ public class NewClaimForm {
     private String provider;
     private String claimCode;
     private String billNumber;
+    private String use;
 
     public String getGuaranteeId() {
         return guaranteeId;
@@ -133,6 +134,14 @@ public class NewClaimForm {
 
     public void setBillNumber(String billNumber) {
         this.billNumber = billNumber;
+    }
+
+    public String getUse() {
+        return use;
+    }
+
+    public void setUse(String use) {
+        this.use = use;
     }
 }
 

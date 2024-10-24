@@ -138,7 +138,9 @@ public class InsuranceClaimResourceController {
             responseHeaders.set("Content-Type", "application/json");
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
             // return new ResponseEntity<String>(convertObjectToJson(claim), responseHeaders, HttpStatus.ACCEPTED);
-            String responseBody = "{\"result\": \"FAILURE\", \"message\": \"" + ex.getMessage() + "}";
+            String responseBody = "{\"result\": \"FAILURE\",\\n" + //
+                                " \"message\": \"" + ex.getMessage() + "\\n" + //
+                                "}";
             return new ResponseEntity<String>(responseBody, responseHeaders, HttpStatus.BAD_REQUEST);
         }
 
@@ -367,6 +369,8 @@ public class InsuranceClaimResourceController {
         System.out.println("Insurance Claims: the CoverageEligibilityRequest is: " + payload);
         // Contact remote server -- TODO: we will return a payload later
         externalApiRequest.postCoverageEligibilityRequest(payload);
+        
+        //
 
         JSONArray coreArray = new JSONArray();
         JSONObject insuranceObject = new JSONObject();

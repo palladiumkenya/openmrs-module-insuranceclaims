@@ -1,8 +1,11 @@
 package org.openmrs.module.insuranceclaims.api.client.impl;
 
+import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.exceptions.FHIRException;
+import org.openmrs.Patient;
+import org.openmrs.Provider;
 import org.openmrs.module.insuranceclaims.api.client.ClaimHttpRequest;
 import org.openmrs.module.insuranceclaims.api.client.FHIRClient;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
@@ -30,6 +33,18 @@ public class ClaimHttpRequestImpl implements ClaimHttpRequest {
         Claim claimToSend = fhirInsuranceClaimService.generateClaim(insuranceClaim);
 
         return fhirRequestClient.postObject(url, claimToSend, ClaimResponse.class);
+    }
+
+    @Override
+    public Bundle sendClaimBundleRequest(String resourceUrl, InsuranceClaim insuranceClaim)
+            throws URISyntaxException, HttpServerErrorException, FHIRException {
+        String url = resourceUrl + "/";
+        Claim claimToSend = fhirInsuranceClaimService.generateClaim(insuranceClaim);
+        Patient patient = insuranceClaim.getPatient();
+        Provider provider = insuranceClaim.getProvider();
+        Bundle claimBundle = fhirInsuranceClaimService.generateClaimBundle(claimToSend, patient, provider);
+
+        return fhirRequestClient.postObject(url, claimBundle, Bundle.class);
     }
 
     @Override

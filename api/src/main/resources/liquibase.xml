@@ -617,6 +617,24 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="insuranceclaims-23102024-173021" author="pwaweru">
+
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim"/>
+            <not>
+                <columnExists tableName="iclm_claim" columnName="usetype"/>
+            </not>
+        </preConditions>
+        <comment>
+            Adds a column to store the use i.e claim, preauthorization and predetermination
+        </comment>
+        <addColumn tableName="iclm_claim" >
+            <column name="usetype" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
     <!-- Add a table to store CoverageEligibilityRequest -->
     <!-- <changeSet id="insuranceclaims-17082024-143021" author="pwaweru">
         <preConditions>

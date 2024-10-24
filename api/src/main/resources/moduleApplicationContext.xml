@@ -21,6 +21,10 @@
 
     <bean id="conceptTranslatorImpl" class="org.openmrs.module.fhir2.api.translators.impl.ConceptTranslatorImpl"/>
 
+    <bean id="patientTranslatorImpl" class="org.openmrs.module.fhir2.api.translators.impl.PatientTranslatorImpl" />
+
+    <bean id="practitionerTranslatorProviderImpl" class="org.openmrs.module.fhir2.api.translators.impl.PractitionerTranslatorProviderImpl"/>
+
     <import resource="classpath:components/daoComponents.xml" />
     <import resource="classpath:components/insuranceServiceComponents.xml" />
     <import resource="classpath:components/dbComponents.xml" />

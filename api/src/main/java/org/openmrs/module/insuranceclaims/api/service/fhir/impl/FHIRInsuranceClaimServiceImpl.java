@@ -1,12 +1,19 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Claim.ClaimStatus;
 import org.hl7.fhir.r4.model.Claim.InsuranceComponent;
 import org.hl7.fhir.r4.model.Claim.Use;
 import org.hl7.fhir.exceptions.FHIRException;
 
+import org.hl7.fhir.r4.model.Coverage;
+import org.hl7.fhir.r4.model.Encounter;
+import org.hl7.fhir.r4.model.MessageHeader;
+import org.hl7.fhir.r4.model.Organization;
+import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Claim;
@@ -29,13 +36,16 @@ import org.openmrs.Provider;
 import org.openmrs.User;
 import org.openmrs.VisitType;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.fhir2.api.translators.PatientTranslator;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.db.AttributeService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimDiagnosisService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRInsuranceClaimService;
+import org.openmrs.module.fhir2.api.translators.PractitionerTranslator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +76,10 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
     private FHIRClaimDiagnosisService claimDiagnosisService;
 
+	private PatientTranslator patientTranslator;
+
+	private PractitionerTranslator<Provider> practitionerTranslator;
+
     @Override
     public Claim generateClaim(InsuranceClaim omrsClaim) throws FHIRException {
         Claim claim = new Claim();
@@ -91,7 +105,15 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         claim.setStatus(ClaimStatus.ACTIVE);
 
         //Set use
-        claim.setUse(Use.CLAIM);
+	    if(omrsClaim.getUse().trim().equalsIgnoreCase("claim")) {
+		    claim.setUse(Use.CLAIM);
+	    } else if(omrsClaim.getUse().trim().equalsIgnoreCase("preauthorization")) {
+	    	claim.setUse(Use.PREAUTHORIZATION);
+	    } else if(omrsClaim.getUse().trim().equalsIgnoreCase("predetermination")) {
+		    claim.setUse(Use.PREDETERMINATION);
+	    } else {
+		    claim.setUse(Use.CLAIM);
+	    }
 
         // Set type
             // Create a new CodeableConcept
@@ -182,6 +204,69 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
         return claim;
     }
+
+	@Override
+	public Bundle generateClaimBundle(Claim fhirClaim, Patient patient, Provider provider) throws FHIRException {
+		Bundle ret = new Bundle();
+
+		ret.setType(Bundle.BundleType.MESSAGE);
+		ret.setTimestamp(new Date());
+
+		// Add message header
+		MessageHeader messageHeader = new MessageHeader();
+		messageHeader.setEvent(new Coding().setSystem("http://hl7.org/fhir/message-events").setCode("claim"));
+		messageHeader.setSource(new MessageHeader.MessageSourceComponent().setName("FHIR Client"));
+
+		// Add Claim to bundle
+		ret.addEntry(createBundleEntry(fhirClaim));
+
+		// Add Encounter to bundle
+		Encounter encounter = new Encounter();
+		encounter.setId("Encounter/example-encounter");
+		encounter.setStatus(Encounter.EncounterStatus.FINISHED);
+		Coding encounterClass = new Coding();
+		encounterClass.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode");
+		encounterClass.setCode("AMB");  // Example: "AMB" for ambulatory care
+		encounterClass.setDisplay("Ambulatory");
+		encounter.setClass_(encounterClass);  // Set the class of the encounter
+		encounter.setSubject(new org.hl7.fhir.r4.model.Reference("Patient/example-patient"));
+		encounter.setPeriod(new org.hl7.fhir.r4.model.Period().setStart(new Date()).setEnd(new Date()));
+		ret.addEntry(createBundleEntry(encounter));
+
+		// Add Patient to bundle
+		org.hl7.fhir.r4.model.Patient fhirPatient = patientTranslator.toFhirResource(patient);;
+		ret.addEntry(createBundleEntry(fhirPatient));
+
+		// Add Organization to bundle
+		Organization organization = new Organization();
+		organization.setName("Health Organization");
+		organization.addIdentifier().setSystem("http://health.org/org").setValue("HOrg-123");
+		ret.addEntry(createBundleEntry(organization));
+
+		// Add Coverage to bundle
+		Coverage coverage = new Coverage();
+		coverage.addIdentifier().setSystem("http://health.org/coverage").setValue("Coverage-123");
+		coverage.setBeneficiary(new Reference(fhirPatient));
+		coverage.setPayor(Collections.singletonList(new Reference(organization)));
+		ret.addEntry(createBundleEntry(coverage));
+
+		// Add Practitioner to bundle
+		Practitioner practitioner = practitionerTranslator.toFhirResource(provider);
+		ret.addEntry(createBundleEntry(practitioner));
+
+		return(ret);
+	}
+
+	/**
+	 * Helper method to create BundleEntryComponent from a resource
+	 * @param resource the FHIR resource to add
+	 * @return a bundle entry
+	 */
+	private static Bundle.BundleEntryComponent createBundleEntry(Resource resource) {
+		Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
+		entry.setResource(resource);
+		return entry;
+	}
 
     @Override
     public InsuranceClaim generateOmrsClaim(Claim claim, List<String> errors) {
@@ -540,5 +625,20 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		return createExtension(DATE_CHANGED_URL, new DateTimeType(dateChanged));
 	}
 
+	public PatientTranslator getPatientTranslator() {
+		return patientTranslator;
+	}
+
+	public void setPatientTranslator(PatientTranslator patientTranslator) {
+		this.patientTranslator = patientTranslator;
+	}
+
+	public PractitionerTranslator getPractitionerTranslator() {
+		return practitionerTranslator;
+	}
+
+	public void setPractitionerTranslator(PractitionerTranslator practitionerTranslator) {
+		this.practitionerTranslator = practitionerTranslator;
+	}
 }
 
