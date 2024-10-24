@@ -2,9 +2,11 @@ package org.openmrs.module.insuranceclaims.api.model;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.openmrs.Encounter;
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.Provider;
+import org.openmrs.Visit;
 import org.openmrs.VisitType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -102,6 +104,14 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	@Basic
 	@Column(name = "guarantee_id", length = 255)
 	private String guaranteeId;
+
+	@ManyToOne
+	@JoinColumn(name = "visit")
+	private Visit visit;
+
+	@ManyToOne
+	@JoinColumn(name = "encounter")
+	private Encounter encounter;
 
 	@Basic
 	@Column(name = "external_id", length = 255)
@@ -283,5 +293,21 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 
 	public void setUse(String use) {
 		this.use = use;
+	}
+
+	public Visit getVisit() {
+		return visit;
+	}
+
+	public void setVisit(Visit visit) {
+		this.visit = visit;
+	}
+
+	public Encounter getEncounter() {
+		return encounter;
+	}
+
+	public void setEncounter(Encounter encounter) {
+		this.encounter = encounter;
 	}
 }

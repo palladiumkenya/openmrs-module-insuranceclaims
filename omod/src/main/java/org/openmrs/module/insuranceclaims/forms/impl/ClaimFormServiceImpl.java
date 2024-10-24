@@ -7,8 +7,10 @@ import org.openmrs.ConceptMap;
 import org.openmrs.ConceptMapType;
 import org.openmrs.ConceptReferenceTerm;
 import org.openmrs.ConceptSource;
+import org.openmrs.Encounter;
 import org.openmrs.Location;
 import org.openmrs.Patient;
+import org.openmrs.Visit;
 import org.openmrs.VisitType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
@@ -77,6 +79,12 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         Patient patient = Context.getPatientService().getPatientByUuid(form.getPatient());
         System.out.println("Patient : " + patient.toString());
         nextClaim.setPatient(patient);
+
+        Visit visit = Context.getVisitService().getVisitByUuid(form.getVisitUuid());
+        nextClaim.setVisit(visit);
+
+        Encounter encounter = Context.getEncounterService().getEncounterByUuid(form.getEncounterUuid());
+        nextClaim.setEncounter(encounter);
 
         nextClaim.setGuaranteeId(form.getGuaranteeId());
         nextClaim.setClaimCode(form.getClaimCode());
