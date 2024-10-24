@@ -309,7 +309,8 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
 
                         //Connect to remote server and send FHIR resource
                         String baseUrl = Context.getAdministrationService().getGlobalProperty(ClientConstants.BASE_URL_PROPERTY);
-                        String Url = baseUrl + "/CoverageEligibilityRequest";
+//                        String Url = baseUrl + "/CoverageEligibilityRequest";
+                        String Url = baseUrl + "/Bundle";
                         String username = Context.getAdministrationService().getGlobalProperty(ClientConstants.API_LOGIN_PROPERTY);
                         String password = Context.getAdministrationService().getGlobalProperty(ClientConstants.API_PASSWORD_PROPERTY);
                         String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
