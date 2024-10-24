@@ -5,6 +5,7 @@ import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.Patient;
+import org.openmrs.Provider;
 import org.openmrs.module.insuranceclaims.api.client.ClaimHttpRequest;
 import org.openmrs.module.insuranceclaims.api.client.FHIRClient;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
@@ -40,7 +41,8 @@ public class ClaimHttpRequestImpl implements ClaimHttpRequest {
         String url = resourceUrl + "/";
         Claim claimToSend = fhirInsuranceClaimService.generateClaim(insuranceClaim);
         Patient patient = insuranceClaim.getPatient();
-        Bundle claimBundle = fhirInsuranceClaimService.generateClaimBundle(claimToSend, patient);
+        Provider provider = insuranceClaim.getProvider();
+        Bundle claimBundle = fhirInsuranceClaimService.generateClaimBundle(claimToSend, patient, provider);
 
         return fhirRequestClient.postObject(url, claimBundle, Bundle.class);
     }

@@ -23,6 +23,7 @@ import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.MessageHeader;
 import org.hl7.fhir.r4.model.Resource;
 import org.openmrs.module.fhir2.api.translators.PatientTranslator;
+import org.openmrs.module.fhir2.api.translators.PractitionerTranslator;
 import org.openmrs.module.insuranceclaims.util.ReferencesUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.openmrs.Patient;

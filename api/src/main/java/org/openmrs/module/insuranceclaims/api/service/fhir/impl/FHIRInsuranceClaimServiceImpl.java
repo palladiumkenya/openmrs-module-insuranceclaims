@@ -42,6 +42,7 @@ import org.openmrs.module.insuranceclaims.api.service.db.AttributeService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimDiagnosisService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRInsuranceClaimService;
+import org.openmrs.module.fhir2.api.translators.PractitionerTranslator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,6 +77,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
     private FHIRClaimDiagnosisService claimDiagnosisService;
 
 	private PatientTranslator patientTranslator;
+
+	private PractitionerTranslator<Provider> practitionerTranslator;
 
     @Override
     public Claim generateClaim(InsuranceClaim omrsClaim) throws FHIRException {
@@ -203,7 +206,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
     }
 
 	@Override
-	public Bundle generateClaimBundle(Claim fhirClaim, Patient patient) throws FHIRException {
+	public Bundle generateClaimBundle(Claim fhirClaim, Patient patient, Provider provider) throws FHIRException {
 		Bundle ret = new Bundle();
 
 		ret.setType(Bundle.BundleType.MESSAGE);
@@ -248,10 +251,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		ret.addEntry(createBundleEntry(coverage));
 
 		// Add Practitioner to bundle
-		Practitioner practitioner = new Practitioner();
-		practitioner.setId("Practitioner/example-practitioner");
-		practitioner.addName().setFamily("Smith").addGiven("John");
-		practitioner.addIdentifier().setSystem("http://example.org/identifier").setValue("PR12345");
+		Practitioner practitioner = practitionerTranslator.toFhirResource(provider);
 		ret.addEntry(createBundleEntry(practitioner));
 
 		return(ret);
@@ -633,5 +633,12 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		this.patientTranslator = patientTranslator;
 	}
 
+	public PractitionerTranslator getPractitionerTranslator() {
+		return practitionerTranslator;
+	}
+
+	public void setPractitionerTranslator(PractitionerTranslator practitionerTranslator) {
+		this.practitionerTranslator = practitionerTranslator;
+	}
 }
 
