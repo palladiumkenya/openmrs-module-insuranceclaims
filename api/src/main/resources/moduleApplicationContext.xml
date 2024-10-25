@@ -25,6 +25,8 @@
 
     <bean id="practitionerTranslatorProviderImpl" class="org.openmrs.module.fhir2.api.translators.impl.PractitionerTranslatorProviderImpl"/>
 
+    <bean id="encounterTranslatorImpl" class="org.openmrs.module.fhir2.api.translators.impl.EncounterTranslatorImpl"/>
+
     <import resource="classpath:components/daoComponents.xml" />
     <import resource="classpath:components/insuranceServiceComponents.xml" />
     <import resource="classpath:components/dbComponents.xml" />

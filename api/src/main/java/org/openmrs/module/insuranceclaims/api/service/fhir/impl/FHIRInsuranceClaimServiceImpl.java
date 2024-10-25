@@ -1,6 +1,7 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.r4.model.Address;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Claim.ClaimStatus;
 import org.hl7.fhir.r4.model.Claim.InsuranceComponent;
@@ -36,6 +37,7 @@ import org.openmrs.Provider;
 import org.openmrs.User;
 import org.openmrs.VisitType;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientTranslator;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.db.AttributeService;
@@ -49,6 +51,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.IdentifierUtil.getIdFromReference;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.IdentifierUtil.getUnambiguousElement;
@@ -80,6 +83,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
 	private PractitionerTranslator<Provider> practitionerTranslator;
 
+	private EncounterTranslator<org.openmrs.Encounter> encounterTranslator;
+
     @Override
     public Claim generateClaim(InsuranceClaim omrsClaim) throws FHIRException {
         Claim claim = new Claim();
@@ -95,6 +100,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         //Set provider
         Reference providerReference = practitionerUtil.buildPractitionerReference(omrsClaim);
         claim.setProvider(providerReference);
+
         //Set enterer
         claim.setEnterer(providerReference);
 
@@ -206,7 +212,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
     }
 
 	@Override
-	public Bundle generateClaimBundle(Claim fhirClaim, Patient patient, Provider provider) throws FHIRException {
+	public Bundle generateClaimBundle(Claim fhirClaim, Patient patient, Provider provider, org.openmrs.Encounter encounter) throws FHIRException {
 		Bundle ret = new Bundle();
 
 		ret.setType(Bundle.BundleType.MESSAGE);
@@ -221,33 +227,38 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		ret.addEntry(createBundleEntry(fhirClaim));
 
 		// Add Encounter to bundle
-		Encounter encounter = new Encounter();
-		encounter.setId("Encounter/example-encounter");
-		encounter.setStatus(Encounter.EncounterStatus.FINISHED);
-		Coding encounterClass = new Coding();
-		encounterClass.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode");
-		encounterClass.setCode("AMB");  // Example: "AMB" for ambulatory care
-		encounterClass.setDisplay("Ambulatory");
-		encounter.setClass_(encounterClass);  // Set the class of the encounter
-		encounter.setSubject(new org.hl7.fhir.r4.model.Reference("Patient/example-patient"));
-		encounter.setPeriod(new org.hl7.fhir.r4.model.Period().setStart(new Date()).setEnd(new Date()));
-		ret.addEntry(createBundleEntry(encounter));
+		org.hl7.fhir.r4.model.Encounter fHIREncounter = encounterTranslator.toFhirResource(encounter);
+		ret.addEntry(createBundleEntry(fHIREncounter));
 
 		// Add Patient to bundle
 		org.hl7.fhir.r4.model.Patient fhirPatient = patientTranslator.toFhirResource(patient);;
 		ret.addEntry(createBundleEntry(fhirPatient));
 
 		// Add Organization to bundle
+		Location location = encounter.getLocation();
 		Organization organization = new Organization();
-		organization.setName("Health Organization");
-		organization.addIdentifier().setSystem("http://health.org/org").setValue("HOrg-123");
+		organization.setId(location.getUuid());
+		organization.setName(location.getName());
+		organization.addIdentifier(new Identifier().setValue(location.getUuid())); // Add UUID as identifier
+//		organization.setDescription(location.getDescription());
+		organization.addAddress(new Address()
+						.setCity(location.getCityVillage())
+						.setState(location.getStateProvince())
+						.setCountry(location.getCountry())
+						.setPostalCode(location.getPostalCode())
+				);
+//		organization.setName("Health Organization");
+//		organization.addIdentifier().setSystem("http://health.org/org").setValue("HOrg-123");
 		ret.addEntry(createBundleEntry(organization));
 
 		// Add Coverage to bundle
 		Coverage coverage = new Coverage();
-		coverage.addIdentifier().setSystem("http://health.org/coverage").setValue("Coverage-123");
+		coverage.addIdentifier().setSystem("http://health.org/coverage").setValue("Coverage/12345");
 		coverage.setBeneficiary(new Reference(fhirPatient));
 		coverage.setPayor(Collections.singletonList(new Reference(organization)));
+		UUID uuid = UUID.randomUUID();
+		String uuidString = uuid.toString();
+		coverage.setId(uuidString);
 		ret.addEntry(createBundleEntry(coverage));
 
 		// Add Practitioner to bundle
@@ -265,6 +276,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 	private static Bundle.BundleEntryComponent createBundleEntry(Resource resource) {
 		Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
 		entry.setResource(resource);
+		String URL = resource.getResourceType().name() + "/" + resource.getId();
+		entry.setFullUrl(URL);
 		return entry;
 	}
 
@@ -639,6 +652,15 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
 	public void setPractitionerTranslator(PractitionerTranslator practitionerTranslator) {
 		this.practitionerTranslator = practitionerTranslator;
+	}
+
+	public EncounterTranslator<org.openmrs.Encounter> getEncounterTranslator() {
+		return encounterTranslator;
+	}
+
+	public void setEncounterTranslator(
+			EncounterTranslator<org.openmrs.Encounter> encounterTranslator) {
+		this.encounterTranslator = encounterTranslator;
 	}
 }
 

@@ -26,6 +26,7 @@
         <property name="claimDiagnosisService" ref="insuranceclaims.FHIRClaimDiagnosisService"/>
         <property name="patientTranslator" ref="patientTranslatorImpl"/>
         <property name="practitionerTranslator" ref="practitionerTranslatorProviderImpl"/>
+        <property name="encounterTranslator" ref="encounterTranslatorImpl"/>
     </bean>
 
     <bean id="insuranceclaims.FHIRClaimResponseService"
