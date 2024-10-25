@@ -1,0 +1,62 @@
+name: deploy to prod 8600
+on:
+  push:
+    branches: [ master ]
+jobs:
+  build:
+    name: deploying to HIE Server 
+    if: github.ref == 'refs/heads/2.x'
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote connection
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.CICD2_HOST }}
+        username: ${{ secrets.CICD2_USERNAME }}
+        key: ${{ secrets.CICD2_SECRET }}
+        port: ${{ secrets.PORT }}
+        command_timeout: 200m
+        script: |
+          cd /apps/github-workflows/kenyaemr-modules
+          sudo rm -rf openmrs-module-insuranceclaims
+          sudo mkdir openmrs-module-insuranceclaims
+          sudo chown -R cicd2:cicd2 openmrs-module-insuranceclaims
+          git config --global --add safe.directory /apps/github-workflows/kenyaemr-modules/openmrs-module-insuranceclaims
+          cd /apps/github-workflows/kenyaemr-modules/openmrs-module-insuranceclaims
+          git clone -b 2.x https://github.com/palladiumkenya/openmrs-module-insuranceclaims.git /apps/github-workflows/kenyaemr-modules/openmrs-module-insuranceclaims
+          sudo chown -R cicd2:cicd2 /apps/github-workflows/kenyaemr-modules/openmrs-module-insuranceclaims
+          git status
+          mvn license:format
+          sudo mvn clean install -DskipTests
+          sudo bash /apps/workflowConfigs/HEI_WORKfLOW/insurance_claims.sh
+  dev_server_deployment:
+    name: deploying to 3.x dev instance
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote connection
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.CICD_HOST }}
+        username: ${{ secrets.CICD_USERNAME }}
+        key: ${{ secrets.CICD_SECRET }}
+        port: ${{ secrets.PORT }}
+        command_timeout: 200m
+        script: |
+          cd /apps/githubworkflows/kenyaemr-modules
+          sudo rm -rf openmrs-module-insuranceclaims
+          sudo mkdir openmrs-module-insuranceclaims
+          sudo chown -R cicd:cicd openmrs-module-insuranceclaims
+          git config --global --add safe.directory /apps/githubworkflows/kenyaemr-modules/openmrs-module-insuranceclaims
+          cd /apps/githubworkflows/kenyaemr-modules/openmrs-module-insuranceclaims
+          git clone -b master https://github.com/palladiumkenya/openmrs-module-insuranceclaims.git .
+          git status
+          mvn license:format
+          sudo mvn clean install -DskipTests
+          sudo rm -rf /var/lib/OpenMRS/modules/kenyaemr-*.omod
+          sudo cp -r /apps/githubworkflows/kenyaemr-modules/openmrs-module-insuranceclaims/omod/target/kenyaemr-*.omod /var/lib/OpenMRS/modules/
+          sudo chown -R tomcat:tomcat /var/lib/OpenMRS/modules/
+          sudo chmod +r /var/lib/OpenMRS/modules/*.omod
+          sudo chmod 755 /var/lib/OpenMRS/modules/*.omod
+          sudo service tomcat9 restart 
