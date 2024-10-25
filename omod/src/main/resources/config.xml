@@ -26,7 +26,7 @@
 
         <require_module version="${fhir2Version}">
             org.openmrs.module.fhir2
-        </require_module>     
+        </require_module>
 
         <require_module version="${metadatamappingVersion}">
             org.openmrs.module.metadatamapping
@@ -177,4 +177,25 @@
         <description>Default strategy used for consummed items
         </description>
     </globalProperty>
+    <globalProperty>
+        <property>${project.parent.artifactId}.coverage.custom.url</property>
+        <defaultValue></defaultValue>
+        <description>Custom url for checking client insurance coverage status
+        </description>
+    </globalProperty>
+    <globalProperty>
+        <property>${project.parent.artifactId}.hiejwt.custom.encodedpass</property>
+        <defaultValue></defaultValue>
+        <description>Encoded  ( Username + : + password) for custom coverage jwt token generation
+        </description>
+    </globalProperty>
+    <globalProperty>
+        <property>${project.parent.artifactId}.hiejwt.url</property>
+        <defaultValue></defaultValue>
+        <description>HIE url for generating jwt token
+        </description>
+    </globalProperty>
+
+
+
 </module>
