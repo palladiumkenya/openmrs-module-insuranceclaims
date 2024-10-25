@@ -21,4 +21,9 @@
         <property name="dbSessionFactory" ref="dbSessionFactory" />
     </bean>
 
+    <bean id="insuranceclaims.InterventionDbService"
+          class="org.openmrs.module.insuranceclaims.api.service.db.impl.InterventionDbServiceImpl">
+        <property name="dbSessionFactory" ref="dbSessionFactory" />
+    </bean>
+
 </beans>

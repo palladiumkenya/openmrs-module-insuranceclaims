@@ -26,6 +26,7 @@
         <property name="insuranceClaimService" ref="insuranceclaims.InsuranceClaimService"/>
         <property name="insuranceClaimItemService" ref="insuranceclaims.InsuranceClaimItemService"/>
         <property name="insuranceClaimDiagnosisService" ref="insuranceclaims.InsuranceClaimDiagnosisService"/>
+        <property name="insuranceClaimInterventionService" ref="insuranceclaims.InsuranceClaimInterventionService"/>
     </bean>
 
     <bean id="insuranceclaims.ClaimFormBuilder"

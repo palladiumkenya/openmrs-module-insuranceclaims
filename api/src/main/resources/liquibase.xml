@@ -660,6 +660,56 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="insuranceclaims-25.10.2024:13:05" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="iclm_claim_intervention"/>
+            </not>
+        </preConditions>
+        <comment>
+            Creating the iclm_claim_intervention table
+        </comment>
+        <createTable tableName="iclm_claim_intervention">
+            <column name="iclm_claim_intervention_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" unique="true"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="claim" type="int">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="creator" type="int"/>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_voided" type="datetime"/>
+            <column name="void_reason" type="varchar(255)"/>
+            <column name="voided" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="voided_by" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint constraintName="iclm_claim_intervention_claim_fk"
+                                 baseTableName="iclm_claim_intervention" baseColumnNames="claim"
+                                 referencedTableName="iclm_claim" referencedColumnNames="iclm_claim_id"/>
+        <addForeignKeyConstraint constraintName="iclm_claim_intervention_creator_fk"
+                                 baseTableName="iclm_claim_intervention" baseColumnNames="creator"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="iclm_claim_intervention_changed_by_fk"
+                                 baseTableName="iclm_claim_intervention" baseColumnNames="changed_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="iclm_claim_intervention_voided_by_fk"
+                                 baseTableName="iclm_claim_intervention" baseColumnNames="voided_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
     <!-- Add a table to store CoverageEligibilityRequest -->
     <!-- <changeSet id="insuranceclaims-17082024-143021" author="pwaweru">
         <preConditions>

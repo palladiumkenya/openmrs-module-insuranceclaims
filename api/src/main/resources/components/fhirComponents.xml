@@ -16,6 +16,7 @@
     <bean id="insuranceclaims.FHIRClaimItemService"
           class="org.openmrs.module.insuranceclaims.api.service.fhir.impl.FHIRClaimItemServiceImpl">
         <property name="itemDbService" ref="insuranceclaims.ItemDbService"/>
+        <property name="interventionDbService" ref="insuranceclaims.InterventionDbService"/>
     </bean>
 
     <bean id="insuranceclaims.FHIRInsuranceClaimService"

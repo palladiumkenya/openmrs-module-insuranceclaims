@@ -34,6 +34,11 @@
         <property name="dao" ref="insuranceclaims.InsuranceClaimDiagnosisDao"/>
     </bean>
 
+    <bean id="insuranceclaims.InsuranceClaimInterventionService"
+          class="org.openmrs.module.insuranceclaims.api.service.impl.InsuranceClaimInterventionServiceImpl">
+        <property name="dao" ref="insuranceclaims.InsuranceClaimInterventionDao"/>
+    </bean>
+
     <bean id="insuranceclaims.ProvidedItemService"
           class="org.openmrs.module.insuranceclaims.api.service.impl.ProvidedItemServiceImpl">
         <property name="dao" ref="insuranceclaims.ProvidedItemDao"/>

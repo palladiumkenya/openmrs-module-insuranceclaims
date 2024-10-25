@@ -76,6 +76,15 @@
     <bean parent="serviceContext">
         <property name="moduleService">
             <list>
+                <value>org.openmrs.module.insuranceclaims.api.service.InsuranceClaimInterventionService</value>
+                <ref bean="insuranceclaims.InsuranceClaimInterventionService"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
                 <value>org.openmrs.module.insuranceclaims.api.service.ProvidedItemService</value>
                 <ref bean="insuranceclaims.ProvidedItemService"/>
             </list>

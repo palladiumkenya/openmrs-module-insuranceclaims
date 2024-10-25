@@ -15,6 +15,7 @@ public class NewClaimForm {
     private String endDate;
     private String location;
     private List<String> diagnoses;
+    private List<String> interventions;
     private boolean paidInFacility;
     private String patient;
     private String visitType;
@@ -160,6 +161,14 @@ public class NewClaimForm {
 
     public void setEncounterUuid(String encounterUuid) {
         this.encounterUuid = encounterUuid;
+    }
+
+    public List<String> getInterventions() {
+        return interventions;
+    }
+
+    public void setInterventions(List<String> interventions) {
+        this.interventions = interventions;
     }
 }
 

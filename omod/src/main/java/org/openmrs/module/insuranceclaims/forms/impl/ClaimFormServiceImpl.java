@@ -16,6 +16,7 @@ import org.openmrs.VisitType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimDiagnosis;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimIntervention;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
 import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
@@ -33,6 +34,7 @@ import org.openmrs.module.insuranceclaims.forms.NewClaimForm;
 import org.openmrs.module.insuranceclaims.forms.ProvidedItemInForm;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpServerErrorException;
+import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimInterventionService;
 
 import javax.transaction.Transactional;
 
@@ -60,6 +62,8 @@ public class ClaimFormServiceImpl implements ClaimFormService {
     private InsuranceClaimItemService insuranceClaimItemService;
 
     private InsuranceClaimDiagnosisService insuranceClaimDiagnosisService;
+
+    private InsuranceClaimInterventionService insuranceClaimInterventionService;
 
     private static final String[] FORM_DATE_FORMAT = {"yyy-mm-dd"};
 
@@ -125,6 +129,9 @@ public class ClaimFormServiceImpl implements ClaimFormService {
             item.setClaim(nextClaim);
             insuranceClaimItemService.saveOrUpdate(item);
         });
+
+        List<InsuranceClaimIntervention> interventions = generateClaimInterventions(form.getInterventions(), nextClaim);
+        interventions.stream().forEach(intervention -> insuranceClaimInterventionService.saveOrUpdate(intervention));
 
         return nextClaim;
     }
@@ -216,6 +223,16 @@ public class ClaimFormServiceImpl implements ClaimFormService {
             diagnoses.add(nextDiagnosis);
         }
         return diagnoses;
+    }
+
+    private List<InsuranceClaimIntervention> generateClaimInterventions(List<String> interventions, InsuranceClaim claim) {
+        List<InsuranceClaimIntervention> claiminterventions = new ArrayList<>();
+
+        for (String intervention: interventions) {
+            InsuranceClaimIntervention nextIntervention = new InsuranceClaimIntervention(intervention, claim);
+            claiminterventions.add(nextIntervention);
+        }
+        return claiminterventions;
     }
 
     public void testDiagnosis(Concept input) {
@@ -400,5 +417,14 @@ public class ClaimFormServiceImpl implements ClaimFormService {
             THREADLOCAL_FORMATS.remove();
         }
 
+    }
+
+    public InsuranceClaimInterventionService getInsuranceClaimInterventionService() {
+        return insuranceClaimInterventionService;
+    }
+
+    public void setInsuranceClaimInterventionService(
+            InsuranceClaimInterventionService insuranceClaimInterventionService) {
+        this.insuranceClaimInterventionService = insuranceClaimInterventionService;
     }
 }

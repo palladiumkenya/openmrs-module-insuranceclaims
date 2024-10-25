@@ -38,46 +38,101 @@ import org.hl7.fhir.r4.model.StringType;
 import org.openmrs.Concept;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimIntervention;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
 import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
+import org.openmrs.module.insuranceclaims.api.service.db.InterventionDbService;
 import org.openmrs.module.insuranceclaims.api.service.db.ItemDbService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
 
 public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
 
     private ItemDbService itemDbService;
+    private InterventionDbService interventionDbService;
+
+//    @Override
+//    public Claim assignItemsWithInformationToClaim(Claim fhirClaim, InsuranceClaim claim) {
+//        List<InsuranceClaimItem> insuranceClaimItems = itemDbService.findInsuranceClaimItems(claim.getId());
+//        List<Claim.ItemComponent> fhirItems = generateClaimItemComponent(insuranceClaimItems);
+//
+//        fhirClaim.setItem(fhirItems);
+//        int initialNumberOnClaimInformation = fhirClaim.getSupportingInfo().size();
+//        for (int itemIndex = 0; itemIndex < insuranceClaimItems.size(); itemIndex++) {
+//            InsuranceClaimItem nextMrsItem = insuranceClaimItems.get(itemIndex);
+//            Claim.ItemComponent correspondingFhirItem = fhirItems.get(itemIndex);
+//            Claim.SupportingInformationComponent itemInformation = createItemExplanationInformation(nextMrsItem);
+//
+//            itemInformation.setSequence(++initialNumberOnClaimInformation);
+//            fhirClaim.addSupportingInfo(itemInformation);
+//            correspondingFhirItem.setInformationSequence(Collections.singletonList(itemInformation.getSequenceElement()));
+//        }
+//
+//        return fhirClaim;
+//    }
 
     @Override
     public Claim assignItemsWithInformationToClaim(Claim fhirClaim, InsuranceClaim claim) {
-        List<InsuranceClaimItem> insuranceClaimItems = itemDbService.findInsuranceClaimItems(claim.getId());
-        List<Claim.ItemComponent> fhirItems = generateClaimItemComponent(insuranceClaimItems);
+        List<InsuranceClaimIntervention> insuranceClaimInterventions = interventionDbService.findInsuranceClaimIntervention(claim.getId());
+        List<Claim.ItemComponent> fhirItems = generateClaimItemComponent(insuranceClaimInterventions);
 
         fhirClaim.setItem(fhirItems);
-        int initialNumberOnClaimInformation = fhirClaim.getSupportingInfo().size();
-        for (int itemIndex = 0; itemIndex < insuranceClaimItems.size(); itemIndex++) {
-            InsuranceClaimItem nextMrsItem = insuranceClaimItems.get(itemIndex);
-            Claim.ItemComponent correspondingFhirItem = fhirItems.get(itemIndex);
-            Claim.SupportingInformationComponent itemInformation = createItemExplanationInformation(nextMrsItem);
-
-            itemInformation.setSequence(++initialNumberOnClaimInformation);
-            fhirClaim.addSupportingInfo(itemInformation);
-            correspondingFhirItem.setInformationSequence(Collections.singletonList(itemInformation.getSequenceElement()));
-        }
-
         return fhirClaim;
     }
 
-    @Override
-    public List<Claim.ItemComponent> generateClaimItemComponent(InsuranceClaim claim) {
-        List<InsuranceClaimItem> insuranceClaimItems = itemDbService.findInsuranceClaimItems(claim.getId());
-        return generateClaimItemComponent(insuranceClaimItems);
-    }
+//    @Override
+//    public List<Claim.ItemComponent> generateClaimItemComponent(InsuranceClaim claim) {
+//        List<InsuranceClaimItem> insuranceClaimItems = itemDbService.findInsuranceClaimItems(claim.getId());
+//        return generateClaimItemComponent(insuranceClaimItems);
+//    }
 
     @Override
-    public List<Claim.ItemComponent> generateClaimItemComponent(List<InsuranceClaimItem> insuranceClaimItems) {
+    public List<Claim.ItemComponent> generateClaimItemComponent(InsuranceClaim claim) {
+        List<InsuranceClaimIntervention> insuranceClaimInterventions = interventionDbService.findInsuranceClaimIntervention(claim.getId());
+        return generateClaimItemComponent(insuranceClaimInterventions);
+    }
+
+//    @Override
+//    public List<Claim.ItemComponent> generateClaimItemComponent(List<InsuranceClaimItem> insuranceClaimItems) {
+//        List<Claim.ItemComponent> newItemComponents = new ArrayList<>();
+//        int counter = 1;
+//        for (InsuranceClaimItem item: insuranceClaimItems) {
+//            Claim.ItemComponent next = new Claim.ItemComponent();
+//
+//            // Set the sequence
+//            next.setSequence(counter);
+//            counter++;
+//            // Set product or service
+//            // Create a CodeableConcept for the product or service
+//                CodeableConcept productOrService = new CodeableConcept();
+//
+//                // Create a Coding for the product or service
+//                Coding coding = new Coding();
+//
+//                // Set the system, code, and display values for the product or service
+//                coding.setSystem("http://snomed.info/sct"); // Adjust system URL as necessary
+//                coding.setCode("303646003"); // Example code, adjust as necessary
+//                coding.setDisplay("Application of wound dressing"); // Example display text, adjust as necessary
+//
+//                // Add the Coding to the CodeableConcept
+//                productOrService.addCoding(coding);
+//
+//                // Optionally, set the text value
+//                productOrService.setText("Wound Dressing Service");
+//            next.setProductOrService(productOrService);
+//            next.setCategory(getItemCategory(item));
+//            next.setQuantity(getItemQuantity(item));
+//            next.setUnitPrice(getItemUnitPrice(item));
+//            // next.setProductOrService(createFhirItemService(item));
+//            newItemComponents.add(next);
+//        }
+//        return newItemComponents;
+//    }
+
+    @Override
+    public List<Claim.ItemComponent> generateClaimItemComponent(List<InsuranceClaimIntervention> insuranceClaimInterventions) {
         List<Claim.ItemComponent> newItemComponents = new ArrayList<>();
         int counter = 1;
-        for (InsuranceClaimItem item: insuranceClaimItems) {
+        for (InsuranceClaimIntervention item: insuranceClaimInterventions) {
             Claim.ItemComponent next = new Claim.ItemComponent();
 
             // Set the sequence
@@ -85,25 +140,25 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             counter++;
             // Set product or service
             // Create a CodeableConcept for the product or service
-                CodeableConcept productOrService = new CodeableConcept();
-                
-                // Create a Coding for the product or service
-                Coding coding = new Coding();
-                
-                // Set the system, code, and display values for the product or service
-                coding.setSystem("http://snomed.info/sct"); // Adjust system URL as necessary
-                coding.setCode("303646003"); // Example code, adjust as necessary
-                coding.setDisplay("Application of wound dressing"); // Example display text, adjust as necessary
-                
-                // Add the Coding to the CodeableConcept
-                productOrService.addCoding(coding);
-                
-                // Optionally, set the text value
-                productOrService.setText("Wound Dressing Service");
+            CodeableConcept productOrService = new CodeableConcept();
+
+            // Create a Coding for the product or service
+            Coding coding = new Coding();
+
+            // Set the system, code, and display values for the product or service
+            coding.setSystem("https://mis.apeiro-digital.com/fhir/CodeSystem/intervention-codes");
+            coding.setCode(item.getName());
+            coding.setDisplay(item.getName());
+
+            // Add the Coding to the CodeableConcept
+            productOrService.addCoding(coding);
+
+            // Optionally, set the text value
+            productOrService.setText("intervention");
             next.setProductOrService(productOrService);
-            next.setCategory(getItemCategory(item));
-            next.setQuantity(getItemQuantity(item));
-            next.setUnitPrice(getItemUnitPrice(item));
+//            next.setCategory(getItemCategory(item));
+//            next.setQuantity(getItemQuantity(item));
+//            next.setUnitPrice(getItemUnitPrice(item));
             // next.setProductOrService(createFhirItemService(item));
             newItemComponents.add(next);
         }
@@ -266,5 +321,14 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
         itemInformation.setValue(new StringType(item.getExplanation()));
 
         return itemInformation;
+    }
+
+    public InterventionDbService getInterventionDbService() {
+        return interventionDbService;
+    }
+
+    public void setInterventionDbService(
+            InterventionDbService interventionDbService) {
+        this.interventionDbService = interventionDbService;
     }
 }
