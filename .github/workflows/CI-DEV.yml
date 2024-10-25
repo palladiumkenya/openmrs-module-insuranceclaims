@@ -26,7 +26,6 @@ jobs:
           git clone -b 2.x https://github.com/palladiumkenya/openmrs-module-insuranceclaims.git /apps/github-workflows/kenyaemr-modules/openmrs-module-insuranceclaims
           sudo chown -R cicd2:cicd2 /apps/github-workflows/kenyaemr-modules/openmrs-module-insuranceclaims
           git status
-          mvn license:format
           sudo mvn clean install -DskipTests
           sudo bash /apps/workflowConfigs/HEI_WORKfLOW/insurance_claims.sh
   dev_server_deployment:
