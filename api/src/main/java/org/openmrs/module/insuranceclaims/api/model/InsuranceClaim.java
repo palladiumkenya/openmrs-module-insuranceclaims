@@ -66,7 +66,7 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	private String use;
 
 	@Basic
-	@Column(name = "bill_number", length = 255, nullable = false)
+	@Column(name = "bill_number", length = 255, nullable = true)
 	private String billNumber;
 
 	@Basic
@@ -128,7 +128,7 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 
 	@ManyToOne
 	@Cascade(CascadeType.SAVE_UPDATE)
-	@JoinColumn(name = "bill", nullable = false)
+	@JoinColumn(name = "bill", nullable = true)
 	@JsonIgnore
 	private Bill bill;
 

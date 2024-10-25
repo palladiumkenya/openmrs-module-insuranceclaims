@@ -154,7 +154,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="bill_number" type="varchar(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="date_from" type="DATETIME">
                 <constraints nullable="false"/>
@@ -175,7 +175,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="bill" type="int">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
 
             <column name="uuid" type="char(38)">
