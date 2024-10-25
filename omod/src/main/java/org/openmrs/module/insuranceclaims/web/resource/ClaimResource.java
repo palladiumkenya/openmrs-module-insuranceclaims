@@ -14,10 +14,15 @@
 package org.openmrs.module.insuranceclaims.web.resource;
 
 
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.annotation.Authorized;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
+import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.RequestContext;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.annotation.Resource;
@@ -26,6 +31,7 @@ import org.openmrs.module.webservices.rest.web.representation.FullRepresentation
 import org.openmrs.module.webservices.rest.web.representation.RefRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 import org.openmrs.module.webservices.rest.web.resource.api.PageableResult;
+import org.openmrs.module.webservices.rest.web.resource.impl.AlreadyPaged;
 import org.openmrs.module.webservices.rest.web.resource.impl.DataDelegatingCrudResource;
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription;
 import org.openmrs.module.webservices.rest.web.resource.impl.NeedsPaging;
@@ -90,6 +96,7 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("claimedTotal");
             description.addProperty("approvedTotal");
             description.addProperty("status");
+            description.addProperty("usetype");
             description.addProperty("provider", Representation.REF);
             description.addProperty("patient", Representation.REF);
             description.addProperty("location", Representation.REF);
@@ -112,6 +119,7 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("rejectionReason");
             description.addProperty("guaranteeId");
             description.addProperty("externalId");
+            description.addProperty("usetype");
             description.addProperty("dateProcessed");
             description.addProperty("provider", Representation.FULL);
             description.addProperty("patient", Representation.FULL);
@@ -130,5 +138,24 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
     protected PageableResult doGetAll(RequestContext context) {
         System.out.println("Getting all claims");
         return new NeedsPaging<>(Context.getService(InsuranceClaimService.class).getAll(false), context);
+    }
+
+    @Override
+    protected AlreadyPaged<InsuranceClaim> doSearch(RequestContext context) {
+        String uuid = context.getRequest().getParameter("uuid");
+        String status = context.getRequest().getParameter("status");
+        String usetype = context.getRequest().getParameter("usetype");
+        String claimCode = context.getRequest().getParameter("claimCode");
+        String createdOnOrBeforeDateStr = context.getRequest().getParameter("createdOnOrBefore");
+        String createdOnOrAfterDateStr = context.getRequest().getParameter("createdOnOrAfter");
+
+        Date createdOnOrBeforeDate = StringUtils.isNotBlank(createdOnOrBeforeDateStr) ? (Date) ConversionUtil
+                .convert(createdOnOrBeforeDateStr, Date.class) : null;
+        Date createdOnOrAfterDate = StringUtils.isNotBlank(createdOnOrAfterDateStr) ? (Date) ConversionUtil.convert(createdOnOrAfterDateStr, Date.class) : null;
+
+        InsuranceClaimService service = Context.getService(InsuranceClaimService.class);
+
+        List<InsuranceClaim> result = service.getInsuranceClaims(uuid, status, usetype, claimCode, createdOnOrAfterDate, createdOnOrBeforeDate);
+        return new AlreadyPaged<InsuranceClaim>(context, result, false);
     }
 }

@@ -44,7 +44,7 @@ public class ClaimHttpRequestImpl implements ClaimHttpRequest {
         Patient patient = insuranceClaim.getPatient();
         Provider provider = insuranceClaim.getProvider();
         Encounter encounter = insuranceClaim.getEncounter();
-        Bundle claimBundle = fhirInsuranceClaimService.generateClaimBundle(claimToSend, patient, provider);
+        Bundle claimBundle = fhirInsuranceClaimService.generateClaimBundle(claimToSend, patient, provider, encounter);
 
         return fhirRequestClient.postObject(url, claimBundle, Bundle.class);
     }

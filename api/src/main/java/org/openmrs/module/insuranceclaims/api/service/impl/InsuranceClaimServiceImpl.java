@@ -8,6 +8,7 @@ import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 public class InsuranceClaimServiceImpl extends BaseOpenmrsDataService<InsuranceClaim> implements InsuranceClaimService {
@@ -62,4 +63,11 @@ public class InsuranceClaimServiceImpl extends BaseOpenmrsDataService<InsuranceC
     public List<InsuranceClaim> getAllInsuranceClaimsByCashierBill(String billUuid) {
         return this.insuranceClaimDao.getAllInsuranceClaimsByCashierBill(billUuid);
     }
+
+    @Override
+    public List<InsuranceClaim> getInsuranceClaims(String uuid, String status, String usetype, String claimCode,
+            Date createdOnOrAfterDate, Date createdOnOrBeforeDate) {
+        return this.insuranceClaimDao.getInsuranceClaims(uuid, status, usetype, claimCode, createdOnOrAfterDate, createdOnOrBeforeDate);
+    }
+
 }

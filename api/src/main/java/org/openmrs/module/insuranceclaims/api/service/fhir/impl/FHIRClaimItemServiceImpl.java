@@ -20,8 +20,10 @@ import static org.openmrs.module.insuranceclaims.api.service.fhir.util.Insurance
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.SpecialComponentUtil.getSpecialConditionComponentBySequenceNumber;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,9 +34,12 @@ import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.ClaimResponse;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.DateType;
 import org.hl7.fhir.r4.model.Money;
 import org.hl7.fhir.r4.model.PositiveIntType;
+import org.hl7.fhir.r4.model.Quantity;
 import org.hl7.fhir.r4.model.StringType;
+import org.hl7.fhir.r4.model.Type;
 import org.openmrs.Concept;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
@@ -156,10 +161,37 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             // Optionally, set the text value
             productOrService.setText("intervention");
             next.setProductOrService(productOrService);
-//            next.setCategory(getItemCategory(item));
-//            next.setQuantity(getItemQuantity(item));
-//            next.setUnitPrice(getItemUnitPrice(item));
-            // next.setProductOrService(createFhirItemService(item));
+
+            // Set the net
+            Money total = new Money();
+            total.setCurrency("KES");
+            total.setValue(1);
+            next.setNet(total);
+
+            // Set the factor
+            next.setFactor(1);
+
+            // Set the quantity
+            Quantity quantity = new Quantity();
+            quantity.setValue(1);
+            next.setQuantity(quantity);
+
+            // Set the unit price
+            Money unitPrice = new Money();
+            unitPrice.setCurrency("KES");
+            unitPrice.setValue(1);
+            next.setUnitPrice(unitPrice);
+
+            // Set the service date
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+            // Get the current date
+            Date currentDate = new Date();
+
+            // Format the current date as a String
+            String formattedDate = dateFormat.format(currentDate);
+            next.setServiced(new DateType(formattedDate));
+
             newItemComponents.add(next);
         }
         return newItemComponents;
