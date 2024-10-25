@@ -38,6 +38,7 @@ import org.openmrs.User;
 import org.openmrs.VisitType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
+import org.openmrs.module.fhir2.api.translators.LocationTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientTranslator;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.db.AttributeService;
@@ -84,6 +85,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 	private PractitionerTranslator<Provider> practitionerTranslator;
 
 	private EncounterTranslator<org.openmrs.Encounter> encounterTranslator;
+
+	private LocationTranslator locationTranslator;
 
     @Override
     public Claim generateClaim(InsuranceClaim omrsClaim) throws FHIRException {
@@ -171,7 +174,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         claim.setInsurance(insuranceList);
 
         //Set facility
-        claim.setFacility(buildLocationReference(omrsClaim));
+//        claim.setFacility(buildLocationReference(omrsClaim));
 
         //Set identifier
         List<Identifier> identifiers = createClaimIdentifier(omrsClaim);
@@ -259,11 +262,16 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		UUID uuid = UUID.randomUUID();
 		String uuidString = uuid.toString();
 		coverage.setId(uuidString);
+		coverage.setStatus(Coverage.CoverageStatus.ACTIVE);
 		ret.addEntry(createBundleEntry(coverage));
 
 		// Add Practitioner to bundle
 		Practitioner practitioner = practitionerTranslator.toFhirResource(provider);
 		ret.addEntry(createBundleEntry(practitioner));
+
+		// Add Location to bundle
+		org.hl7.fhir.r4.model.Location fhirLocation = locationTranslator.toFhirResource(location);
+		ret.addEntry(createBundleEntry(fhirLocation));
 
 		return(ret);
 	}
@@ -661,6 +669,14 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 	public void setEncounterTranslator(
 			EncounterTranslator<org.openmrs.Encounter> encounterTranslator) {
 		this.encounterTranslator = encounterTranslator;
+	}
+
+	public LocationTranslator getLocationTranslator() {
+		return locationTranslator;
+	}
+
+	public void setLocationTranslator(LocationTranslator locationTranslator) {
+		this.locationTranslator = locationTranslator;
 	}
 }
 
