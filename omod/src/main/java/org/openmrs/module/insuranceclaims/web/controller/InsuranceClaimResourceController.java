@@ -3,23 +3,18 @@ package org.openmrs.module.insuranceclaims.web.controller;
 import static org.openmrs.module.insuranceclaims.InsuranceClaimsOmodConstants.CLAIM_ALREADY_SENT_MESSAGE;
 import static org.openmrs.module.insuranceclaims.InsuranceClaimsOmodConstants.CLAIM_NOT_SENT_MESSAGE;
 
-import java.math.BigDecimal;
-import java.net.HttpURLConnection;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Base64;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.openmrs.Patient;
-import org.openmrs.PatientIdentifier;
-import org.openmrs.PatientIdentifierType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.openmrs.annotation.Authorized;
-import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.idgen.service.IdentifierSourceService;
-import org.openmrs.module.insuranceclaims.api.client.ClientConstants;
 import org.openmrs.module.insuranceclaims.api.client.impl.ClaimRequestWrapper;
 import org.openmrs.module.insuranceclaims.api.model.Bill;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
@@ -155,14 +150,14 @@ public class InsuranceClaimResourceController {
     public static String convertObjectToJson(Object obj) {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonResult = "";
-        
+
         try {
             jsonResult = objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
             System.err.println("Error serializing object: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         return jsonResult;
     }
 
@@ -358,7 +353,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * CoverageEligibilityRequest
-     * 
+     *
      * Returns the eligibility request response
      */
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.OPTIONS})
@@ -369,7 +364,7 @@ public class InsuranceClaimResourceController {
         System.out.println("Insurance Claims: the CoverageEligibilityRequest is: " + payload);
         // Contact remote server -- TODO: we will return a payload later
         externalApiRequest.postCoverageEligibilityRequest(payload);
-        
+
         //
 
         JSONArray coreArray = new JSONArray();
@@ -409,7 +404,7 @@ public class InsuranceClaimResourceController {
     }
 
     /**
-     * Get Eligibility 
+     * Get Eligibility
      * @param claimUuid
      * @param request
      * @param response
@@ -419,35 +414,55 @@ public class InsuranceClaimResourceController {
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
     @RequestMapping(value = "/CoverageEligibilityRequest", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    public ResponseEntity<JSONArray> getCoverageEligibilityRequestGET(@RequestParam(value = "patientUuid") String patientUuid, HttpServletRequest request, HttpServletResponse response) throws ResponseException {
-        System.out.println("Insurance Claims: REST - Get Eligibility per patient: " + patientUuid);
-        
-        JSONArray coreArray = new JSONArray();
+    public ResponseEntity<JSONArray> getCoverageEligibilityRequestGET(@RequestParam(value = "patientUuid") String patientUuid,@RequestParam(value = "nationalId", required = false) String nationalId, HttpServletRequest request, HttpServletResponse response) throws ResponseException, IOException {
 
+
+        JSONArray coreArray = new JSONArray();
+        String eligibilityResponse = getCoverageStatus(nationalId);
         JSONObject insuranceObject = new JSONObject();
         insuranceObject.put("insurer", "SHAX001");
         insuranceObject.put("inforce", true);
         insuranceObject.put("start", "2024-01-01");
         insuranceObject.put("end", "2024-12-31");
+        insuranceObject.put("eligibility_response", eligibilityResponse);
 
-        JSONObject insuranceObject1 = new JSONObject();
-        insuranceObject1.put("insurer", "UAP");
-        insuranceObject1.put("inforce", false);
-        insuranceObject1.put("start", "2024-01-01");
-        insuranceObject1.put("end", "2024-12-31");
-
-        JSONObject insuranceObject2 = new JSONObject();
-        insuranceObject2.put("insurer", "BRITAM");
-        insuranceObject2.put("inforce", false);
-        insuranceObject2.put("start", "2024-01-01");
-        insuranceObject2.put("end", "2024-12-31");
 
         coreArray.add(insuranceObject);
-        coreArray.add(insuranceObject1);
-        coreArray.add(insuranceObject2);
 
         ResponseEntity<JSONArray> requestResponse = new ResponseEntity<>(coreArray, HttpStatus.ACCEPTED);
         return requestResponse;
+    }
+
+
+    public static String getAuthToken() throws IOException {
+        OkHttpClient client = new OkHttpClient();
+
+        String auth = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.custom.encodedpass");
+        String hieJwtUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.url");
+        Request request = new Request.Builder()
+                .url(hieJwtUrl)
+                .header("Authorization", "Basic " + auth)
+                .build();
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            System.out.println("Request failed: " + response.code() + " - " + response.message());
+        }
+        return response.body().string();
+    }
+
+    public static String getCoverageStatus(String nationalId) throws IOException {
+        String token = getAuthToken();
+        String coverageUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.coverage.custom.url");
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .build();
+        Request request = new Request.Builder()
+                .url(coverageUrl + nationalId)
+                .addHeader("Referer", "")
+                .addHeader("Authorization", "Bearer " + token)
+                .build();
+
+        Response response = client.newCall(request).execute();
+        return response.body().string();
     }
 
 }
