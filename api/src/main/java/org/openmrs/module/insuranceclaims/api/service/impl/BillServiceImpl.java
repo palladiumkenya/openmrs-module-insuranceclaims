@@ -1,5 +1,6 @@
 package org.openmrs.module.insuranceclaims.api.service.impl;
 
+import org.openmrs.Patient;
 import org.openmrs.api.APIException;
 import org.openmrs.module.insuranceclaims.api.dao.BillDao;
 import org.openmrs.module.insuranceclaims.api.model.Bill;
@@ -20,7 +21,7 @@ public class BillServiceImpl extends BaseOpenmrsDataService<Bill> implements Bil
     private ProvidedItemService providedItemService;
 
     @Override
-    public Bill generateBill(List<ProvidedItem> providedItems) {
+    public Bill generateBill(List<ProvidedItem> providedItems, Patient patient) {
         Bill bill = new Bill();
 
         Date date = dateUtil.now();
@@ -28,14 +29,21 @@ public class BillServiceImpl extends BaseOpenmrsDataService<Bill> implements Bil
         bill.setStartDate(date);
         bill.setEndDate(dateUtil.plusDays(date, ConstantValues.DEFAULT_DURATION_BILL_DAYS));
         bill.setDateCreated(date);
-        bill.setPatient(providedItems.get(0).getPatient());
+        if(providedItems != null && providedItems.size() > 0) {
+            bill.setPatient(providedItems.get(0).getPatient());
 
-        BigDecimal sumProvidedItems = providedItems.stream().map(ProvidedItem::getTotalPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal sumProvidedItems = providedItems.stream().map(ProvidedItem::getTotalPrice)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        bill.setTotalAmount(sumProvidedItems);
+            bill.setTotalAmount(sumProvidedItems);
 
-        providedItemService.updateStatusProvidedItems(providedItems);
+            providedItemService.updateStatusProvidedItems(providedItems);
+        } else {
+            System.out.println("Insurance module: providedItems parameter is empty");
+            bill.setPatient(patient);
+            bill.setTotalAmount(BigDecimal.ZERO);
+        }
+
         return billDao.saveOrUpdate(bill);
     }
 

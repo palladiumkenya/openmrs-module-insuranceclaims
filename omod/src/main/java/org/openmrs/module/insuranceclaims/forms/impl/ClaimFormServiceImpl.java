@@ -7,8 +7,11 @@ import org.openmrs.ConceptMap;
 import org.openmrs.ConceptMapType;
 import org.openmrs.ConceptReferenceTerm;
 import org.openmrs.ConceptSource;
+import org.openmrs.Encounter;
 import org.openmrs.Location;
 import org.openmrs.Patient;
+import org.openmrs.Provider;
+import org.openmrs.Visit;
 import org.openmrs.VisitType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
@@ -73,10 +76,20 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         VisitType visitType = Context.getVisitService().getVisitTypeByUuid(form.getVisitType());
         nextClaim.setVisitType(visitType);
 
-        System.out.println("Patient UUID : " + form.getPatient());
+        System.out.println("Insurance Module: Patient UUID : " + form.getPatient());
         Patient patient = Context.getPatientService().getPatientByUuid(form.getPatient());
-        System.out.println("Patient : " + patient.toString());
+        System.out.println("Insurance Module: Patient : " + patient);
         nextClaim.setPatient(patient);
+
+        System.out.println("Insurance Module: Visit UUID : " + form.getVisitUuid());
+        Visit visit = Context.getVisitService().getVisitByUuid(form.getVisitUuid());
+        System.out.println("Insurance Module: Visit : " + visit);
+        nextClaim.setVisit(visit);
+
+        System.out.println("Insurance Module: Encounter UUID : " + form.getEncounterUuid());
+        Encounter encounter = Context.getEncounterService().getEncounterByUuid(form.getEncounterUuid());
+        System.out.println("Insurance Module: Encounter : " + encounter);
+        nextClaim.setEncounter(encounter);
 
         nextClaim.setGuaranteeId(form.getGuaranteeId());
         nextClaim.setClaimCode(form.getClaimCode());
@@ -85,6 +98,9 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         nextClaim.setStatus(InsuranceClaimStatus.ENTERED);
         nextClaim.setLocation(getClaimLocation(form));
 
+        Provider provider = Context.getProviderService().getProviderByUuid(form.getProvider());
+        nextClaim.setProvider(provider);
+
         assignDatesFromFormToClaim(nextClaim, form);
 
         List<InsuranceClaimItem> items = generateClaimItems(form.getProvidedItems(), patient);
@@ -92,8 +108,14 @@ public class ClaimFormServiceImpl implements ClaimFormService {
                 .map(item -> item.getItem())
                 .collect(Collectors.toList());
 
-        createClaimBill(nextClaim, claimProvidedItems);
-        nextClaim.getBill().setPaymentType(PaymentType.INSURANCE_CLAIM);
+        if(claimProvidedItems != null && claimProvidedItems.size() > 0) {
+            createClaimBill(nextClaim, claimProvidedItems);
+            nextClaim.getBill().setPaymentType(PaymentType.INSURANCE_CLAIM);
+        } else {
+            createClaimBill(nextClaim, claimProvidedItems);
+            nextClaim.getBill().setPaymentType(PaymentType.INSURANCE_CLAIM);
+        }
+
         insuranceClaimService.saveOrUpdate(nextClaim);
 
         List<InsuranceClaimDiagnosis> diagnoses = generateClaimDiagnoses(form.getDiagnoses(), nextClaim);
@@ -224,7 +246,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
     }
 
     private void createClaimBill(InsuranceClaim claim, List<ProvidedItem> claimProvidedItems) {
-        Bill bill = billService.generateBill(claimProvidedItems);
+        Bill bill = billService.generateBill(claimProvidedItems, claim.getPatient());
         claim.setBill(bill);
         claim.setClaimedTotal(claim.getBill().getTotalAmount());
     }

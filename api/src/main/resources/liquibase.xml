@@ -154,7 +154,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="bill_number" type="varchar(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="date_from" type="DATETIME">
                 <constraints nullable="false"/>
@@ -175,7 +175,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="bill" type="int">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
 
             <column name="uuid" type="char(38)">
@@ -631,6 +631,31 @@
         <addColumn tableName="iclm_claim" >
             <column name="usetype" type="varchar(64)">
                 <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="insuranceclaims-24102024-113021" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim"/>
+            <not>
+                <columnExists tableName="iclm_claim" columnName="visit_uuid"/>
+            </not>
+            <not>
+                <columnExists tableName="iclm_claim" columnName="encounter_uuid"/>
+            </not>
+        </preConditions>
+        <comment>
+            Adds two columns to store the visit and the encounter into the claims table
+        </comment>
+        <addColumn tableName="iclm_claim" >
+            <column name="visit" type="int">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="iclm_claim" >
+            <column name="encounter" type="int">
+                <constraints nullable="true"/>
             </column>
         </addColumn>
     </changeSet>

@@ -18,6 +18,8 @@ public class NewClaimForm {
     private boolean paidInFacility;
     private String patient;
     private String visitType;
+    private String visitUuid;
+    private String encounterUuid;
     private String guaranteeId;
     private String provider;
     private String claimCode;
@@ -142,6 +144,22 @@ public class NewClaimForm {
 
     public void setUse(String use) {
         this.use = use;
+    }
+
+    public String getVisitUuid() {
+        return visitUuid;
+    }
+
+    public void setVisitUuid(String visitUuid) {
+        this.visitUuid = visitUuid;
+    }
+
+    public String getEncounterUuid() {
+        return encounterUuid;
+    }
+
+    public void setEncounterUuid(String encounterUuid) {
+        this.encounterUuid = encounterUuid;
     }
 }
 
