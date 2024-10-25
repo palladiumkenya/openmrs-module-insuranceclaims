@@ -418,4 +418,13 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         }
 
     }
+
+    public InsuranceClaimInterventionService getInsuranceClaimInterventionService() {
+        return insuranceClaimInterventionService;
+    }
+
+    public void setInsuranceClaimInterventionService(
+            InsuranceClaimInterventionService insuranceClaimInterventionService) {
+        this.insuranceClaimInterventionService = insuranceClaimInterventionService;
+    }
 }
