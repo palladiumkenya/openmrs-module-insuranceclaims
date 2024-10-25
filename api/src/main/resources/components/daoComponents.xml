@@ -17,6 +17,9 @@
     <bean id="insuranceclaims.InsuranceClaimDiagnosisDao"
           class="org.openmrs.module.insuranceclaims.api.dao.impl.InsuranceClaimDiagnosisDaoImpl"/>
 
+    <bean id="insuranceclaims.InsuranceClaimInterventionDao"
+          class="org.openmrs.module.insuranceclaims.api.dao.impl.InsuranceClaimInterventionDaoImpl"/>
+
     <bean id="insuranceclaims.InsuranceClaimDao"
           class="org.openmrs.module.insuranceclaims.api.dao.impl.InsuranceClaimDaoImpl" />
 
