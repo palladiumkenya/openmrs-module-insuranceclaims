@@ -1,11 +1,11 @@
-name: deploy to prod 8600
+name: deploy to hie server
 on:
   push:
     branches: [ master ]
 jobs:
   build:
     name: deploying to HIE Server 
-    if: github.ref == 'refs/heads/2.x'
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
     - name: executing remote connection
