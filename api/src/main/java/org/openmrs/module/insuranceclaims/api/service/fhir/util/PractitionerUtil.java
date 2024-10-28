@@ -1,5 +1,6 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
+import org.hl7.fhir.r4.model.IdType;
 import org.openmrs.Provider;
 import org.openmrs.ProviderAttribute;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
@@ -47,6 +48,7 @@ public final class PractitionerUtil {
     public Reference createPractitionerReference(Provider provider) {
         // Translate the OpenMRS provider to a FHIR Practitioner and create a reference
         Practitioner fhirPractitioner = practitionerTranslator.toFhirResource(provider);
-        return new Reference(fhirPractitioner.getIdElement().getValue());
+        IdType id = fhirPractitioner.getIdElement();
+        return new Reference(id.getValue());
     }
 }

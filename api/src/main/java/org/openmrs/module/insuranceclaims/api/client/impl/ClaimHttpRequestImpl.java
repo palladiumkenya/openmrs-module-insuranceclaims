@@ -12,6 +12,7 @@ import org.openmrs.module.insuranceclaims.api.client.FHIRClient;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRInsuranceClaimService;
 import org.springframework.web.client.HttpServerErrorException;
+import ca.uhn.fhir.context.FhirContext;
 
 import java.net.URISyntaxException;
 
@@ -20,6 +21,8 @@ public class ClaimHttpRequestImpl implements ClaimHttpRequest {
     private FHIRClient fhirRequestClient;
 
     private FHIRInsuranceClaimService fhirInsuranceClaimService;
+
+    private static final FhirContext fhirContext = FhirContext.forR4();
 
     @Override
     public Claim getClaimRequest(String resourceUrl, String claimCode) throws URISyntaxException {
@@ -40,11 +43,15 @@ public class ClaimHttpRequestImpl implements ClaimHttpRequest {
     public Bundle sendClaimBundleRequest(String resourceUrl, InsuranceClaim insuranceClaim)
             throws URISyntaxException, HttpServerErrorException, FHIRException {
         String url = resourceUrl + "/";
+        System.out.println("Insurance Module Debug: Provider 2: " + insuranceClaim.getProvider());
         Claim claimToSend = fhirInsuranceClaimService.generateClaim(insuranceClaim);
         Patient patient = insuranceClaim.getPatient();
         Provider provider = insuranceClaim.getProvider();
         Encounter encounter = insuranceClaim.getEncounter();
         Bundle claimBundle = fhirInsuranceClaimService.generateClaimBundle(claimToSend, patient, provider, encounter);
+
+        String bundleJSON = fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(claimBundle);
+        System.err.println("Insurance Module: Sending claim bundle to server: " + bundleJSON);
 
         return fhirRequestClient.postObject(url, claimBundle, Bundle.class);
     }

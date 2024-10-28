@@ -43,6 +43,7 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -92,6 +93,12 @@ public class ClaimFormServiceImpl implements ClaimFormService {
 
         System.out.println("Insurance Module: Encounter UUID : " + form.getEncounterUuid());
         Encounter encounter = Context.getEncounterService().getEncounterByUuid(form.getEncounterUuid());
+        // Check for null encounter and if null get the first patient encounter TODO: remove this
+        if(encounter == null) {
+            System.out.println("Insurance Module: Encounter : Fail control. Encounter was null so we use a random one");
+            List<Encounter> encounters = Context.getEncounterService().getEncountersByPatient(patient);
+            encounter = encounters.size() > 0 ? encounters.get(encounters.size() - 1) : null;
+        }
         System.out.println("Insurance Module: Encounter : " + encounter);
         nextClaim.setEncounter(encounter);
 
@@ -102,7 +109,15 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         nextClaim.setStatus(InsuranceClaimStatus.ENTERED);
         nextClaim.setLocation(getClaimLocation(form));
 
+        System.out.println("Insurance Module: Provider UUID : " + form.getProvider());
         Provider provider = Context.getProviderService().getProviderByUuid(form.getProvider());
+        // Check for null provider and if null get the first registered provider TODO: remove this
+        if(provider == null) {
+            System.out.println("Insurance Module: Provider : Fail control. Provider was null so we use a random one");
+            provider = Context.getProviderService().getAllProviders().get(0);
+        }
+        System.out.println("Insurance Module: Provider : " + provider);
+
         nextClaim.setProvider(provider);
 
         assignDatesFromFormToClaim(nextClaim, form);
@@ -112,14 +127,10 @@ public class ClaimFormServiceImpl implements ClaimFormService {
                 .map(item -> item.getItem())
                 .collect(Collectors.toList());
 
-        if(claimProvidedItems != null && claimProvidedItems.size() > 0) {
-            createClaimBill(nextClaim, claimProvidedItems);
-            nextClaim.getBill().setPaymentType(PaymentType.INSURANCE_CLAIM);
-        } else {
-            createClaimBill(nextClaim, claimProvidedItems);
-            nextClaim.getBill().setPaymentType(PaymentType.INSURANCE_CLAIM);
-        }
+        createClaimBill(nextClaim, claimProvidedItems);
+        nextClaim.getBill().setPaymentType(PaymentType.INSURANCE_CLAIM);
 
+        System.out.println("Insurance Module: Provider Debug 0 : " + nextClaim.getProvider());
         insuranceClaimService.saveOrUpdate(nextClaim);
 
         List<InsuranceClaimDiagnosis> diagnoses = generateClaimDiagnoses(form.getDiagnoses(), nextClaim);
@@ -259,7 +270,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         Date endDate = parseDate(form.getEndDate(), FORM_DATE_FORMAT);
         claim.setDateFrom(startDate);
         claim.setDateTo(endDate);
-        claim.setProvider(Context.getProviderService().getProviderByUuid(form.getProvider()));
+//        claim.setProvider(Context.getProviderService().getProviderByUuid(form.getProvider()));
     }
 
     private void createClaimBill(InsuranceClaim claim, List<ProvidedItem> claimProvidedItems) {
