@@ -33,12 +33,19 @@ import org.openmrs.BaseOpenmrsData;
 import org.openmrs.BaseOpenmrsMetadata;
 import org.openmrs.Location;
 import org.openmrs.Patient;
+import org.openmrs.PatientIdentifier;
+import org.openmrs.PatientIdentifierType;
+import org.openmrs.Person;
 import org.openmrs.Provider;
+import org.openmrs.ProviderAttribute;
+import org.openmrs.ProviderAttributeType;
 import org.openmrs.User;
 import org.openmrs.VisitType;
+import org.openmrs.api.ProviderService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
 import org.openmrs.module.fhir2.api.translators.LocationTranslator;
+import org.openmrs.module.fhir2.api.translators.PatientIdentifierTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientTranslator;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.db.AttributeService;
@@ -87,6 +94,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 	private EncounterTranslator<org.openmrs.Encounter> encounterTranslator;
 
 	private LocationTranslator locationTranslator;
+
+	private PatientIdentifierTranslator patientIdentifierTranslator;
 
     @Override
     public Claim generateClaim(InsuranceClaim omrsClaim) throws FHIRException {
@@ -267,6 +276,57 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
 		// Add Practitioner to bundle
 		Practitioner practitioner = practitionerTranslator.toFhirResource(provider);
+		ProviderService providerService = Context.getService(ProviderService.class);
+
+		// Add National ID to practitioner
+		String NATIONAL_ID = "3d152c97-2293-4a2b-802e-e0f1009b7b15";
+		ProviderAttributeType providerNationalIdAttributeType = providerService.getProviderAttributeTypeByUuid(NATIONAL_ID);
+		for(ProviderAttribute providerAttribute : provider.getActiveAttributes()) {
+			if(providerAttribute.getAttributeType().getUuid().equalsIgnoreCase(providerNationalIdAttributeType.getUuid())) {
+				String nationalId = providerAttribute.getValue().toString();
+				System.err.println("Insurance Module: Got provider national ID: " + nationalId);
+				Identifier providerIdentifier = new Identifier();
+				providerIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+				providerIdentifier.setValue(nationalId);
+				CodeableConcept provCode = new CodeableConcept();
+
+				Coding provCoding = new Coding();
+				provCoding.setSystem("http://hwr-kenyahie.health");
+				provCoding.setCode("national-id");
+
+				provCode.setCoding(Collections.singletonList(provCoding));
+				providerIdentifier.setType(provCode);
+
+				practitioner.addIdentifier(providerIdentifier);
+
+				break;
+			}
+		}
+
+		// Add Doctors licence to practitioner
+		String LICENSE_NUMBER = "bcaaa67b-cc72-4662-90c2-e1e992ceda66";
+		ProviderAttributeType providerLicenseAttributeType = providerService.getProviderAttributeTypeByUuid(LICENSE_NUMBER);
+		for(ProviderAttribute providerAttribute : provider.getActiveAttributes()) {
+			if(providerAttribute.getAttributeType().getUuid().equalsIgnoreCase(providerLicenseAttributeType.getUuid())) {
+				String licenceNumber = providerAttribute.getValue().toString();
+				System.err.println("Insurance Module: Got provider licence number: " + licenceNumber);
+				Identifier providerIdentifier = new Identifier();
+				providerIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+				providerIdentifier.setValue(licenceNumber);
+				CodeableConcept provCode = new CodeableConcept();
+
+				Coding provCoding = new Coding();
+				provCoding.setSystem("https://shr.tiberbuapps.com/fhir");
+				provCoding.setCode("Board Registration Number");
+
+				provCode.setCoding(Collections.singletonList(provCoding));
+				providerIdentifier.setType(provCode);
+
+				practitioner.addIdentifier(providerIdentifier);
+
+				break;
+			}
+		}
 		ret.addEntry(createBundleEntry(practitioner));
 
 		// Add Location to bundle
@@ -677,6 +737,15 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
 	public void setLocationTranslator(LocationTranslator locationTranslator) {
 		this.locationTranslator = locationTranslator;
+	}
+
+	public PatientIdentifierTranslator getPatientIdentifierTranslator() {
+		return patientIdentifierTranslator;
+	}
+
+	public void setPatientIdentifierTranslator(
+			PatientIdentifierTranslator patientIdentifierTranslator) {
+		this.patientIdentifierTranslator = patientIdentifierTranslator;
 	}
 }
 

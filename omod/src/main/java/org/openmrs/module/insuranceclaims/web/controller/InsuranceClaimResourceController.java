@@ -104,6 +104,7 @@ public class InsuranceClaimResourceController {
         try {
             InsuranceClaim claim = claimFormService.createClaim(form);
 
+            System.out.println("Insurance Module Debug: Provider 1: " + claim.getProvider());
             // ResponseEntity<InsuranceClaim> requestResponse = new ResponseEntity<>(claim, HttpStatus.ACCEPTED);
             // return requestResponse;
             HttpHeaders responseHeaders = new HttpHeaders();

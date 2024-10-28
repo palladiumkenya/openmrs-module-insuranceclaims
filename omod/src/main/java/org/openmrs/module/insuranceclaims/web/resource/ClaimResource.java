@@ -96,7 +96,7 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("claimedTotal");
             description.addProperty("approvedTotal");
             description.addProperty("status");
-            description.addProperty("usetype");
+            description.addProperty("use");
             description.addProperty("provider", Representation.REF);
             description.addProperty("patient", Representation.REF);
             description.addProperty("location", Representation.REF);
@@ -119,7 +119,7 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("rejectionReason");
             description.addProperty("guaranteeId");
             description.addProperty("externalId");
-            description.addProperty("usetype");
+            description.addProperty("use");
             description.addProperty("dateProcessed");
             description.addProperty("provider", Representation.FULL);
             description.addProperty("patient", Representation.FULL);
@@ -144,7 +144,7 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
     protected AlreadyPaged<InsuranceClaim> doSearch(RequestContext context) {
         String uuid = context.getRequest().getParameter("uuid");
         String status = context.getRequest().getParameter("status");
-        String usetype = context.getRequest().getParameter("usetype");
+        String use = context.getRequest().getParameter("use");
         String claimCode = context.getRequest().getParameter("claimCode");
         String createdOnOrBeforeDateStr = context.getRequest().getParameter("createdOnOrBefore");
         String createdOnOrAfterDateStr = context.getRequest().getParameter("createdOnOrAfter");
@@ -155,7 +155,7 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
 
         InsuranceClaimService service = Context.getService(InsuranceClaimService.class);
 
-        List<InsuranceClaim> result = service.getInsuranceClaims(uuid, status, usetype, claimCode, createdOnOrAfterDate, createdOnOrBeforeDate);
+        List<InsuranceClaim> result = service.getInsuranceClaims(uuid, status, use, claimCode, createdOnOrAfterDate, createdOnOrBeforeDate);
         return new AlreadyPaged<InsuranceClaim>(context, result, false);
     }
 }
