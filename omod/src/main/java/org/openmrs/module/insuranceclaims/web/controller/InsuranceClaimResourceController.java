@@ -3,6 +3,7 @@ package org.openmrs.module.insuranceclaims.web.controller;
 import static org.openmrs.module.insuranceclaims.InsuranceClaimsOmodConstants.CLAIM_ALREADY_SENT_MESSAGE;
 import static org.openmrs.module.insuranceclaims.InsuranceClaimsOmodConstants.CLAIM_NOT_SENT_MESSAGE;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+// import okhttp3.MediaType;
 import org.openmrs.annotation.Authorized;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.client.impl.ClaimRequestWrapper;
@@ -80,6 +82,7 @@ import org.hl7.fhir.r4.model.CoverageEligibilityResponse.BenefitComponent;
 import org.hl7.fhir.r4.model.CoverageEligibilityResponse.InsuranceComponent;
 import org.hl7.fhir.r4.model.CoverageEligibilityResponse.ItemsComponent;
 import org.hl7.fhir.r4.model.Money;
+import org.apache.commons.lang3.StringUtils;
 
 @RestController
 @Authorized
@@ -434,21 +437,241 @@ public class InsuranceClaimResourceController {
         return requestResponse;
     }
 
+    /**
+	 * End Point for getting benefit packages
+	 * @return just proxy the response
+	 */
+	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+	@RequestMapping(method = RequestMethod.GET, value = "/claims/benefit-package")
+	public ResponseEntity<String> getBenefitPackages() throws IOException {
+		String errorMsg = "{\n" + //
+                        "\t\"status\": \"error\",\n" + //
+                        "\t\"message\":\"An error occured\"\n" + //
+                        "}";
+		String token = getAuthToken();
+        String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
+
+        try {
+
+            if (hieBaseUrl == null || hieBaseUrl.trim().isEmpty()) {
+                System.err.println("Insurance- Claims: Get Packages: ERROR: HIE URL is not set");
+            } else {
+                if(token != null && StringUtils.isNotEmpty(token)) {
+                    String benefitsUrl = hieBaseUrl + "/benefit-package";
+
+                    OkHttpClient client = new OkHttpClient().newBuilder()
+                        .build();
+                    Request request = new Request.Builder()		
+                        .url(benefitsUrl)
+                        .addHeader("Referer", "")
+                        .addHeader("Authorization", "Bearer " + token)
+                        .build();
+                    Response response = client.newCall(request).execute();	
+                    String toReturn = response.body().string();
+
+                    return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(toReturn);
+                } else {
+                    System.err.println("Insurance- Claims: Get Packages: ERROR: Failed to get HIE Auth Token");
+                }
+            }
+        } catch(Exception ex) {
+            System.err.println("Insurance- Claims: Get Packages: ERROR: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        return ResponseEntity.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorMsg);
+	}
+
+    /**
+	 * End Point for getting benefit sub packages
+	 * @return just proxy the response
+	 */
+	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+	@RequestMapping(method = RequestMethod.GET, value = "/claims/benefit-sub-package")
+	public ResponseEntity<String> getBenefitSubPackages() throws IOException {
+		String errorMsg = "{\n" + //
+                        "\t\"status\": \"error\",\n" + //
+                        "\t\"message\":\"An error occured\"\n" + //
+                        "}";
+		String token = getAuthToken();
+        String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
+
+        try {
+
+            if (hieBaseUrl == null || hieBaseUrl.trim().isEmpty()) {
+                System.err.println("Insurance- Claims: Get Sub Packages: ERROR: HIE URL is not set");
+            } else {
+                if(token != null && StringUtils.isNotEmpty(token)) {
+                    String benefitsUrl = hieBaseUrl + "/benefit-sub-package";
+
+                    OkHttpClient client = new OkHttpClient().newBuilder()
+                        .build();
+                    Request request = new Request.Builder()		
+                        .url(benefitsUrl)
+                        .addHeader("Referer", "")
+                        .addHeader("Authorization", "Bearer " + token)
+                        .build();
+                    Response response = client.newCall(request).execute();	
+                    String toReturn = response.body().string();
+
+                    return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(toReturn);
+                } else {
+                    System.err.println("Insurance- Claims: Get Sub Packages: ERROR: Failed to get HIE Auth Token");
+                }
+            }
+        } catch(Exception ex) {
+            System.err.println("Insurance- Claims: Get Sub Packages: ERROR: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        return ResponseEntity.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorMsg);
+	}
+
+    /**
+	 * End Point for getting interventions
+	 * @return just proxy the response
+	 */
+	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+	@RequestMapping(method = RequestMethod.GET, value = "/claims/interventions")
+	public ResponseEntity<String> getClaimInterventions() throws IOException {
+		String errorMsg = "{\n" + //
+                        "\t\"status\": \"error\",\n" + //
+                        "\t\"message\":\"An error occured\"\n" + //
+                        "}";
+		String token = getAuthToken();
+        String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
+
+        try {
+
+            if (hieBaseUrl == null || hieBaseUrl.trim().isEmpty()) {
+                System.err.println("Insurance- Claims: Get interventions: ERROR: HIE URL is not set");
+            } else {
+                if(token != null && StringUtils.isNotEmpty(token)) {
+                    String benefitsUrl = hieBaseUrl + "/interventions";
+
+                    OkHttpClient client = new OkHttpClient().newBuilder()
+                        .build();
+                    Request request = new Request.Builder()		
+                        .url(benefitsUrl)
+                        .addHeader("Referer", "")
+                        .addHeader("Authorization", "Bearer " + token)
+                        .build();
+                    Response response = client.newCall(request).execute();	
+                    String toReturn = response.body().string();
+
+                    return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(toReturn);
+                } else {
+                    System.err.println("Insurance- Claims: Get interventions: ERROR: Failed to get HIE Auth Token");
+                }
+            }
+        } catch(Exception ex) {
+            System.err.println("Insurance- Claims: Get interventions: ERROR: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        return ResponseEntity.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorMsg);
+	}
+
+    /**
+     * Endpoint to Get Intervention codes by scheme (POST)
+     * @param request - The request JSON
+     * @return
+     */
+    @CrossOrigin(origins = "*", methods = {RequestMethod.POST, RequestMethod.OPTIONS})
+    @RequestMapping(method = RequestMethod.POST, value = "/claims/interventions/query")
+    @ResponseBody
+    public Object getInterventionsByScheme(HttpServletRequest request) throws IOException {
+        String errorMsg = "{\n" + //
+                        "\t\"status\": \"error\",\n" + //
+                        "\t\"message\":\"An error occured\"\n" + //
+                        "}";
+
+        String requestBody = "";
+        BufferedReader requestReader = request.getReader();
+        
+        for (String output = ""; (output = requestReader.readLine()) != null; requestBody = requestBody
+                + output) {}
+        System.out.println("Insurance- Claims: Get intervention codes by scheme: details: " + requestBody);
+
+		String token = getAuthToken();
+        String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
+
+        try {
+
+            if (hieBaseUrl == null || hieBaseUrl.trim().isEmpty()) {
+                System.err.println("Insurance- Claims: Get intervention codes by scheme: ERROR: HIE URL is not set");
+            } else {
+                if(token != null && StringUtils.isNotEmpty(token)) {
+                    String benefitsUrl = hieBaseUrl + "/interventions/query";
+
+                    OkHttpClient client = new OkHttpClient().newBuilder()
+                        .build();
+                    okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/json");
+                    okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, requestBody);
+                    Request requester = new Request.Builder()		
+                        .url(benefitsUrl)
+                        .method("POST", body)
+                        .addHeader("Referer", "")
+                        .addHeader("Authorization", "Bearer " + token)
+                        .build();
+                    Response response = client.newCall(requester).execute();	
+                    String toReturn = response.body().string();
+
+                    return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(toReturn);
+                } else {
+                    System.err.println("Insurance- Claims: Get intervention codes by scheme: ERROR: Failed to get HIE Auth Token");
+                }
+            }
+        } catch(Exception ex) {
+            System.err.println("Insurance- Claims: Get intervention codes by scheme: ERROR: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        return ResponseEntity.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorMsg);
+    }
 
     public static String getAuthToken() throws IOException {
-        OkHttpClient client = new OkHttpClient();
+        String ret = null;
+        try {
+            OkHttpClient client = new OkHttpClient();
 
-        String auth = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.custom.encodedpass");
-        String hieJwtUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.url");
-        Request request = new Request.Builder()
-                .url(hieJwtUrl)
-                .header("Authorization", "Basic " + auth)
-                .build();
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            System.out.println("Request failed: " + response.code() + " - " + response.message());
+            String auth = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.custom.encodedpass");
+            String hieJwtUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.url");
+            if(auth != null && hieJwtUrl != null && StringUtils.isNotEmpty(auth) && StringUtils.isNotEmpty(hieJwtUrl)) {
+                Request request = new Request.Builder()
+                        .url(hieJwtUrl)
+                        .header("Authorization", "Basic " + auth)
+                        .build();
+                Response response = client.newCall(request).execute();
+                if (!response.isSuccessful()) {
+                    System.err.println("Insurance- Claims: Get HIE Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
+                } else {
+                    return response.body().string();
+                }
+            } else {
+                System.err.println("Insurance- Claims: Get HIE Auth: ERROR: Request failed: The global properties for hie jwt must be set");
+            }
+        } catch(Exception ex) {
+            System.err.println("Insurance- Claims: Get HIE Auth: ERROR: Request failed: " + ex.getMessage());
+            ex.printStackTrace();
         }
-        return response.body().string();
+        return(ret);
     }
 
     public static String getCoverageStatus(String nationalId) throws IOException {
