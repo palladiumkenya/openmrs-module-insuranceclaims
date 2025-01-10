@@ -185,8 +185,8 @@
     </globalProperty>
     <globalProperty>
         <property>${project.parent.artifactId}.hiejwt.custom.encodedpass</property>
-        <defaultValue>a2VueWFfZW1yOndyZXJ0NDVTV1JGR1RydDZ5aGRlNA==</defaultValue>
-        <description>Encoded  ( Username + : + password) for custom coverage jwt token generation
+        <defaultValue></defaultValue>
+        <description>Base64 Encoded  ( Username + : + password) for custom coverage jwt token generation
         </description>
     </globalProperty>
     <globalProperty>
