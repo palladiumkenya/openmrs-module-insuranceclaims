@@ -186,16 +186,19 @@
     <globalProperty>
         <property>${project.parent.artifactId}.hiejwt.custom.encodedpass</property>
         <defaultValue></defaultValue>
-        <description>Encoded  ( Username + : + password) for custom coverage jwt token generation
+        <description>Base64 Encoded  ( Username + : + password) for custom coverage jwt token generation
         </description>
     </globalProperty>
     <globalProperty>
         <property>${project.parent.artifactId}.hiejwt.url</property>
-        <defaultValue></defaultValue>
+        <defaultValue>https://api.dha.go.ke/v1/hie-auth?key=kenya_emr</defaultValue>
         <description>HIE url for generating jwt token
         </description>
     </globalProperty>
-
-
-
+    <globalProperty>
+        <property>${project.parent.artifactId}.hie.base.url</property>
+        <defaultValue>https://api.dha.go.ke/api/v1</defaultValue>
+        <description>Base HIE url
+        </description>
+    </globalProperty>
 </module>
