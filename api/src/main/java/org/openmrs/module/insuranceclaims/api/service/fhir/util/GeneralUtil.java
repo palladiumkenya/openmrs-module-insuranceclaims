@@ -3,6 +3,7 @@ package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.r4.model.Organization;
 import org.openmrs.GlobalProperty;
 import org.openmrs.Location;
 import org.openmrs.LocationAttribute;
@@ -21,9 +22,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PROVIDER_LICENSE_NUMBER;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.LOCATION_LICENSE_NUMBER;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PROVIDER_HIE_FHIR_REFERENCE;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.LOCATION_HIE_FHIR_REFERENCE;
 
 public class GeneralUtil {
 
@@ -173,5 +178,51 @@ public class GeneralUtil {
         }
 
         return var2;
+    }
+
+    /**
+     * Gets the organization FHIR payload from the location attributes
+     * @return
+     */
+    public static Organization getSavedLocationFHIRPayload() {
+        Organization ret = null;
+        String jsonOrganization = null;
+
+        Location curLocation = getDefaultLocation();
+        if(curLocation != null) {
+            LocationAttributeType locationAttributeType = Context.getLocationService().getLocationAttributeTypeByUuid(LOCATION_HIE_FHIR_REFERENCE);
+            if(locationAttributeType != null) {
+                LocationAttribute locationAttribute = curLocation.getActiveAttributes(locationAttributeType)
+                .stream()
+                .filter(attr -> attr.getAttributeType().equals(locationAttributeType))
+                .findFirst()
+                .orElse(null);
+
+                if(locationAttribute != null) {
+                    String locationFHIRPayload = locationAttribute.getValue().toString();
+                    System.out.println("Insurance Claims: Got Location FHIR Payload as: " + locationFHIRPayload);
+                    jsonOrganization = locationFHIRPayload;
+                } else {
+                    System.err.println("Insurance Claims: Error Getting location FHIR Payload: null locationAttribute");
+                }
+            } else {
+                System.err.println("Insurance Claims: Error Getting location FHIR Payload: null locationAttributeType");
+            }
+        } else {
+             System.err.println("Insurance Claims: Error Getting location FHIR Payload: null location");
+        }
+
+        if(jsonOrganization != null) {
+            // de-serialize the object
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                ret = objectMapper.readValue(jsonOrganization, Organization.class);
+            } catch(Exception ex) {
+                System.err.println("Insurance Claims: Error Getting location FHIR payload " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
+
+        return(ret);
     }
 }
