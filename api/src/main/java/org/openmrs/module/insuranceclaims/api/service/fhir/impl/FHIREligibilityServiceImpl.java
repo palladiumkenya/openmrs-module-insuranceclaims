@@ -89,7 +89,7 @@ public class FHIREligibilityServiceImpl implements FHIREligibilityService {
         ret.addEntry(createBundleEntry(request));
 
         //Add the patient
-        org.hl7.fhir.r4.model.Patient fhirPatient = patientTranslator.toFhirResource(patient);;
+        org.hl7.fhir.r4.model.Patient fhirPatient = patientTranslator.toFhirResource(patient);
         ret.addEntry(createBundleEntry(fhirPatient));
 
         //Add the organization

@@ -102,6 +102,8 @@ import org.json.simple.parser.JSONParser;
 import org.openmrs.module.metadatadeploy.MetadataUtils;
 import ca.uhn.fhir.context.FhirContext;
 
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER;
+
 public class ExternalApiRequestImpl implements ExternalApiRequest {
     private String claimResponseUrl;
     private String claimUrl;
@@ -281,7 +283,6 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
     @Override
     public JSONArray postCoverageEligibilityRequest(String payload) {
         JSONArray coreArray = new JSONArray();
-        String SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER = "24aedd37-b5be-4e08-8311-3721b8d5100d";
 
         try {
 
