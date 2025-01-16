@@ -71,5 +71,10 @@ public final class InsuranceClaimConstants {
     public static final String OPENMRS_ID_DEFAULT_IDENTIFIER_SOURCE = "691eed12-c0f1-11e2-94be-8c13b969e334";
     public static final String OPENMRS_ID_DEFAULT_TYPE = "05a29f94-c0ed-11e2-94be-8c13b969e334";
 
+    public static final String SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER = "24aedd37-b5be-4e08-8311-3721b8d5100d";
+    public static final String PROVIDER_HIE_FHIR_REFERENCE = "67b94e8e-4d61-4810-b0f1-d86497f6e553";
+    public static final String PROVIDER_LICENSE_NUMBER = "bcaaa67b-cc72-4662-90c2-e1e992ceda66";
+    public static final String LOCATION_LICENSE_NUMBER = "217da59b-6003-43b9-9595-b5c1349f1152";
+
     private InsuranceClaimConstants() {}
 }

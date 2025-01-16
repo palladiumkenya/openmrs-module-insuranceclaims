@@ -6,6 +6,7 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Claim.ClaimStatus;
 import org.hl7.fhir.r4.model.Claim.InsuranceComponent;
 import org.hl7.fhir.r4.model.Claim.Use;
+import org.hl7.fhir.r4.model.Encounter.EncounterStatus;
 import org.hl7.fhir.exceptions.FHIRException;
 
 import org.hl7.fhir.r4.model.Coverage;
@@ -76,6 +77,8 @@ import static org.openmrs.module.insuranceclaims.api.service.fhir.util.Insurance
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimUtil.getClaimGuaranteeId;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimUtil.getClaimUuid;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.LocationUtil.buildLocationReference;
+
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.PatientUtil;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.PractitionerUtil;
 
@@ -227,7 +230,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 	public Bundle generateClaimBundle(Claim fhirClaim, Patient patient, Provider provider, org.openmrs.Encounter encounter) throws FHIRException {
 		Bundle ret = new Bundle();
 
-		ret.setType(Bundle.BundleType.MESSAGE);
+		ret.setType(Bundle.BundleType.BATCH);
 		ret.setTimestamp(new Date());
 
 		// Add message header
@@ -240,6 +243,63 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
 		// Add Encounter to bundle
 		org.hl7.fhir.r4.model.Encounter fHIREncounter = encounterTranslator.toFhirResource(encounter);
+        // status
+        fHIREncounter.setStatus(EncounterStatus.FINISHED);
+        // period
+        if(fHIREncounter.getPeriod().getEnd() == null) {
+            Period encounterPeriod = fHIREncounter.getPeriod();
+            Date dateNow = new Date();
+            encounterPeriod.setEnd(dateNow);
+            fHIREncounter.setPeriod(encounterPeriod);
+        }
+        // priority
+        CodeableConcept encounterPriority = new CodeableConcept();
+        Coding encounterPriorityCoding = new Coding();
+        encounterPriorityCoding.setCode("routine");
+        encounterPriorityCoding.setSystem("https://hl7.org/fhir/R4/v3/ActPriority/vs.html");
+        encounterPriorityCoding.setDisplay("routine");
+        encounterPriority.setCoding(Collections.singletonList(encounterPriorityCoding));
+        fHIREncounter.setPriority(encounterPriority);
+        // identifier
+        List<Identifier> encounterIdentifiers = new ArrayList<>();
+        Identifier encounterIdentifier = new Identifier();
+        encounterIdentifier.setSystem("https://hmisv15-clone.tiberbu.health");
+        encounterIdentifier.setValue(fHIREncounter.getId());
+        encounterIdentifiers.add(encounterIdentifier);
+        fHIREncounter.setIdentifier(encounterIdentifiers);
+        // subject
+        Reference encounterSubject = fHIREncounter.getSubject();
+        String CR = GeneralUtil.getPatientCRNo(patient);
+        String encRef = "https://cr.kenya-hie.health/api/v4/Patient/" + CR;
+        encounterSubject.setReference(encRef);
+        Identifier encounterPatientIdentifier = new Identifier();
+        encounterPatientIdentifier.setSystem("https://cr.kenya-hie.health/api/v4/Patient");
+        encounterPatientIdentifier.setValue(CR);
+        encounterSubject.setIdentifier(encounterPatientIdentifier);
+        fHIREncounter.setSubject(encounterSubject);
+        // participant (practitioner)
+        String providerRegNo = GeneralUtil.getProviderRegNo(provider);
+        List<Encounter.EncounterParticipantComponent> encounterParticipant = new ArrayList<>();
+        Encounter.EncounterParticipantComponent participant = new Encounter.EncounterParticipantComponent();
+        Reference participantIndividualRef = new Reference();
+        participantIndividualRef.setReference("https://hwr.kenya-hie.health/api/v4/Practitioner/" + providerRegNo);
+        Identifier participantIdentifier = new Identifier();
+        participantIdentifier.setSystem("https://hwr.kenya-hie.health/api/v4/Practitioner");
+        participantIdentifier.setValue(providerRegNo);
+        participantIndividualRef.setIdentifier(participantIdentifier);
+        participant.setIndividual(participantIndividualRef);
+        encounterParticipant.add(participant);
+        fHIREncounter.setParticipant(encounterParticipant);
+        // Service Provider (location)
+        String locationRegNo = GeneralUtil.getLocationRegNo();
+        Reference encounterServiceProviderRef = new Reference();
+        participantIndividualRef.setReference("https://fr.kenya-hie.health/api/v4/Organization/" + locationRegNo);
+        Identifier locationIdentifier = new Identifier();
+        locationIdentifier.setSystem("https://fr.kenya-hie.health/api/v4/Organization");
+        locationIdentifier.setValue(locationRegNo);
+        encounterServiceProviderRef.setIdentifier(locationIdentifier);
+        fHIREncounter.setServiceProvider(encounterServiceProviderRef);
+
 		ret.addEntry(createBundleEntry(fHIREncounter));
 
 		// Add Patient to bundle

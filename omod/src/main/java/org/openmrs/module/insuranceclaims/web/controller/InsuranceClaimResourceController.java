@@ -83,7 +83,7 @@ import org.hl7.fhir.r4.model.CoverageEligibilityResponse.InsuranceComponent;
 import org.hl7.fhir.r4.model.CoverageEligibilityResponse.ItemsComponent;
 import org.hl7.fhir.r4.model.Money;
 import org.apache.commons.lang3.StringUtils;
-
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
 @RestController
 @Authorized
 @RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/insuranceclaims")
@@ -448,7 +448,7 @@ public class InsuranceClaimResourceController {
                         "\t\"status\": \"error\",\n" + //
                         "\t\"message\":\"An error occured\"\n" + //
                         "}";
-		String token = getAuthToken();
+		String token = GeneralUtil.getAuthToken();
         String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
 
         try {
@@ -497,7 +497,7 @@ public class InsuranceClaimResourceController {
                         "\t\"status\": \"error\",\n" + //
                         "\t\"message\":\"An error occured\"\n" + //
                         "}";
-		String token = getAuthToken();
+		String token = GeneralUtil.getAuthToken();
         String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
 
         try {
@@ -546,7 +546,7 @@ public class InsuranceClaimResourceController {
                         "\t\"status\": \"error\",\n" + //
                         "\t\"message\":\"An error occured\"\n" + //
                         "}";
-		String token = getAuthToken();
+		String token = GeneralUtil.getAuthToken();
         String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
 
         try {
@@ -605,7 +605,7 @@ public class InsuranceClaimResourceController {
                 + output) {}
         System.out.println("Insurance- Claims: Get intervention codes by scheme: details: " + requestBody);
 
-		String token = getAuthToken();
+		String token = GeneralUtil.getAuthToken();
         String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
 
         try {
@@ -646,36 +646,10 @@ public class InsuranceClaimResourceController {
                 .body(errorMsg);
     }
 
-    public static String getAuthToken() throws IOException {
-        String ret = null;
-        try {
-            OkHttpClient client = new OkHttpClient();
-
-            String auth = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.custom.encodedpass");
-            String hieJwtUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.url");
-            if(auth != null && hieJwtUrl != null && StringUtils.isNotEmpty(auth) && StringUtils.isNotEmpty(hieJwtUrl)) {
-                Request request = new Request.Builder()
-                        .url(hieJwtUrl)
-                        .header("Authorization", "Basic " + auth)
-                        .build();
-                Response response = client.newCall(request).execute();
-                if (!response.isSuccessful()) {
-                    System.err.println("Insurance- Claims: Get HIE Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
-                } else {
-                    return response.body().string();
-                }
-            } else {
-                System.err.println("Insurance- Claims: Get HIE Auth: ERROR: Request failed: The global properties for hie jwt must be set");
-            }
-        } catch(Exception ex) {
-            System.err.println("Insurance- Claims: Get HIE Auth: ERROR: Request failed: " + ex.getMessage());
-            ex.printStackTrace();
-        }
-        return(ret);
-    }
+    
 
     public static String getCoverageStatus(String nationalId) throws IOException {
-        String token = getAuthToken();
+        String token = GeneralUtil.getAuthToken();
         String coverageUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.coverage.custom.url");
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();

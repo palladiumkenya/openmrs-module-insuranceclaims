@@ -10,6 +10,7 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.client.FHIRClient;
 import org.openmrs.module.insuranceclaims.api.client.FhirMessageConverter;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,6 +38,15 @@ public class FhirRequestClient implements FHIRClient {
     }
 
     private <L> ResponseEntity<L> sendRequest(ClientHttpEntity clientHttpEntity, Class<L> objectClass) {
+        try {
+            System.out.println("InsuranceClaims: Getting JWT token");
+            String token = GeneralUtil.getAuthToken();
+            System.out.println("InsuranceClaims: Got JWT token as: " + token);
+            headers.add("Authorization", "Bearer " + token);
+        } catch(Exception ex) {
+            System.err.println("InsuranceClaims: Failed to get JWT token: " + ex.getMessage());
+            ex.printStackTrace();
+        }
         HttpEntity<Object> entity = new HttpEntity<>(clientHttpEntity.getBody(), headers);
         return restTemplate.exchange(clientHttpEntity.getUrl(), clientHttpEntity.getMethod(), entity, objectClass);
     }
