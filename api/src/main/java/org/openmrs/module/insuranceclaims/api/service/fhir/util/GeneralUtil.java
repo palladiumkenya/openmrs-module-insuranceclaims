@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Organization;
+import org.hl7.fhir.r4.model.Practitioner;
 import org.openmrs.GlobalProperty;
 import org.openmrs.Location;
 import org.openmrs.LocationAttribute;
@@ -181,7 +182,52 @@ public class GeneralUtil {
     }
 
     /**
-     * Gets the organization FHIR payload from the location attributes
+     * Gets the practitioner/provider FHIR payload from the provider attributes
+     * @return
+     */
+    public static Practitioner getSavedProviderFHIRPayload(Provider provider) {
+        Practitioner ret = null;
+        String jsonProvider = null;
+
+        if(provider != null) {
+            ProviderAttributeType providerAttributeType = Context.getProviderService().getProviderAttributeTypeByUuid(PROVIDER_HIE_FHIR_REFERENCE);
+            if(providerAttributeType != null) {
+                ProviderAttribute providerAttribute = provider.getActiveAttributes(providerAttributeType)
+                .stream()
+                .filter(attr -> attr.getAttributeType().equals(providerAttributeType))
+                .findFirst()
+                .orElse(null);
+
+                if(providerAttribute != null) {
+                    String providerFHIRPayload = providerAttribute.getValue().toString();
+                    System.out.println("Insurance Claims: Got Provider FHIR payload as: " + providerFHIRPayload);
+                    jsonProvider = providerFHIRPayload;
+                } else {
+                    System.err.println("Insurance Claims: Error Getting provider FHIR payload: null providerAttribute");
+                }
+            } else {
+                System.err.println("Insurance Claims: Error Getting Provider FHIR payload: null ProviderAttributeType");
+            }
+        } else {
+             System.err.println("Insurance Claims: Error Getting Provider FHIR payload: null provider");
+        }
+
+        if(jsonProvider != null) {
+            // de-serialize the object
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                ret = objectMapper.readValue(jsonProvider, Practitioner.class);
+            } catch(Exception ex) {
+                System.err.println("Insurance Claims: Error Getting provider FHIR payload " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
+
+        return(ret);
+    }
+
+    /**
+     * Gets the organization/location/facility FHIR payload from the location attributes
      * @return
      */
     public static Organization getSavedLocationFHIRPayload() {

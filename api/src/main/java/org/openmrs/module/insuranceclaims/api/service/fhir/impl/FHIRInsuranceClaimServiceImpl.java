@@ -307,27 +307,33 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		ret.addEntry(createBundleEntry(fhirPatient));
 
 		// Add Organization to bundle
-		Location location = encounter.getLocation();
-		Organization organization = new Organization();
-		organization.setId(location.getUuid());
-		organization.setName(location.getName());
-		organization.addIdentifier(new Identifier().setValue(location.getUuid())); // Add UUID as identifier
-//		organization.setDescription(location.getDescription());
-		organization.addAddress(new Address()
-						.setCity(location.getCityVillage())
-						.setState(location.getStateProvince())
-						.setCountry(location.getCountry())
-						.setPostalCode(location.getPostalCode())
-				);
-//		organization.setName("Health Organization");
-//		organization.addIdentifier().setSystem("http://health.org/org").setValue("HOrg-123");
-		ret.addEntry(createBundleEntry(organization));
+        Organization mainOrg = GeneralUtil.getSavedLocationFHIRPayload();
+
+        if(mainOrg != null) {
+            ret.addEntry(createBundleEntry(mainOrg));
+        } else {
+            Location location = encounter.getLocation();
+            mainOrg = new Organization();
+            mainOrg.setId(location.getUuid());
+            mainOrg.setName(location.getName());
+            mainOrg.addIdentifier(new Identifier().setValue(location.getUuid())); // Add UUID as identifier
+            //		organization.setDescription(location.getDescription());
+            mainOrg.addAddress(new Address()
+                            .setCity(location.getCityVillage())
+                            .setState(location.getStateProvince())
+                            .setCountry(location.getCountry())
+                            .setPostalCode(location.getPostalCode())
+                    );
+    //		organization.setName("Health Organization");
+    //		organization.addIdentifier().setSystem("http://health.org/org").setValue("HOrg-123");
+            ret.addEntry(createBundleEntry(mainOrg));
+        }
 
 		// Add Coverage to bundle
 		Coverage coverage = new Coverage();
 		coverage.addIdentifier().setSystem("http://health.org/coverage").setValue("Coverage/12345");
 		coverage.setBeneficiary(new Reference(fhirPatient));
-		coverage.setPayor(Collections.singletonList(new Reference(organization)));
+		coverage.setPayor(Collections.singletonList(new Reference(mainOrg)));
 		UUID uuid = UUID.randomUUID();
 		String uuidString = uuid.toString();
 		coverage.setId(uuidString);
@@ -335,62 +341,68 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		ret.addEntry(createBundleEntry(coverage));
 
 		// Add Practitioner to bundle
-		Practitioner practitioner = practitionerTranslator.toFhirResource(provider);
-		ProviderService providerService = Context.getService(ProviderService.class);
+        Practitioner mainProvider = GeneralUtil.getSavedProviderFHIRPayload(provider);
 
-		// Add National ID to practitioner
-		String NATIONAL_ID = "3d152c97-2293-4a2b-802e-e0f1009b7b15";
-		ProviderAttributeType providerNationalIdAttributeType = providerService.getProviderAttributeTypeByUuid(NATIONAL_ID);
-		for(ProviderAttribute providerAttribute : provider.getActiveAttributes()) {
-			if(providerAttribute.getAttributeType().getUuid().equalsIgnoreCase(providerNationalIdAttributeType.getUuid())) {
-				String nationalId = providerAttribute.getValue().toString();
-				System.err.println("Insurance Module: Got provider national ID: " + nationalId);
-				Identifier providerIdentifier = new Identifier();
-				providerIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-				providerIdentifier.setValue(nationalId);
-				CodeableConcept provCode = new CodeableConcept();
+        if(mainProvider != null) {
+            ret.addEntry(createBundleEntry(mainProvider));
+        } else {
+            Practitioner practitioner = practitionerTranslator.toFhirResource(provider);
+            ProviderService providerService = Context.getService(ProviderService.class);
 
-				Coding provCoding = new Coding();
-				provCoding.setSystem("http://hwr-kenyahie.health");
-				provCoding.setCode("national-id");
+            // Add National ID to practitioner
+            String NATIONAL_ID = "3d152c97-2293-4a2b-802e-e0f1009b7b15";
+            ProviderAttributeType providerNationalIdAttributeType = providerService.getProviderAttributeTypeByUuid(NATIONAL_ID);
+            for(ProviderAttribute providerAttribute : provider.getActiveAttributes()) {
+                if(providerAttribute.getAttributeType().getUuid().equalsIgnoreCase(providerNationalIdAttributeType.getUuid())) {
+                    String nationalId = providerAttribute.getValue().toString();
+                    System.err.println("Insurance Module: Got provider national ID: " + nationalId);
+                    Identifier providerIdentifier = new Identifier();
+                    providerIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+                    providerIdentifier.setValue(nationalId);
+                    CodeableConcept provCode = new CodeableConcept();
 
-				provCode.setCoding(Collections.singletonList(provCoding));
-				providerIdentifier.setType(provCode);
+                    Coding provCoding = new Coding();
+                    provCoding.setSystem("http://hwr-kenyahie.health");
+                    provCoding.setCode("national-id");
 
-				practitioner.addIdentifier(providerIdentifier);
+                    provCode.setCoding(Collections.singletonList(provCoding));
+                    providerIdentifier.setType(provCode);
 
-				break;
-			}
-		}
+                    practitioner.addIdentifier(providerIdentifier);
 
-		// Add Doctors licence to practitioner
-		String LICENSE_NUMBER = "bcaaa67b-cc72-4662-90c2-e1e992ceda66";
-		ProviderAttributeType providerLicenseAttributeType = providerService.getProviderAttributeTypeByUuid(LICENSE_NUMBER);
-		for(ProviderAttribute providerAttribute : provider.getActiveAttributes()) {
-			if(providerAttribute.getAttributeType().getUuid().equalsIgnoreCase(providerLicenseAttributeType.getUuid())) {
-				String licenceNumber = providerAttribute.getValue().toString();
-				System.err.println("Insurance Module: Got provider licence number: " + licenceNumber);
-				Identifier providerIdentifier = new Identifier();
-				providerIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-				providerIdentifier.setValue(licenceNumber);
-				CodeableConcept provCode = new CodeableConcept();
+                    break;
+                }
+            }
 
-				Coding provCoding = new Coding();
-				provCoding.setSystem("https://shr.tiberbuapps.com/fhir");
-				provCoding.setCode("Board Registration Number");
+            // Add Doctors licence to practitioner
+            String LICENSE_NUMBER = "bcaaa67b-cc72-4662-90c2-e1e992ceda66";
+            ProviderAttributeType providerLicenseAttributeType = providerService.getProviderAttributeTypeByUuid(LICENSE_NUMBER);
+            for(ProviderAttribute providerAttribute : provider.getActiveAttributes()) {
+                if(providerAttribute.getAttributeType().getUuid().equalsIgnoreCase(providerLicenseAttributeType.getUuid())) {
+                    String licenceNumber = providerAttribute.getValue().toString();
+                    System.err.println("Insurance Module: Got provider licence number: " + licenceNumber);
+                    Identifier providerIdentifier = new Identifier();
+                    providerIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+                    providerIdentifier.setValue(licenceNumber);
+                    CodeableConcept provCode = new CodeableConcept();
 
-				provCode.setCoding(Collections.singletonList(provCoding));
-				providerIdentifier.setType(provCode);
+                    Coding provCoding = new Coding();
+                    provCoding.setSystem("https://shr.tiberbuapps.com/fhir");
+                    provCoding.setCode("Board Registration Number");
 
-				practitioner.addIdentifier(providerIdentifier);
+                    provCode.setCoding(Collections.singletonList(provCoding));
+                    providerIdentifier.setType(provCode);
 
-				break;
-			}
-		}
-		ret.addEntry(createBundleEntry(practitioner));
+                    practitioner.addIdentifier(providerIdentifier);
+
+                    break;
+                }
+            }
+            ret.addEntry(createBundleEntry(practitioner));
+        }
 
 		// Add Location to bundle
-		org.hl7.fhir.r4.model.Location fhirLocation = locationTranslator.toFhirResource(location);
+		org.hl7.fhir.r4.model.Location fhirLocation = locationTranslator.toFhirResource(encounter.getLocation());
 		ret.addEntry(createBundleEntry(fhirLocation));
 
 		return(ret);
