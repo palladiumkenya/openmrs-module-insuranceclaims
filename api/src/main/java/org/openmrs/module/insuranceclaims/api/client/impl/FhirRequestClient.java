@@ -31,27 +31,18 @@ public class FhirRequestClient implements FHIRClient {
 
     public <T extends IBaseResource> T getObject(String url, Class<T> objectClass) throws URISyntaxException {
         prepareRestTemplate();
-        setRequestHeaders();
+        setBasicRequestHeaders();
         ClientHttpEntity clientHttpEntity = createClientHttpEntity(url, HttpMethod.GET, null);
         ResponseEntity<T> response = sendRequest(clientHttpEntity, objectClass);
         return response.getBody();
     }
 
     private <L> ResponseEntity<L> sendRequest(ClientHttpEntity clientHttpEntity, Class<L> objectClass) {
-        try {
-            System.out.println("InsuranceClaims: Getting JWT token");
-            String token = GeneralUtil.getAuthToken();
-            System.out.println("InsuranceClaims: Got JWT token as: " + token);
-            headers.add("Authorization", "Bearer " + token);
-        } catch(Exception ex) {
-            System.err.println("InsuranceClaims: Failed to get JWT token: " + ex.getMessage());
-            ex.printStackTrace();
-        }
         HttpEntity<Object> entity = new HttpEntity<>(clientHttpEntity.getBody(), headers);
         return restTemplate.exchange(clientHttpEntity.getUrl(), clientHttpEntity.getMethod(), entity, objectClass);
     }
 
-    private void setRequestHeaders() {
+    private void setBasicRequestHeaders() {
         headers = new HttpHeaders();
         String username = Context.getAdministrationService().getGlobalProperty("insuranceclaims.externalApiLogin");
         String password = Context.getAdministrationService().getGlobalProperty("insuranceclaims.externalApiPassword");
@@ -63,6 +54,25 @@ public class FhirRequestClient implements FHIRClient {
         headers.set(HttpHeaders.AUTHORIZATION, authHeader);
 
         headers.add(HttpHeaders.USER_AGENT, "ClientHelperUserAgent");
+        headers.setContentType(MediaType.APPLICATION_JSON);
+    }
+
+    private void setJWTRequestHeaders() {
+        headers = new HttpHeaders();
+        String token = "";
+        try {
+            System.out.println("InsuranceClaims: Getting JWT token");
+            token = GeneralUtil.getAuthToken();
+            System.out.println("InsuranceClaims: Got JWT token as: " + token);
+        } catch(Exception ex) {
+            System.err.println("InsuranceClaims: Failed to get JWT token: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        String authHeader = "Bearer " + token;
+        headers.set(HttpHeaders.AUTHORIZATION, authHeader);
+        headers.set(HttpHeaders.REFERER, "");
+        headers.set(HttpHeaders.USER_AGENT, "ClientHelperUserAgent");
         headers.setContentType(MediaType.APPLICATION_JSON);
     }
 
@@ -116,8 +126,10 @@ public class FhirRequestClient implements FHIRClient {
     public <T,K extends IBaseResource> K postObject(String url, T object, Class<K> objectClass) throws URISyntaxException,
             HttpServerErrorException {
         prepareRestTemplate();
-        setRequestHeaders();
+        setJWTRequestHeaders();
         ClientHttpEntity clientHttpEntity = createClientHttpEntity(url, HttpMethod.POST, object);
+        url = GeneralUtil.removeTrailingSlash(url);
+        System.out.println("InsuranceClaims: Sending claim bundle to: " + url);
         ResponseEntity<K> response = sendRequest(clientHttpEntity, objectClass);
         return response.getBody();
     }

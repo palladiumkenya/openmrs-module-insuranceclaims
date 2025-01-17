@@ -22,6 +22,7 @@ import org.openmrs.util.PrivilegeConstants;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -270,5 +271,17 @@ public class GeneralUtil {
         }
 
         return(ret);
+    }
+
+    /**
+     * Removes any trailing slash from a URL
+     * @param input
+     * @return
+     */
+    public static String removeTrailingSlash(String input) {
+        if (input == null || input.isEmpty()) {
+            return input; // Return the input as-is if it's null or empty
+        }
+        return input.endsWith("/") ? input.substring(0, input.length() - 1) : input;
     }
 }
