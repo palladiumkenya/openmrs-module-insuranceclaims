@@ -8,6 +8,7 @@ import org.hl7.fhir.r4.model.Claim.ClaimStatus;
 import org.hl7.fhir.r4.model.Claim.InsuranceComponent;
 import org.hl7.fhir.r4.model.Claim.Use;
 import org.hl7.fhir.r4.model.Encounter.EncounterStatus;
+import org.hl7.fhir.r4.model.Enumerations.AdministrativeGender;
 import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
 import org.hl7.fhir.exceptions.FHIRException;
 
@@ -28,6 +29,7 @@ import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.DomainResource;
 import org.hl7.fhir.r4.model.Element;
 import org.hl7.fhir.r4.model.Extension;
+import org.hl7.fhir.r4.model.HumanName;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.IdType;
 import org.hl7.fhir.r4.model.Money;
@@ -281,7 +283,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         encounterSubject.setIdentifier(encounterPatientIdentifier);
         fHIREncounter.setSubject(encounterSubject);
         // participant (practitioner)
-        String providerRegNo = GeneralUtil.getProviderRegNo(provider);
+        String providerRegNo = GeneralUtil.getProviderLicenseNo(provider);
         List<Encounter.EncounterParticipantComponent> encounterParticipant = new ArrayList<>();
         Encounter.EncounterParticipantComponent participant = new Encounter.EncounterParticipantComponent();
         Reference participantIndividualRef = new Reference();
@@ -294,7 +296,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         encounterParticipant.add(participant);
         fHIREncounter.setParticipant(encounterParticipant);
         // Service Provider (location)
-        String locationRegNo = GeneralUtil.getLocationRegNo();
+        String locationRegNo = GeneralUtil.getLocationLicenseNo();
+        if(StringUtils.isEmpty(locationRegNo)) {locationRegNo = "FID-27-104435-4";}
         Reference encounterServiceProviderRef = new Reference();
         encounterServiceProviderRef.setReference("https://fr.kenya-hie.health/api/v4/Organization/" + locationRegNo);
         Identifier locationIdentifier = new Identifier();
@@ -306,7 +309,54 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		ret.addEntry(createBundleEntry(fHIREncounter));
 
 		// Add Patient to bundle
-		org.hl7.fhir.r4.model.Patient fhirPatient = patientTranslator.toFhirResource(patient);
+		// org.hl7.fhir.r4.model.Patient fhirPatient = patientTranslator.toFhirResource(patient);
+        org.hl7.fhir.r4.model.Patient fhirPatient = new org.hl7.fhir.r4.model.Patient();
+        // Meta
+        Meta patientMeta = new Meta();
+        List<CanonicalType> patientMetaProfile = new ArrayList<>();
+        CanonicalType patientMetaProfileType = new CanonicalType();
+        patientMetaProfileType.setValue("https://mis.apeiro-digital.com/fhir/StructureDefinition/patient|1.0.0");
+        patientMetaProfile.add(patientMetaProfileType);
+        patientMeta.setProfile(patientMetaProfile);
+        fhirPatient.setMeta(patientMeta);
+        // ID
+        fhirPatient.setId(CR);
+        // Gender
+        if(patient.getGender().trim().equalsIgnoreCase("F")) {
+            fhirPatient.setGender(AdministrativeGender.FEMALE);
+        } else if(patient.getGender().trim().equalsIgnoreCase("M")) {
+            fhirPatient.setGender(AdministrativeGender.MALE);
+        }
+        // birth date
+        fhirPatient.setBirthDate(patient.getBirthdate());
+        // name
+        HumanName patientName = new HumanName();
+        String patientFullName = GeneralUtil.getPatientsFullName(patient);
+        patientName.setText(patientFullName);
+        patientName.setFamily(patient.getFamilyName());
+        patientName.addGiven(patient.getGivenName());
+        patientName.addGiven(patient.getMiddleName());
+        fhirPatient.addName(patientName);
+        // identifier
+        // ID-1 - CR
+        Identifier patientIdentifierOne = new Identifier();
+        patientIdentifierOne.setUse(IdentifierUse.OFFICIAL);
+        patientIdentifierOne.setSystem("https://mis.apeiro-digital.com/fhir/identifier/shanumber");
+        patientIdentifierOne.setValue(CR);
+        fhirPatient.addIdentifier(patientIdentifierOne);
+        // ID-2 - National ID
+        Identifier patientIdentifierTwo = new Identifier();
+        patientIdentifierTwo.setUse(IdentifierUse.OFFICIAL);
+        patientIdentifierTwo.setSystem("https://mis.apeiro-digital.com/fhir/identifier/nationalid");
+        patientIdentifierTwo.setValue(GeneralUtil.getPatientsNationalID(patient));
+        fhirPatient.addIdentifier(patientIdentifierTwo);
+        // ID-3 - Phone Num
+        Identifier patientIdentifierThree = new Identifier();
+        patientIdentifierThree.setUse(IdentifierUse.OFFICIAL);
+        patientIdentifierThree.setSystem("https://mis.apeiro-digital.com/fhir/identifier/phonenumber");
+        patientIdentifierThree.setValue(GeneralUtil.getPatientsPhoneNumber(patient));
+        fhirPatient.addIdentifier(patientIdentifierThree);
+
 		ret.addEntry(createBundleEntry(fhirPatient));
 
 		// Add Organization to bundle
@@ -387,7 +437,37 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
             Practitioner practitioner = practitionerTranslator.toFhirResource(provider);
             ProviderService providerService = Context.getService(ProviderService.class);
 
-            // Add National ID to practitioner
+            // Meta
+            Meta practitionerMeta = new Meta();
+            List<CanonicalType> practitionerMetaProfile = new ArrayList<>();
+            CanonicalType practitionerMetaProfileType = new CanonicalType();
+            practitionerMetaProfileType.setValue("https://mis.apeiro-digital.com/fhir/StructureDefinition/practitioner|1.0.0");
+            practitionerMetaProfile.add(practitionerMetaProfileType);
+            practitionerMeta.setProfile(practitionerMetaProfile);
+            practitioner.setMeta(practitionerMeta);
+
+            // Name
+            List<HumanName> thePractitionerName = new ArrayList<>();
+            HumanName practitionerHumanName = new HumanName();
+            practitionerHumanName.setText(provider.getName());
+            thePractitionerName.add(practitionerHumanName);
+            practitioner.setName(thePractitionerName);
+
+            // Active
+            practitioner.setActive(true);
+
+            // Gender
+            String prGen = provider.getPerson().getGender();
+            if(prGen.trim().equalsIgnoreCase("F")) {
+                practitioner.setGender(AdministrativeGender.FEMALE);
+            } else if(prGen.trim().equalsIgnoreCase("M")) {
+                practitioner.setGender(AdministrativeGender.MALE);
+            }
+
+            // ID
+            practitioner.setId(providerRegNo);
+
+            // Identifier: Add Doctors National ID to practitioner
             String NATIONAL_ID = "3d152c97-2293-4a2b-802e-e0f1009b7b15";
             ProviderAttributeType providerNationalIdAttributeType = providerService.getProviderAttributeTypeByUuid(NATIONAL_ID);
             for(ProviderAttribute providerAttribute : provider.getActiveAttributes()) {
@@ -397,45 +477,29 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
                     Identifier providerIdentifier = new Identifier();
                     providerIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
                     providerIdentifier.setValue(nationalId);
-                    CodeableConcept provCode = new CodeableConcept();
-
-                    Coding provCoding = new Coding();
-                    provCoding.setSystem("http://hwr-kenyahie.health");
-                    provCoding.setCode("national-id");
-
-                    provCode.setCoding(Collections.singletonList(provCoding));
-                    providerIdentifier.setType(provCode);
-
+                    providerIdentifier.setSystem("https://mis.apeiro-digital.com/fhir/Practitioner/National_ID");
                     practitioner.addIdentifier(providerIdentifier);
 
                     break;
                 }
             }
 
-            // Add Doctors licence to practitioner
-            String LICENSE_NUMBER = "bcaaa67b-cc72-4662-90c2-e1e992ceda66";
-            ProviderAttributeType providerLicenseAttributeType = providerService.getProviderAttributeTypeByUuid(LICENSE_NUMBER);
-            for(ProviderAttribute providerAttribute : provider.getActiveAttributes()) {
-                if(providerAttribute.getAttributeType().getUuid().equalsIgnoreCase(providerLicenseAttributeType.getUuid())) {
-                    String licenceNumber = providerAttribute.getValue().toString();
-                    System.err.println("Insurance Module: Got provider licence number: " + licenceNumber);
-                    Identifier providerIdentifier = new Identifier();
-                    providerIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-                    providerIdentifier.setValue(licenceNumber);
-                    CodeableConcept provCode = new CodeableConcept();
+            // Identifier: Add Doctors licence number to practitioner
+            Identifier providerIdentifier = new Identifier();
+            providerIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+            providerIdentifier.setValue(providerRegNo);
+            providerIdentifier.setSystem("https://mis.apeiro-digital.com/fhir/Practitioner/PractitionerRegistrationNumber");
+            practitioner.addIdentifier(providerIdentifier);
 
-                    Coding provCoding = new Coding();
-                    provCoding.setSystem("https://shr.tiberbuapps.com/fhir");
-                    provCoding.setCode("Board Registration Number");
+            // Identifier: Add Doctors registry id to practitioner NB: TODO: Missing from HIE
+            // Identifier providerRegistryIdIdentifier = new Identifier();
+            // providerRegistryIdIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+            // providerRegistryIdIdentifier.setValue(GeneralUtil.getProviderLicenseNo(provider));
+            // providerRegistryIdIdentifier.setSystem("https://mis.apeiro-digital.com/fhir/Practitioner/PractitionerRegistryID");
+            // practitioner.addIdentifier(providerRegistryIdIdentifier);
 
-                    provCode.setCoding(Collections.singletonList(provCoding));
-                    providerIdentifier.setType(provCode);
+            practitioner.addAddress(null);
 
-                    practitioner.addIdentifier(providerIdentifier);
-
-                    break;
-                }
-            }
             ret.addEntry(createBundleEntry(practitioner));
         }
 

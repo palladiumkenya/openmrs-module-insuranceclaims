@@ -12,6 +12,8 @@ import org.openmrs.LocationAttributeType;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientIdentifierType;
+import org.openmrs.PersonAttribute;
+import org.openmrs.PersonAttributeType;
 import org.openmrs.Provider;
 import org.openmrs.ProviderAttribute;
 import org.openmrs.ProviderAttributeType;
@@ -29,8 +31,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PROVIDER_LICENSE_NUMBER;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.LOCATION_LICENSE_NUMBER;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.FACILITY_LICENSE_NUMBER;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.FACILITY_REGISTRY_CODE;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PROVIDER_HIE_FHIR_REFERENCE;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.LOCATION_HIE_FHIR_REFERENCE;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PATIENT_HIE_NATIONAL_ID;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PATIENT_HIE_TELEPHONE_CONTACT;
 
 public class GeneralUtil {
 
@@ -98,10 +104,71 @@ public class GeneralUtil {
     }
 
     /**
+     * Get the National ID of patient
+     * @return
+     */
+    public static String getPatientsNationalID(Patient patient) {
+        String ret = "";
+        if(patient != null) {
+
+            PatientIdentifierType shaIdentifierType = Context.getPatientService().getPatientIdentifierTypeByUuid(PATIENT_HIE_NATIONAL_ID);
+            if(shaIdentifierType != null) {
+                PatientIdentifier shaObject = patient.getPatientIdentifier(shaIdentifierType);
+
+                if(shaObject != null) {
+                    String shaNumber = shaObject.getIdentifier();
+                    System.out.println("Insurance Claims: Got Patient SHA ID number as: " + shaNumber);
+                    return(shaNumber);
+                } else {
+                    System.err.println("Insurance Claims: Error Getting Patient SHA ID number: null PatientIdentifier");
+                }
+            } else {
+                System.err.println("Insurance Claims: Error Getting Patient SHA ID number: null PatientIdentifierType");
+            }
+        } else {
+             System.err.println("Insurance Claims: Error Getting Patient SHA ID number: null patient");
+        }
+
+        return(ret);
+    }
+
+    /**
+     * Get the Tel Number of patient
+     * @return
+     */
+    public static String getPatientsPhoneNumber(Patient patient) {
+        String ret = "";
+        if(patient != null) {
+            PersonAttributeType personAttributeType = Context.getPersonService().getPersonAttributeTypeByUuid(PATIENT_HIE_TELEPHONE_CONTACT);
+            if(personAttributeType != null) {
+                PersonAttribute personAttribute = patient.getPerson().getAttributes(personAttributeType)
+                .stream()
+                .filter(attr -> attr.getAttributeType().equals(personAttributeType))
+                .findFirst()
+                .orElse(null);
+
+                if(personAttribute != null) {
+                    String patientTelNumber = personAttribute.getValue().toString();
+                    System.out.println("Insurance Claims: Got Provider Reg number as: " + patientTelNumber);
+                    return(patientTelNumber);
+                } else {
+                    System.err.println("Insurance Claims: Error Getting provider reg number: null providerAttribute");
+                }
+            } else {
+                System.err.println("Insurance Claims: Error Getting Provider reg number: null ProviderAttributeType");
+            }
+        } else {
+             System.err.println("Insurance Claims: Error Getting Provider reg number: null provider");
+        }
+
+        return(ret);
+    }
+
+    /**
      * Get the registration number of provider (practitioner)
      * @return
      */
-    public static String getProviderRegNo(Provider provider) {
+    public static String getProviderLicenseNo(Provider provider) {
         String ret = "";
         if(provider != null) {
             ProviderAttributeType providerAttributeType = Context.getProviderService().getProviderAttributeTypeByUuid(PROVIDER_LICENSE_NUMBER);
@@ -130,14 +197,47 @@ public class GeneralUtil {
     }
 
     /**
-     * Get the registration number of facility (location or organization)
+     * Get the license number of facility (location or organization)
      * @return
      */
-    public static String getLocationRegNo() {
+    public static String getLocationLicenseNo() {
         String ret = "";
         Location curLocation = getDefaultLocation();
         if(curLocation != null) {
-            LocationAttributeType locationAttributeType = Context.getLocationService().getLocationAttributeTypeByUuid(LOCATION_LICENSE_NUMBER);
+            LocationAttributeType locationAttributeType = Context.getLocationService().getLocationAttributeTypeByUuid(FACILITY_LICENSE_NUMBER);
+            if(locationAttributeType != null) {
+                LocationAttribute locationAttribute = curLocation.getActiveAttributes(locationAttributeType)
+                .stream()
+                .filter(attr -> attr.getAttributeType().equals(locationAttributeType))
+                .findFirst()
+                .orElse(null);
+
+                if(locationAttribute != null) {
+                    String locationRegNumber = locationAttribute.getValue().toString();
+                    System.out.println("Insurance Claims: Got Location Reg number as: " + locationRegNumber);
+                    return(locationRegNumber);
+                } else {
+                    System.err.println("Insurance Claims: Error Getting location reg number: null locationAttribute");
+                }
+            } else {
+                System.err.println("Insurance Claims: Error Getting location reg number: null locationAttributeType");
+            }
+        } else {
+             System.err.println("Insurance Claims: Error Getting location reg number: null location");
+        }
+
+        return(ret);
+    }
+
+    /**
+     * Get the registry code id of facility (location or organization)
+     * @return
+     */
+    public static String getLocationRegistryId() {
+        String ret = "";
+        Location curLocation = getDefaultLocation();
+        if(curLocation != null) {
+            LocationAttributeType locationAttributeType = Context.getLocationService().getLocationAttributeTypeByUuid(FACILITY_REGISTRY_CODE);
             if(locationAttributeType != null) {
                 LocationAttribute locationAttribute = curLocation.getActiveAttributes(locationAttributeType)
                 .stream()
@@ -167,19 +267,26 @@ public class GeneralUtil {
      * @return
      */
     public static Location getDefaultLocation() {
-        Location var2;
+        Location location = null;
         try {
             Context.addProxyPrivilege(PrivilegeConstants.GET_LOCATIONS);
             Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
             String GP_DEFAULT_LOCATION = "kenyaemr.defaultLocation";
             GlobalProperty gp = Context.getAdministrationService().getGlobalPropertyObject(GP_DEFAULT_LOCATION);
-            var2 = gp != null ? (Location)gp.getValue() : null;
-        } finally {
+            location = gp != null ? (Location)gp.getValue() : null;
+            if( location != null ) {
+                System.out.println("Insurance Claims: Got Local Location ID as: " + location.getId());
+            }
+        } catch (Exception ex) {
+            System.err.println("Insurance Claims: Error Getting local location: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        finally {
             Context.removeProxyPrivilege(PrivilegeConstants.GET_LOCATIONS);
             Context.removeProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
         }
 
-        return var2;
+        return location;
     }
 
     /**
@@ -283,5 +390,29 @@ public class GeneralUtil {
             return input; // Return the input as-is if it's null or empty
         }
         return input.endsWith("/") ? input.substring(0, input.length() - 1) : input;
+    }
+
+    /**
+     * Returns the patients full name
+     * @param patient
+     * @return
+     */
+    public static String getPatientsFullName(Patient patient) {
+        String ret = "";
+
+        try {
+            // String patientFullName = patient.getGivenName() + " " + patient.getMiddleName() + " " + patient.getFamilyName();
+            String patientFullName = patient.getGivenName() != null ? patient.getGivenName() : "";
+            patientFullName = patientFullName != null ? patientFullName + " " : patientFullName;
+            patientFullName = patient.getMiddleName() != null ? patientFullName + patient.getMiddleName() : patientFullName;
+            patientFullName = patient.getFamilyName() != null ? patientFullName + " " + patient.getFamilyName() : patientFullName;
+            patientFullName = patientFullName.trim();
+            ret = patientFullName;
+        } catch(Exception ex) {
+            System.err.println("Insurance Claims: Error creating patient full name " + ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        return ret;
     }
 }

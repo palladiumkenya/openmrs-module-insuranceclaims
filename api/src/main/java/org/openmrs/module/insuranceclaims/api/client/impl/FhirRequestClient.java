@@ -127,9 +127,9 @@ public class FhirRequestClient implements FHIRClient {
             HttpServerErrorException {
         prepareRestTemplate();
         setJWTRequestHeaders();
-        ClientHttpEntity clientHttpEntity = createClientHttpEntity(url, HttpMethod.POST, object);
         url = GeneralUtil.removeTrailingSlash(url);
         System.out.println("InsuranceClaims: Sending claim bundle to: " + url);
+        ClientHttpEntity clientHttpEntity = createClientHttpEntity(url, HttpMethod.POST, object);
         ResponseEntity<K> response = sendRequest(clientHttpEntity, objectClass);
         return response.getBody();
     }
