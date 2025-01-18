@@ -10,6 +10,7 @@ import org.hl7.fhir.r4.model.Claim.Use;
 import org.hl7.fhir.r4.model.Encounter.EncounterStatus;
 import org.hl7.fhir.r4.model.Enumerations.AdministrativeGender;
 import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
+import org.hl7.fhir.r4.model.Location.LocationStatus;
 import org.hl7.fhir.exceptions.FHIRException;
 
 import org.hl7.fhir.r4.model.Coverage;
@@ -21,6 +22,7 @@ import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.StringType;
+import org.hl7.fhir.r4.model.Type;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.CodeableConcept;
@@ -244,7 +246,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		messageHeader.setSource(new MessageHeader.MessageSourceComponent().setName("FHIR Client"));
 
 		// Add Claim to bundle
-		ret.addEntry(createBundleEntry(fhirClaim));
+		ret.addEntry(createBundleEntry(fhirClaim, "https://mis.apeiro-digital.com/fhir/Claim/" + fhirClaim.getId()));
 
 		// Add Encounter to bundle
 		org.hl7.fhir.r4.model.Encounter fHIREncounter = encounterTranslator.toFhirResource(encounter);
@@ -275,10 +277,10 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         // subject
         Reference encounterSubject = fHIREncounter.getSubject();
         String CR = GeneralUtil.getPatientCRNo(patient);
-        String encRef = "https://cr.kenya-hie.health/api/v4/Patient/" + CR;
+        String encRef = "https://mis.apeiro-digital.com/fhir/Patient/" + CR;
         encounterSubject.setReference(encRef);
         Identifier encounterPatientIdentifier = new Identifier();
-        encounterPatientIdentifier.setSystem("https://cr.kenya-hie.health/api/v4/Patient");
+        encounterPatientIdentifier.setSystem("https://mis.apeiro-digital.com/fhir/Patient");
         encounterPatientIdentifier.setValue(CR);
         encounterSubject.setIdentifier(encounterPatientIdentifier);
         fHIREncounter.setSubject(encounterSubject);
@@ -306,7 +308,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         encounterServiceProviderRef.setIdentifier(locationIdentifier);
         fHIREncounter.setServiceProvider(encounterServiceProviderRef);
 
-		ret.addEntry(createBundleEntry(fHIREncounter));
+		ret.addEntry(createBundleEntry(fHIREncounter, "https://mis.apeiro-digital.com/fhir/Encounter/" + fHIREncounter.getId()));
 
 		// Add Patient to bundle
 		// org.hl7.fhir.r4.model.Patient fhirPatient = patientTranslator.toFhirResource(patient);
@@ -357,15 +359,15 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         patientIdentifierThree.setValue(GeneralUtil.getPatientsPhoneNumber(patient));
         fhirPatient.addIdentifier(patientIdentifierThree);
 
-		ret.addEntry(createBundleEntry(fhirPatient));
+		ret.addEntry(createBundleEntry(fhirPatient, "https://mis.apeiro-digital.com/fhir/Patient/" + CR));
 
 		// Add Organization to bundle
         Organization mainOrg = GeneralUtil.getSavedLocationFHIRPayload();
 
         if(mainOrg != null) {
-            ret.addEntry(createBundleEntry(mainOrg));
+            ret.addEntry(createBundleEntry(mainOrg, "https://mis.apeiro-digital.com/fhir/Organization/" + mainOrg.getId()));
         } else {
-            Location location = encounter.getLocation();
+            Location location = GeneralUtil.getDefaultLocation();
             mainOrg = new Organization();
             // Meta
             Meta orgMeta = new Meta();
@@ -414,25 +416,41 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
                             .setCountry(location.getCountry())
                             .setPostalCode(location.getPostalCode())
                     );
-            ret.addEntry(createBundleEntry(mainOrg));
+            ret.addEntry(createBundleEntry(mainOrg, "https://mis.apeiro-digital.com/fhir/Organization/" + mainOrg.getId()));
         }
 
 		// Add Coverage to bundle
 		Coverage coverage = new Coverage();
 		coverage.setBeneficiary(encounterSubject);
 		coverage.setPayor(Collections.singletonList(new Reference(mainOrg)));
-		UUID uuid = UUID.randomUUID();
-		String uuidString = uuid.toString();
-		coverage.setId(uuidString);
-        coverage.addIdentifier().setSystem("http://health.org/coverage").setValue("Coverage/" + uuidString);
+        // Id
+		coverage.setId(CR + "-sha-coverage");
+        //Identifier
+        Identifier coverageIdentifier = new Identifier();
+        coverageIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+        coverageIdentifier.setValue(CR + "-sha-coverage");
+        coverage.addIdentifier(coverageIdentifier);
+        // Active
 		coverage.setStatus(Coverage.CoverageStatus.ACTIVE);
-		ret.addEntry(createBundleEntry(coverage));
+        // Extension
+        // Ext-1
+        Extension coverageExtension = new Extension();
+        coverageExtension.setUrl("https://mis.apeiro-digital.com/fhir/StructureDefinition/schemeCategoryCode");
+        coverageExtension.setValue(new org.hl7.fhir.r4.model.StringType("CAT-SHA-001"));
+        coverage.addExtension(coverageExtension);
+        // Ext-2
+        Extension coverageExtensionTwo = new Extension();
+        coverageExtensionTwo.setUrl("https://mis.apeiro-digital.com/fhir/StructureDefinition/schemeCategoryName");
+        coverageExtensionTwo.setValue(new org.hl7.fhir.r4.model.StringType("SOCIAL HEALTH AUTHORITY"));
+        coverage.addExtension(coverageExtensionTwo);
+
+		ret.addEntry(createBundleEntry(coverage, "https://mis.apeiro-digital.com/fhir/Coverage/" + CR + "-sha-coverage"));
 
 		// Add Practitioner to bundle
         Practitioner mainProvider = GeneralUtil.getSavedProviderFHIRPayload(provider);
 
         if(mainProvider != null) {
-            ret.addEntry(createBundleEntry(mainProvider));
+            ret.addEntry(createBundleEntry(mainProvider, "https://mis.apeiro-digital.com/fhir/Practitioner/" + mainProvider.getId()));
         } else {
             Practitioner practitioner = practitionerTranslator.toFhirResource(provider);
             ProviderService providerService = Context.getService(ProviderService.class);
@@ -500,12 +518,61 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
             practitioner.addAddress(null);
 
-            ret.addEntry(createBundleEntry(practitioner));
+            ret.addEntry(createBundleEntry(practitioner, "https://mis.apeiro-digital.com/fhir/Practitioner/" + practitioner.getId()));
         }
 
 		// Add Location to bundle
-		org.hl7.fhir.r4.model.Location fhirLocation = locationTranslator.toFhirResource(encounter.getLocation());
-		ret.addEntry(createBundleEntry(fhirLocation));
+		// org.hl7.fhir.r4.model.Location fhirLocation = locationTranslator.toFhirResource(encounter.getLocation());
+        Location location = GeneralUtil.getDefaultLocation();
+        org.hl7.fhir.r4.model.Location fhirLocation = new org.hl7.fhir.r4.model.Location();
+        // Meta
+        Meta locationMeta = new Meta();
+        List<CanonicalType> locationMetaProfile = new ArrayList<>();
+        CanonicalType locationMetaProfileType = new CanonicalType();
+        locationMetaProfileType.setValue("https://mis.apeiro-digital.com/fhir/StructureDefinition/provider-organization|1.0.0");
+        locationMetaProfile.add(locationMetaProfileType);
+        locationMeta.setProfile(locationMetaProfile);
+        fhirLocation.setMeta(locationMeta);
+        // ID
+        fhirLocation.setId(locationRegNo);
+        // Name
+        fhirLocation.setName(location.getName());
+        // Active
+        fhirLocation.setStatus(LocationStatus.ACTIVE);
+        // Identifier
+        // id-1
+        Identifier mainLocationIdentifier = new Identifier();
+        mainLocationIdentifier.setValue(locationRegNo);
+        mainLocationIdentifier.setSystem("https://mis.apeiro-digital.com/fhir/license/provider-license");
+        mainLocationIdentifier.setUse(IdentifierUse.OFFICIAL);
+        fhirLocation.addIdentifier(mainLocationIdentifier);
+        // id-2
+        Identifier mainLocationIdentifierTwo = new Identifier();
+        mainLocationIdentifierTwo.setValue(locationRegNo);
+        mainLocationIdentifierTwo.setUse(IdentifierUse.OFFICIAL);
+        CodeableConcept mainLocationIdentifierType = new CodeableConcept();
+        Coding mainLocationIdentifierTypeCoding = new Coding();
+        mainLocationIdentifierTypeCoding.setCode("slade-code");
+        mainLocationIdentifierTypeCoding.setSystem("https://mis.apeiro-digital.com/fhir/terminology/CodeSystem/facility-identifier-types");
+        mainLocationIdentifierTypeCoding.setDisplay("Code");
+        mainLocationIdentifierType.setCoding(Collections.singletonList(mainLocationIdentifierTypeCoding));
+        mainLocationIdentifierTwo.setType(mainLocationIdentifierType);
+        fhirLocation.addIdentifier(mainLocationIdentifierTwo);
+        // Type
+        CodeableConcept mainLocationType = new CodeableConcept();
+        Coding mainLocationTypeCoding = new Coding();
+        mainLocationTypeCoding.setCode("prov");
+        mainLocationTypeCoding.setSystem("https://mis.apeiro-digital.com/fhir/terminology/CodeSystem/organization-type");
+        mainLocationType.setCoding(Collections.singletonList(mainLocationTypeCoding));
+        fhirLocation.addType(mainLocationType);
+        // Address
+        fhirLocation.setAddress(new Address()
+                        .setCity(location.getCityVillage())
+                        .setState(location.getStateProvince())
+                        .setCountry(location.getCountry())
+                        .setPostalCode(location.getPostalCode())
+                );
+		ret.addEntry(createBundleEntry(fhirLocation, "https://mis.apeiro-digital.com/fhir/Location/" + fhirLocation.getId()));
 
 		return(ret);
 	}
@@ -515,11 +582,15 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 	 * @param resource the FHIR resource to add
 	 * @return a bundle entry
 	 */
-	private static Bundle.BundleEntryComponent createBundleEntry(Resource resource) {
+	private static Bundle.BundleEntryComponent createBundleEntry(Resource resource, String fullUrl) {
 		Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
 		entry.setResource(resource);
-		String URL = resource.getResourceType().name() + "/" + resource.getId();
-		entry.setFullUrl(URL);
+        if(StringUtils.isEmpty(fullUrl)) {
+            String URL = resource.getResourceType().name() + "/" + resource.getId();
+            entry.setFullUrl(URL);
+        } else {
+            entry.setFullUrl(fullUrl);
+        }
 		return entry;
 	}
 
