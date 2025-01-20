@@ -116,7 +116,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
         //Set Claim id to fhir Claim
         IdType claimId = new IdType();
-        claimId.setValue(omrsClaim.getClaimCode());
+        // claimId.setValue(omrsClaim.getClaimCode());
+        claimId.setValue(omrsClaim.getUuid());
         claim.setId(claimId);
 
         //Set provider (location/facility/organization)
@@ -124,10 +125,10 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         String providerRegNo = GeneralUtil.getLocationLicenseNo();
         if(StringUtils.isEmpty(providerRegNo)) {providerRegNo = "FID-27-104435-4";}
         Reference claimLocation = new Reference();
-        claimLocation.setReference("https://fr.kenya-hie.health/api/v4/Organization/" + providerRegNo);
+        claimLocation.setReference("https://uat-mis.apeiro-digital.com/fhir/Organization/" + providerRegNo);
         Identifier providerIdentifier = new Identifier();
         providerIdentifier.setUse(IdentifierUse.OFFICIAL);
-        providerIdentifier.setSystem("https://fr.kenya-hie.health/api/v4/Organization");
+        providerIdentifier.setSystem("https://uat-mis.apeiro-digital.com/fhir/Organization");
         providerIdentifier.setValue(providerRegNo);
         CodeableConcept identifierType = new CodeableConcept();
         Coding identifierTypeCoding = new Coding();
@@ -170,19 +171,32 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 	    }
 
         // Set type
-            // Create a new CodeableConcept
-            CodeableConcept claimTypeConcept = new CodeableConcept();       
-            // Create a new Coding
-            Coding typeCoding = new Coding();
-            // Set the system, code, and display values
-            typeCoding.setSystem("http://terminology.hl7.org/CodeSystem/claim-type");
-            typeCoding.setCode("institutional");
-            typeCoding.setDisplay("Institutional");
-            // Add the Coding to the CodeableConcept
-            claimTypeConcept.addCoding(typeCoding);
-            // Optionally, set the text value
-            claimTypeConcept.setText("Institutional Claim Type");
+        // Create a new CodeableConcept
+        CodeableConcept claimTypeConcept = new CodeableConcept();       
+        // Create a new Coding
+        Coding typeCoding = new Coding();
+        // Set the system, code, and display values
+        typeCoding.setSystem("http://terminology.hl7.org/CodeSystem/claim-type");
+        typeCoding.setCode("institutional");
+        typeCoding.setDisplay("Institutional");
+        // Add the Coding to the CodeableConcept
+        claimTypeConcept.addCoding(typeCoding);
+        // Optionally, set the text value
+        claimTypeConcept.setText("Institutional Claim Type");
         claim.setType(claimTypeConcept);
+
+        // Set subtype
+        // Create a new CodeableConcept
+        CodeableConcept claimSubTypeConcept = new CodeableConcept();       
+        // Create a new Coding
+        Coding subTypeCoding = new Coding();
+        // Set the system, code, and display values
+        subTypeCoding.setSystem("http://terminology.hl7.org/CodeSystem/ex-claimsubtype");
+        subTypeCoding.setCode("ip");
+        subTypeCoding.setDisplay("ip");
+        // Add the Coding to the CodeableConcept
+        claimSubTypeConcept.addCoding(subTypeCoding);
+        claim.setSubType(claimSubTypeConcept);
 
         // Set Priority
             // Create a new CodeableConcept
@@ -263,8 +277,12 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 	public Bundle generateClaimBundle(Claim fhirClaim, Patient patient, Provider provider, org.openmrs.Encounter encounter) throws FHIRException {
 		Bundle ret = new Bundle();
 
-		ret.setType(Bundle.BundleType.BATCH);
+		ret.setType(Bundle.BundleType.MESSAGE);
 		ret.setTimestamp(new Date());
+
+        // Add bundle uuid
+        UUID uuid = UUID.randomUUID();
+        ret.setId(uuid.toString());
 
 		// Add message header
 		MessageHeader messageHeader = new MessageHeader();
@@ -327,9 +345,9 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         String locationRegNo = GeneralUtil.getLocationLicenseNo();
         if(StringUtils.isEmpty(locationRegNo)) {locationRegNo = "FID-27-104435-4";}
         Reference encounterServiceProviderRef = new Reference();
-        encounterServiceProviderRef.setReference("https://fr.kenya-hie.health/api/v4/Organization/" + locationRegNo);
+        encounterServiceProviderRef.setReference("https://uat-mis.apeiro-digital.com/fhir/Organization/" + locationRegNo);
         Identifier locationIdentifier = new Identifier();
-        locationIdentifier.setSystem("https://fr.kenya-hie.health/api/v4/Organization");
+        locationIdentifier.setSystem("https://uat-mis.apeiro-digital.com/fhir/Organization");
         locationIdentifier.setValue(locationRegNo);
         encounterServiceProviderRef.setIdentifier(locationIdentifier);
         fHIREncounter.setServiceProvider(encounterServiceProviderRef);
