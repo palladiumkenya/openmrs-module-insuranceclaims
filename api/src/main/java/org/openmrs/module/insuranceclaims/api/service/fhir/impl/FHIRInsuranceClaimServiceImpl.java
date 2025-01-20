@@ -220,14 +220,16 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         insuranceComponent.setSequence(1);
         // Set whether this insurance is focal (i.e., primary insurance)
         insuranceComponent.setFocal(true);
+
         // Set the coverage (reference to the Coverage resource)
         Reference coverageReference = new Reference();
-        coverageReference.setReference("Coverage/12345"); // Adjust the reference as necessary
+        coverageReference.setReference("https://uat-mis.apeiro-digital.com/fhir/Coverage/" + CR + "-sha-coverage");
         insuranceComponent.setCoverage(coverageReference);
+
         // Set the business identifier for the insurance
         Identifier identifier = new Identifier();
         identifier.setSystem("http://example.org/insurance-identifier");
-        identifier.setValue("ABC12345"); // Example identifier, adjust as necessary
+        identifier.setValue("ABC12345");
         insuranceComponent.setIdentifier(identifier);
         insuranceList.add(insuranceComponent);
         claim.setInsurance(insuranceList);
@@ -466,7 +468,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		// Add Coverage to bundle
 		Coverage coverage = new Coverage();
 		coverage.setBeneficiary(encounterSubject);
-		coverage.setPayor(Collections.singletonList(new Reference(mainOrg)));
+		// coverage.setPayor(Collections.singletonList(new Reference(mainOrg)));
         // Id
 		coverage.setId(CR + "-sha-coverage");
         //Identifier
