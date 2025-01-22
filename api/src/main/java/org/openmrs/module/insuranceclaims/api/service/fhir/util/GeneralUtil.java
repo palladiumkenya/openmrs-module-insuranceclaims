@@ -128,6 +128,16 @@ public class GeneralUtil {
     }
 
     /**
+     * Gets the full URL and resource base URL property from globals 
+     * @return
+     * @throws IOException
+     */
+    public static String getBaseURLForResourceAndFullURL() throws IOException {
+        String auth = Context.getAdministrationService().getGlobalProperty("insuranceclaims.base.resource.url");
+        return auth;
+    }
+
+    /**
      * Get the CR number of patient
      * @return
      */

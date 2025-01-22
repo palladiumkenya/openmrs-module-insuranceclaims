@@ -215,7 +215,11 @@
     <globalProperty>
         <property>${project.parent.artifactId}.hiestaging.auth.url</property>
         <defaultValue>https://apistg.safaricom.co.ke/oauth2/v1/generate?grant_type=client_credentials</defaultValue>
-        <description>HIE url for generating staging bearer token
-        </description>
+        <description>HIE url for generating staging bearer token</description>
+    </globalProperty>
+    <globalProperty>
+        <property>${project.parent.artifactId}.base.resource.url</property>
+        <defaultValue>https://uat-mis.apeiro-digital.com/fhir</defaultValue>
+        <description>Base URL to be used in the final claim payload references</description>
     </globalProperty>
 </module>
