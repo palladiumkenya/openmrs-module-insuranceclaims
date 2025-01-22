@@ -120,9 +120,9 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         claim.setId(claimId);
 
         //Set provider (location/facility/organization)
-        // Reference providerReference = practitionerUtil.buildPractitionerReference(omrsClaim);
+        // Reference providerReference = practitionerUtil.buildPractitionerReference(omrsClaim); // TODO: Do this in another area
         String providerRegNo = GeneralUtil.getLocationLicenseNo();
-        if(StringUtils.isEmpty(providerRegNo)) {providerRegNo = "FID-27-104435-4";}
+        // if(StringUtils.isEmpty(providerRegNo)) {providerRegNo = "FID-27-104435-4";}
         Reference claimLocation = new Reference();
         claimLocation.setReference(baseReferenceURL + "/Organization/" + providerRegNo);
         Identifier providerIdentifier = new Identifier();
@@ -216,17 +216,10 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         insuranceComponent.setSequence(1);
         // Set whether this insurance is focal (i.e., primary insurance)
         insuranceComponent.setFocal(true);
-
         // Set the coverage (reference to the Coverage resource)
         Reference coverageReference = new Reference();
         coverageReference.setReference(baseReferenceURL + "/Coverage/" + CR + "-sha-coverage");
         insuranceComponent.setCoverage(coverageReference);
-
-        // Set the business identifier for the insurance
-        Identifier identifier = new Identifier();
-        identifier.setSystem("http://example.org/insurance-identifier");
-        identifier.setValue("ABC12345");
-        insuranceComponent.setIdentifier(identifier);
         insuranceList.add(insuranceComponent);
         claim.setInsurance(insuranceList);
 
@@ -339,9 +332,9 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         List<Encounter.EncounterParticipantComponent> encounterParticipant = new ArrayList<>();
         Encounter.EncounterParticipantComponent participant = new Encounter.EncounterParticipantComponent();
         Reference participantIndividualRef = new Reference();
-        participantIndividualRef.setReference("https://hwr.kenya-hie.health/api/v4/Practitioner/" + providerRegNo);
+        participantIndividualRef.setReference(baseReferenceURL + "/Practitioner/" + providerRegNo);
         Identifier participantIdentifier = new Identifier();
-        participantIdentifier.setSystem("https://hwr.kenya-hie.health/api/v4/Practitioner");
+        participantIdentifier.setSystem(baseReferenceURL + "/Practitioner");
         participantIdentifier.setValue(providerRegNo);
         participantIndividualRef.setIdentifier(participantIdentifier);
         participant.setIndividual(participantIndividualRef);
@@ -349,7 +342,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         fHIREncounter.setParticipant(encounterParticipant);
         // Service Provider (location)
         String locationRegNo = GeneralUtil.getLocationLicenseNo();
-        if(StringUtils.isEmpty(locationRegNo)) {locationRegNo = "FID-27-104435-4";}
+        // if(StringUtils.isEmpty(locationRegNo)) {locationRegNo = "FID-27-104435-4";}
         Reference encounterServiceProviderRef = new Reference();
         encounterServiceProviderRef.setReference(baseReferenceURL + "/Organization/" + locationRegNo);
         Identifier locationIdentifier = new Identifier();
