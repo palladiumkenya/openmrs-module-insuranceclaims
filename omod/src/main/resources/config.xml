@@ -201,4 +201,21 @@
         <description>Base HIE url
         </description>
     </globalProperty>
+    <globalProperty>
+        <property>${project.parent.artifactId}.apiero.apikey</property>
+        <defaultValue></defaultValue>
+        <description>Apiero API Key</description>
+    </globalProperty>
+    <globalProperty>
+        <property>${project.parent.artifactId}.hiestaging.custom.encodedpass</property>
+        <defaultValue>dXNlcjpzZXRtZQ==</defaultValue>
+        <description>Base64 Encoded  ( Username + : + password) for custom coverage hie staging token generation
+        </description>
+    </globalProperty>
+    <globalProperty>
+        <property>${project.parent.artifactId}.hiestaging.auth.url</property>
+        <defaultValue>https://apistg.safaricom.co.ke/oauth2/v1/generate?grant_type=client_credentials</defaultValue>
+        <description>HIE url for generating staging bearer token
+        </description>
+    </globalProperty>
 </module>

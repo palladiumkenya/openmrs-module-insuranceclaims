@@ -26,6 +26,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER;
@@ -46,7 +47,7 @@ public class GeneralUtil {
      * @return
      * @throws IOException
      */
-    public static String getAuthToken() throws IOException {
+    public static String getJWTAuthToken() throws IOException {
         String ret = null;
         try {
             OkHttpClient client = new OkHttpClient();
@@ -72,6 +73,58 @@ public class GeneralUtil {
             ex.printStackTrace();
         }
         return(ret);
+    }
+
+    /**
+     * Gets the HIE Staging auth token
+     * @return
+     * @throws IOException
+     */
+    public static String getHIEStagingAuthToken() throws IOException {
+        String ret = null;
+        try {
+            OkHttpClient client = new OkHttpClient();
+
+            String auth = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiestaging.custom.encodedpass");
+            String hieStagingAuthUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiestaging.auth.url");
+            if(auth != null && hieStagingAuthUrl != null && StringUtils.isNotEmpty(auth) && StringUtils.isNotEmpty(hieStagingAuthUrl)) {
+                System.out.println("Insurance- Claims: Get HIE Staging Auth token URL: " + hieStagingAuthUrl + " Auth: " + auth);
+                okhttp3.MediaType mediaType = okhttp3.MediaType.parse("text/plain");
+                okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "");
+                Request request = new Request.Builder()
+                        .url(hieStagingAuthUrl)
+                        .method("POST", body)
+                        .header("Authorization", "Basic " + auth)
+                        .header("Cookie", "incap_ses_1018_2912339=uz4wbZrEaRQGuNQvzKkgDoZOi2cAAAAAh71yBQVsYKTfUsik3X0AHg==; incap_ses_6550_2912339=P9iSNzSCAWGD2agnhkbmWjpNi2cAAAAAtq+a6uIcQS1f7zitlRG7OA==; visid_incap_2912339=+CAiq0KsQoWKzfmVNLKgIQg6b2cAAAAAQUIPAAAAAAB3pFvtYwe7WLmCrwbOPKPg")
+                        .build();
+                Response response = client.newCall(request).execute();
+                if (!response.isSuccessful()) {
+                    System.err.println("Insurance- Claims: Get HIE Staging Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
+                } else {
+                    String payload = response.body().string();
+                    System.out.println("Insurance- Claims: Got HIE Staging Auth token payload: " + payload);
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    JsonNode rootNode = objectMapper.readTree(payload);
+                    return rootNode.path("access_token").asText();
+                }
+            } else {
+                System.err.println("Insurance- Claims: Get HIE Staging Auth: ERROR: Request failed: The global properties for hie Staging must be set");
+            }
+        } catch(Exception ex) {
+            System.err.println("Insurance- Claims: Get HIE Staging Auth: ERROR: Request failed: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        return(ret);
+    }
+
+    /**
+     * Gets the Apiero ApiKey auth token
+     * @return
+     * @throws IOException
+     */
+    public static String getApiKeyAuthToken() throws IOException {
+        String auth = Context.getAdministrationService().getGlobalProperty("insuranceclaims.apiero.apikey");
+        return auth;
     }
 
     /**

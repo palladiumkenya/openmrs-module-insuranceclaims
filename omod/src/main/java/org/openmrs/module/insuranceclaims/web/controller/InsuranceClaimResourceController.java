@@ -448,7 +448,7 @@ public class InsuranceClaimResourceController {
                         "\t\"status\": \"error\",\n" + //
                         "\t\"message\":\"An error occured\"\n" + //
                         "}";
-		String token = GeneralUtil.getAuthToken();
+		String token = GeneralUtil.getJWTAuthToken();
         String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
 
         try {
@@ -497,7 +497,7 @@ public class InsuranceClaimResourceController {
                         "\t\"status\": \"error\",\n" + //
                         "\t\"message\":\"An error occured\"\n" + //
                         "}";
-		String token = GeneralUtil.getAuthToken();
+		String token = GeneralUtil.getJWTAuthToken();
         String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
 
         try {
@@ -546,7 +546,7 @@ public class InsuranceClaimResourceController {
                         "\t\"status\": \"error\",\n" + //
                         "\t\"message\":\"An error occured\"\n" + //
                         "}";
-		String token = GeneralUtil.getAuthToken();
+		String token = GeneralUtil.getJWTAuthToken();
         String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
 
         try {
@@ -605,7 +605,7 @@ public class InsuranceClaimResourceController {
                 + output) {}
         System.out.println("Insurance- Claims: Get intervention codes by scheme: details: " + requestBody);
 
-		String token = GeneralUtil.getAuthToken();
+		String token = GeneralUtil.getJWTAuthToken();
         String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
 
         try {
@@ -649,7 +649,7 @@ public class InsuranceClaimResourceController {
     
 
     public static String getCoverageStatus(String nationalId) throws IOException {
-        String token = GeneralUtil.getAuthToken();
+        String token = GeneralUtil.getJWTAuthToken();
         String coverageUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.coverage.custom.url");
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
