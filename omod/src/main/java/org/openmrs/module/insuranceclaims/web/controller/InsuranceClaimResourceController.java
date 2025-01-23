@@ -662,7 +662,7 @@ public class InsuranceClaimResourceController {
 					.build();
 				Response response = client.newCall(request).execute();
 				if (!response.isSuccessful()) {
-					System.out.println("External Insurance claim token not fetched");
+					System.out.println("Could not fetch auth token for claims");
 				} else {
 					JSONParser parser = new JSONParser();
 					JSONObject responseObject = (JSONObject) parser.parse(response.body().string());
