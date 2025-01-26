@@ -654,20 +654,16 @@ public class InsuranceClaimResourceController {
             String auth = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.custom.encodedpass");
             String hieJwtUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.url");
             if(auth != null && hieJwtUrl != null && StringUtils.isNotEmpty(auth) && StringUtils.isNotEmpty(hieJwtUrl)) {
-				okhttp3.RequestBody body = okhttp3.RequestBody.create(okhttp3.MediaType.parse("text/plain"), "");
-				Request request = new Request.Builder()
-					.method("POST",body)
-					.url(hieJwtUrl)
-					.header("Authorization", "Basic " + auth)
-					.build();
-				Response response = client.newCall(request).execute();
-				if (!response.isSuccessful()) {
-					System.out.println("Could not fetch auth token for claims");
-				} else {
-					JSONParser parser = new JSONParser();
-					JSONObject responseObject = (JSONObject) parser.parse(response.body().string());
-					return responseObject.get("access_token").toString();
-				}
+                Request request = new Request.Builder()
+                        .url(hieJwtUrl)
+                        .header("Authorization", "Basic " + auth)
+                        .build();
+                Response response = client.newCall(request).execute();
+                if (!response.isSuccessful()) {
+                    System.err.println("Insurance- Claims: Get HIE Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
+                } else {
+                    return response.body().string();
+                }
             } else {
                 System.err.println("Insurance- Claims: Get HIE Auth: ERROR: Request failed: The global properties for hie jwt must be set");
             }
