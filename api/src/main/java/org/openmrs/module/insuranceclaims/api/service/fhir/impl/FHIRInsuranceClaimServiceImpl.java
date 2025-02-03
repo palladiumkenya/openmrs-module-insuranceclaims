@@ -124,6 +124,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         String providerRegNo = GeneralUtil.getLocationLicenseNo();
         // if(StringUtils.isEmpty(providerRegNo)) {providerRegNo = "FID-27-104435-4";}
         Reference claimLocation = new Reference();
+        claimLocation.setId(providerRegNo);
         claimLocation.setReference(baseReferenceURL + "/Organization/" + providerRegNo);
         Identifier providerIdentifier = new Identifier();
         providerIdentifier.setUse(IdentifierUse.OFFICIAL);
