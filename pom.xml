@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -10,7 +12,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>insuranceclaims</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.5-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Insurance Claims</name>
 	<description>Module for insurance claims.</description>
@@ -36,7 +38,7 @@
 		<apiResourceDir>${basedir}/src/main/resources</apiResourceDir>
 		<metadatamappingVersion>1.6.0</metadatamappingVersion>
 		<metadatadeployVersion>1.11.0</metadatadeployVersion>
-        <metadatasharingVersion>1.5.0</metadatasharingVersion>
+		<metadatasharingVersion>1.5.0</metadatasharingVersion>
 		<!-- <eventModuleVersion>2.10.0</eventModuleVersion> -->
 		<idgenModuleVersion>4.10.0</idgenModuleVersion>
 		<webservices.restVersion>2.42.0</webservices.restVersion>
@@ -45,11 +47,11 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-                <groupId>org.openmrs.module</groupId>
-                <artifactId>fhir2-api</artifactId>
-                <version>${fhir2Version}</version>
-                <scope>provided</scope>
-            </dependency>
+				<groupId>org.openmrs.module</groupId>
+				<artifactId>fhir2-api</artifactId>
+				<version>${fhir2Version}</version>
+				<scope>provided</scope>
+			</dependency>
 
 			<dependency>
 				<groupId>org.openmrs.module</groupId>
@@ -201,4 +203,17 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
+
+	<distributionManagement>
+		<repository>
+			<id>mks-repo</id>
+			<name>Mekom Solutions Nexus Releases</name>
+			<url>https://nexus.mekomsolutions.net/repository/maven-releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>mks-repo-snapshots</id>
+			<name>Mekom Solutions Nexus Snapshots</name>
+			<url>https://nexus.mekomsolutions.net/repository/maven-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>
