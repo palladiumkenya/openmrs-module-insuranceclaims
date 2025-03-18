@@ -292,8 +292,9 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		// Add Claim to bundle
 		ret.addEntry(createBundleEntry(fhirClaim, baseReferenceURL + "/Claim/" + fhirClaim.getId()));
 
-		// Add Encounter to bundle
+		// Add Encounter to bundle NB: removed to reduce upstream noise : TODO: Return this encounter resource to the bundle. It is needed by apiero
 		org.hl7.fhir.r4.model.Encounter fHIREncounter = encounterTranslator.toFhirResource(encounter);
+
         // status
         fHIREncounter.setStatus(EncounterStatus.FINISHED);
         // period
@@ -352,7 +353,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         encounterServiceProviderRef.setIdentifier(locationIdentifier);
         fHIREncounter.setServiceProvider(encounterServiceProviderRef);
 
-		ret.addEntry(createBundleEntry(fHIREncounter, baseReferenceURL + "/Encounter/" + fHIREncounter.getId()));
+		// ret.addEntry(createBundleEntry(fHIREncounter, baseReferenceURL + "/Encounter/" + fHIREncounter.getId()));
 
 		// Add Patient to bundle
 		// org.hl7.fhir.r4.model.Patient fhirPatient = patientTranslator.toFhirResource(patient);
@@ -493,9 +494,10 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 		// Add Practitioner to bundle
         Practitioner mainProvider = GeneralUtil.getSavedProviderFHIRPayload(provider);
 
-        if(mainProvider != null) {
+        if(mainProvider != null && mainProvider.getId() != null) {
             ret.addEntry(createBundleEntry(mainProvider, baseReferenceURL + "/Practitioner/" + mainProvider.getId()));
         } else {
+            System.out.println("insurance claims: we did not get a saved fhir payload for provider. We create it");
             Practitioner practitioner = practitionerTranslator.toFhirResource(provider);
             ProviderService providerService = Context.getService(ProviderService.class);
 
@@ -565,7 +567,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
             ret.addEntry(createBundleEntry(practitioner, baseReferenceURL + "/Practitioner/" + practitioner.getId()));
         }
 
-		// Add Location to bundle
+		// Add Location to bundle: NB: removed to remove upstream noise: TODO: restore this in production because apiero needs it
 		// org.hl7.fhir.r4.model.Location fhirLocation = locationTranslator.toFhirResource(encounter.getLocation());
         Location location = GeneralUtil.getDefaultLocation();
         org.hl7.fhir.r4.model.Location fhirLocation = new org.hl7.fhir.r4.model.Location();
@@ -616,7 +618,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
                         .setCountry(location.getCountry())
                         .setPostalCode(location.getPostalCode())
                 );
-		ret.addEntry(createBundleEntry(fhirLocation, baseReferenceURL + "/Location/" + fhirLocation.getId()));
+		//ret.addEntry(createBundleEntry(fhirLocation, baseReferenceURL + "/Location/" + fhirLocation.getId()));
 
 		return(ret);
 	}

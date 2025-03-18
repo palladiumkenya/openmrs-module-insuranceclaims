@@ -270,6 +270,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         Date endDate = parseDate(form.getEndDate(), FORM_DATE_FORMAT);
         claim.setDateFrom(startDate);
         claim.setDateTo(endDate);
+        System.err.println("Insurance Claims; Setting date to: " + startDate + " and date from: " + endDate);
 //        claim.setProvider(Context.getProviderService().getProviderByUuid(form.getProvider()));
     }
 
