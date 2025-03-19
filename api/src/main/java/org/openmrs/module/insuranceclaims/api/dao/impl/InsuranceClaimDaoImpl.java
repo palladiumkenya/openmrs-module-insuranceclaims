@@ -46,6 +46,14 @@ public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> im
 	}
 
 	@Override
+	public List<InsuranceClaim> getAllInsuranceClaims() {
+		Criteria criteria = createCriteria();
+		// Add ordering by iclm_claim_id in descending order
+		criteria.addOrder(org.hibernate.criterion.Order.desc("id"));
+		return findAllByCriteria(criteria, false);
+	}
+
+	@Override
 	public List<InsuranceClaim> getAllInsuranceClaimsByPatient(Integer patientId) {
 		Criteria crit = createCriteria();
 		crit.createCriteria("patient")
@@ -119,6 +127,9 @@ public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> im
 
 		// criteriaQuery.where(predicate);
 		criteriaQuery.where(predicate).distinct(true);
+
+		// Order by 'iclm_claim_id' in descending order
+		criteriaQuery.orderBy(criteriaBuilder.desc(root.get("id")));
 
 		// Print the generated SQL query
 		Query query = session.createQuery(criteriaQuery);

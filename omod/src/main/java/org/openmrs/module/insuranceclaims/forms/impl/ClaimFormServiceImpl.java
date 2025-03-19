@@ -66,7 +66,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
 
     private InsuranceClaimInterventionService insuranceClaimInterventionService;
 
-    private static final String[] FORM_DATE_FORMAT = {"yyy-mm-dd"};
+    private static final String[] FORM_DATE_FORMAT = {"yyyy-MM-dd"};
 
     private static final String INVALID_LOCATION_ERROR = "You must select valid location";
 

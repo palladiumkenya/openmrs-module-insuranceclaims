@@ -40,6 +40,12 @@ public class InsuranceClaimServiceImpl extends BaseOpenmrsDataService<InsuranceC
 
     @Transactional
     @Override
+    public List<InsuranceClaim> getAllInsuranceClaims() throws APIException {
+        return this.insuranceClaimDao.getAllInsuranceClaims();
+    }
+
+    @Transactional
+    @Override
     public List<InsuranceClaim> getAllInsuranceClaimsByPatient(String patientId) throws APIException {
         return this.insuranceClaimDao.getAllInsuranceClaimsByPatient(patientId);
     }
