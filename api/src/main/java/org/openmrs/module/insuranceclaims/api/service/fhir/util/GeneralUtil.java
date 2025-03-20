@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.SOCIAL_HEALTH_INSURANCE_NUMBER;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PROVIDER_LICENSE_NUMBER;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.LOCATION_LICENSE_NUMBER;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.FACILITY_LICENSE_NUMBER;
@@ -145,6 +146,35 @@ public class GeneralUtil {
         String ret = "";
         if(patient != null) {
 
+            PatientIdentifierType CRIdentifierType = Context.getPatientService().getPatientIdentifierTypeByUuid(SOCIAL_HEALTH_INSURANCE_NUMBER);
+            if(CRIdentifierType != null) {
+                PatientIdentifier CRObject = patient.getPatientIdentifier(CRIdentifierType);
+
+                if(CRObject != null) {
+                    String CRNumber = CRObject.getIdentifier();
+                    System.out.println("Insurance Claims: Got Patient CR number as: " + CRNumber);
+                    return(CRNumber);
+                } else {
+                    System.err.println("Insurance Claims: Error Getting Patient CR number: null PatientIdentifier");
+                }
+            } else {
+                System.err.println("Insurance Claims: Error Getting Patient CR number: null PatientIdentifierType");
+            }
+        } else {
+             System.err.println("Insurance Claims: Error Getting Patient CR number: null patient");
+        }
+
+        return(ret);
+    }
+
+    /**
+     * Get the SHA number of patient
+     * @return
+     */
+    public static String getPatientSHANo(Patient patient) {
+        String ret = "";
+        if(patient != null) {
+
             PatientIdentifierType shaIdentifierType = Context.getPatientService().getPatientIdentifierTypeByUuid(SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER);
             if(shaIdentifierType != null) {
                 PatientIdentifier shaObject = patient.getPatientIdentifier(shaIdentifierType);
@@ -212,16 +242,16 @@ public class GeneralUtil {
 
                 if(personAttribute != null) {
                     String patientTelNumber = personAttribute.getValue().toString();
-                    System.out.println("Insurance Claims: Got Provider Reg number as: " + patientTelNumber);
+                    System.out.println("Insurance Claims: Got patient tel number as: " + patientTelNumber);
                     return(patientTelNumber);
                 } else {
-                    System.err.println("Insurance Claims: Error Getting provider reg number: null providerAttribute");
+                    System.err.println("Insurance Claims: Error Getting patient tel number: null personAttribute");
                 }
             } else {
-                System.err.println("Insurance Claims: Error Getting Provider reg number: null ProviderAttributeType");
+                System.err.println("Insurance Claims: Error Getting patient tel number: null PersonAttributeType");
             }
         } else {
-             System.err.println("Insurance Claims: Error Getting Provider reg number: null provider");
+             System.err.println("Insurance Claims: Error Getting patient tel number: null patient");
         }
 
         return(ret);
