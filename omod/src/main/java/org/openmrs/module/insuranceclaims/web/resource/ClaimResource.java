@@ -136,12 +136,13 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
 
     @Override
     protected PageableResult doGetAll(RequestContext context) {
-        System.out.println("Getting all claims");
-        return new NeedsPaging<>(Context.getService(InsuranceClaimService.class).getAll(false), context);
+        System.out.println("Insurance Claims: Getting all claims");
+        return new NeedsPaging<>(Context.getService(InsuranceClaimService.class).getAllInsuranceClaims(), context);
     }
 
     @Override
     protected AlreadyPaged<InsuranceClaim> doSearch(RequestContext context) {
+        System.out.println("Insurance Claims: Searching for claims");
         String uuid = context.getRequest().getParameter("uuid");
         String status = context.getRequest().getParameter("status");
         String use = context.getRequest().getParameter("use");

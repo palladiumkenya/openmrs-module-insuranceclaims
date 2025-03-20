@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 public interface InsuranceClaimDao extends BaseOpenmrsCriteriaDao<InsuranceClaim> {
+    List<InsuranceClaim> getAllInsuranceClaims();
     List<InsuranceClaim> getAllInsuranceClaimsByPatient(Integer patientId);
     List<InsuranceClaim> getAllInsuranceClaimsByPatient(String patientId);
     List<InsuranceClaim> getAllInsuranceClaimsByCashierBill(String billUuid);

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 public interface InsuranceClaimService extends OpenmrsDataService<InsuranceClaim> {
+    List<InsuranceClaim> getAllInsuranceClaims();
     List<InsuranceClaim> getAllInsuranceClaimsByPatient(Integer patientId) throws APIException;
     List<InsuranceClaim> getAllInsuranceClaimsByPatient(String patientId) throws APIException;
     List<InsuranceClaim> getUnProcessedInsuranceClaims();

@@ -1,48 +1,34 @@
 package org.openmrs.module.insuranceclaims.api.dao.impl;
 
-import org.openmrs.module.insuranceclaims.api.dao.BaseOpenmrsDataDao;
-import org.openmrs.module.insuranceclaims.api.dao.InsuranceClaimDao;
-import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
-import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
-
 import java.util.Date;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Join;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.exception.DataException;
-import org.openmrs.Cohort;
-import org.openmrs.Order;
-import org.openmrs.Patient;
-import org.openmrs.api.context.Context;
-import org.openmrs.api.db.DAOException;
-import org.openmrs.util.PrivilegeConstants;
+import org.openmrs.module.insuranceclaims.api.dao.BaseOpenmrsDataDao;
+import org.openmrs.module.insuranceclaims.api.dao.InsuranceClaimDao;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
 
 public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> implements InsuranceClaimDao {
 	public InsuranceClaimDaoImpl() {
 		super(InsuranceClaim.class);
+	}
+
+	@Override
+	public List<InsuranceClaim> getAllInsuranceClaims() {
+		Criteria criteria = createCriteria();
+		// Add ordering by iclm_claim_id in descending order
+		criteria.addOrder(org.hibernate.criterion.Order.desc("id"));
+		return findAllByCriteria(criteria, false);
 	}
 
 	@Override
@@ -119,6 +105,9 @@ public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> im
 
 		// criteriaQuery.where(predicate);
 		criteriaQuery.where(predicate).distinct(true);
+
+		// Order by 'iclm_claim_id' in descending order
+		criteriaQuery.orderBy(criteriaBuilder.desc(root.get("id")));
 
 		// Print the generated SQL query
 		Query query = session.createQuery(criteriaQuery);
