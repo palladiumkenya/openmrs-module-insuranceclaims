@@ -121,7 +121,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
         //Set provider (location/facility/organization)
         // Reference providerReference = practitionerUtil.buildPractitionerReference(omrsClaim); // TODO: Do this in another area
-        String providerRegNo = GeneralUtil.getLocationLicenseNo();
+        //String providerRegNo = GeneralUtil.getLocationLicenseNo();
+        String providerRegNo = GeneralUtil.getLocationRegistryId();
         // if(StringUtils.isEmpty(providerRegNo)) {providerRegNo = "FID-27-104435-4";}
         Reference claimLocation = new Reference();
         claimLocation.setId(providerRegNo);
@@ -343,7 +344,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         encounterParticipant.add(participant);
         fHIREncounter.setParticipant(encounterParticipant);
         // Service Provider (location)
-        String locationRegNo = GeneralUtil.getLocationLicenseNo();
+        // String locationRegNo = GeneralUtil.getLocationLicenseNo();
+        String locationRegNo = GeneralUtil.getLocationRegistryId();
         // if(StringUtils.isEmpty(locationRegNo)) {locationRegNo = "FID-27-104435-4";}
         Reference encounterServiceProviderRef = new Reference();
         encounterServiceProviderRef.setReference(baseReferenceURL + "/Organization/" + locationRegNo);
