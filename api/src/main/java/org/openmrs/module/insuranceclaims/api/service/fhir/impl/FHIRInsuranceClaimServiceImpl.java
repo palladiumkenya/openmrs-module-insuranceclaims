@@ -240,7 +240,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
         //Set total
         Money total = new Money();
-        total.setValue(omrsClaim.getClaimedTotal());
+        // total.setValue(omrsClaim.getClaimedTotal());
+        total.setValue(0); // TODO: in future, set the correct claim total
         claim.setTotal(total);
 
         //Set created
