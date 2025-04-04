@@ -162,10 +162,10 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             productOrService.setText("intervention");
             next.setProductOrService(productOrService);
 
-            // Set the net
+            // Set the net value
             Money total = new Money();
             total.setCurrency("KES");
-            total.setValue(1);
+            total.setValue(0); // TODO: in future set the correct net value
             next.setNet(total);
 
             // Set the factor
@@ -179,7 +179,7 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             // Set the unit price
             Money unitPrice = new Money();
             unitPrice.setCurrency("KES");
-            unitPrice.setValue(1);
+            unitPrice.setValue(0); // TODO: In future, set the correct unit price
             next.setUnitPrice(unitPrice);
 
             // Set the service date
