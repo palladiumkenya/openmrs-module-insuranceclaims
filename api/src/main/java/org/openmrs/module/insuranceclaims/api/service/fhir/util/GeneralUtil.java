@@ -371,30 +371,21 @@ public class GeneralUtil {
 	 */
 	public static String getLocationRegistryId() {
 		String ret = "";
-		Location curLocation = getDefaultLocation();
-		if (curLocation != null) {
-			LocationAttributeType locationAttributeType = Context.getLocationService().getLocationAttributeTypeByUuid(FACILITY_REGISTRY_CODE);
-			if (locationAttributeType != null) {
-				LocationAttribute locationAttribute = curLocation.getActiveAttributes(locationAttributeType)
-					.stream()
-					.filter(attr -> attr.getAttributeType().equals(locationAttributeType))
-					.findFirst()
-					.orElse(null);
-
-				if (locationAttribute != null) {
-					String locationRegNumber = locationAttribute.getValue().toString();
-					System.out.println("Insurance Claims: Got Location Reg number as: " + locationRegNumber);
-					return (locationRegNumber);
-				} else {
-					System.err.println("Insurance Claims: Error Getting location reg number: null locationAttribute");
-				}
-			} else {
-				System.err.println("Insurance Claims: Error Getting location reg number: null locationAttributeType");
+		try {
+			Context.addProxyPrivilege(PrivilegeConstants.GET_LOCATIONS);
+			Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
+			String GP_HIE_REGISTRY_CODE = "kenyaemr.hie.facility.registry.code";
+			GlobalProperty gp = Context.getAdministrationService().getGlobalPropertyObject(GP_HIE_REGISTRY_CODE);		
+			if (gp.getValue() != null) {
+				System.out.println("Insurance Claims: Got Local Facility Registry Code ID as: " + gp.getValue().toString());
+				ret=gp.getValue().toString();
 			}
-		} else {
-			System.err.println("Insurance Claims: Error Getting location reg number: null location");
+		} catch (Exception ex) {
+			System.err.println("Insurance Claims: Error Getting Facility Registry Code: " + ex.getMessage());
+			ex.printStackTrace();
+		} finally {
+				Context.removeProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
 		}
-
 		return (ret);
 	}
 
