@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CanonicalType;
 import org.hl7.fhir.r4.model.Claim;
+import org.hl7.fhir.r4.model.Claim.CareTeamComponent;
 import org.hl7.fhir.r4.model.Claim.ClaimStatus;
 import org.hl7.fhir.r4.model.Claim.InsuranceComponent;
 import org.hl7.fhir.r4.model.Claim.Use;
@@ -263,6 +264,37 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
         //Set diagnosis
         claim.setDiagnosis(claimDiagnosisService.generateClaimDiagnosisComponent(omrsClaim));
+
+        // Set care team
+        List<CareTeamComponent> careTeam = new ArrayList<>();
+        CareTeamComponent careTeamComponent = new CareTeamComponent();
+        careTeamComponent.setSequence(1);
+        careTeamComponent.setResponsible(true);
+
+        CodeableConcept careTeamRole = new CodeableConcept();
+        Coding careTeamRoleCoding = new Coding();
+        careTeamRoleCoding.setCode("primary");
+        careTeamRoleCoding.setSystem("http://hl7.org/fhir/ValueSet/claim-careteamrole");
+        careTeamRoleCoding.setDisplay("primary");
+        careTeamRole.setCoding(Collections.singletonList(careTeamRoleCoding));
+
+        careTeamComponent.setRole(careTeamRole);
+
+        Reference practitionerRef = new Reference();
+        String practitionerRegNo = GeneralUtil.getProviderLicenseNo(omrsClaim.getProvider());
+        practitionerRef.setId(practitionerRegNo);
+        practitionerRef.setReference(baseReferenceURL + "/Practitioner/" + practitionerRegNo);
+        practitionerRef.setType("Practitioner");
+        Identifier practitionertIdentifier = new Identifier();
+        practitionertIdentifier.setUse(IdentifierUse.OFFICIAL);
+        practitionertIdentifier.setSystem("https://fr.kenya-hie.health/api/v4/Practitioner");
+        practitionertIdentifier.setValue(practitionerRegNo);
+        practitionerRef.setIdentifier(practitionertIdentifier);
+
+        careTeamComponent.setProvider(practitionerRef);
+
+        careTeam.add(careTeamComponent);
+        claim.setCareTeam(careTeam);
 
         return claim;
     }
