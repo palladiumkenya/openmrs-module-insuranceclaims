@@ -266,7 +266,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         claim.setDiagnosis(claimDiagnosisService.generateClaimDiagnosisComponent(omrsClaim));
 
         // Set care team
-        List<CareTeamComponent> theCareTeam = new ArrayList<>();
+        List<CareTeamComponent> careTeam = new ArrayList<>();
         CareTeamComponent careTeamComponent = new CareTeamComponent();
         careTeamComponent.setSequence(1);
         careTeamComponent.setResponsible(true);
@@ -293,8 +293,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
         careTeamComponent.setProvider(practitionerRef);
 
-        theCareTeam.add(careTeamComponent);
-        claim.setCareTeam(theCareTeam);
+        careTeam.add(careTeamComponent);
+        claim.setCareTeam(careTeam);
 
         return claim;
     }
