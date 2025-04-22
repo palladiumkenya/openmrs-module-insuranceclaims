@@ -83,6 +83,7 @@ public final class InsuranceClaimConstants {
     public static final String PROVIDER_HIE_NATIONAL_ID = "3d152c97-2293-4a2b-802e-e0f1009b7b15";
     public static final String PATIENT_HIE_NATIONAL_ID = "49af6cdc-7968-4abb-bf46-de10d7f4859f";
     public static final String PATIENT_HIE_TELEPHONE_CONTACT = "b2c38640-2603-4629-aebd-3b54f33f1e3a";
-
+	public static final String PROVIDER_UNIQUE_IDENTIFIER = "dace9d99-9f29-4653-9eae-c05929f34a32";
+	
     private InsuranceClaimConstants() {}
 }

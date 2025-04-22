@@ -30,16 +30,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.SOCIAL_HEALTH_INSURANCE_NUMBER;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PROVIDER_LICENSE_NUMBER;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.LOCATION_LICENSE_NUMBER;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.FACILITY_LICENSE_NUMBER;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.FACILITY_REGISTRY_CODE;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PROVIDER_HIE_FHIR_REFERENCE;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.LOCATION_HIE_FHIR_REFERENCE;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PATIENT_HIE_NATIONAL_ID;
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PATIENT_HIE_TELEPHONE_CONTACT;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.*;
 
 public class GeneralUtil {
 
@@ -546,4 +537,37 @@ public class GeneralUtil {
 
 		return ret;
 	}
+	/**
+	 * Get the Unique provider identifier PUID (practitioner)
+	 *
+	 * @return
+	 */
+	public static String getProviderUniqueIdentifierNo(Provider provider) {
+		String ret = "";
+		if (provider != null) {
+			ProviderAttributeType providerAttributeType = Context.getProviderService().getProviderAttributeTypeByUuid(PROVIDER_UNIQUE_IDENTIFIER);
+			if (providerAttributeType != null) {
+				ProviderAttribute providerAttribute = provider.getActiveAttributes(providerAttributeType)
+					.stream()
+					.filter(attr -> attr.getAttributeType().equals(providerAttributeType))
+					.findFirst()
+					.orElse(null);
+
+				if (providerAttribute != null) {
+					String providerUniqueIdentifier = providerAttribute.getValue().toString();
+					System.out.println("Insurance Claims: Got Provider Unique Identifier as: " + providerUniqueIdentifier);
+					return (providerUniqueIdentifier);
+				} else {
+					System.err.println("Insurance Claims: Error Getting provider unique identifier: null providerAttribute");
+				}
+			} else {
+				System.err.println("Insurance Claims: Error Getting Provider unique identifier: null ProviderAttributeType");
+			}
+		} else {
+			System.err.println("Insurance Claims: Error Getting Provider unique identifier: null provider");
+		}
+
+		return (ret);
+	}
+
 }
