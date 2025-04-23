@@ -81,7 +81,8 @@ public class FhirRequestClient implements FHIRClient {
         String token = "";
         try {
             System.out.println("InsuranceClaims: Getting Staging Bearer token");
-            token = GeneralUtil.getHIEStagingAuthToken();
+           // token = GeneralUtil.getHIEStagingAuthToken();
+            token = GeneralUtil.getJWTAuthToken();
             System.out.println("InsuranceClaims: Got Staging Bearer token as: " + token);
         } catch(Exception ex) {
             System.err.println("InsuranceClaims: Failed to get Staging Bearer token: " + ex.getMessage());
