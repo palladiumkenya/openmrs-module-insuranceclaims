@@ -62,6 +62,10 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	private String claimCode;
 
 	@Basic
+	@Column(name = "response_UUID", length = 255, nullable = true)
+	private String responseUUID;
+
+	@Basic
 	@Column(name = "usetype", length = 64, nullable = false)
 	private String use;
 
@@ -301,6 +305,14 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 
 	public void setVisit(Visit visit) {
 		this.visit = visit;
+	}
+
+	public String getResponseUUID() {
+		return responseUUID;
+	}
+
+	public void setResponseUUID(String responseUUID) {
+		this.responseUUID = responseUUID;
 	}
 
 	public Encounter getEncounter() {
