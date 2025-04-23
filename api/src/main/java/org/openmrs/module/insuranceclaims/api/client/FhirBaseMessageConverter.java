@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Generic message conventer that use application/json type and allows all FHIR Models as response type
  */
-public class FhirMessageConverter extends AbstractHttpMessageConverter<IBaseResource> {
+public class FhirBaseMessageConverter extends AbstractHttpMessageConverter<IBaseResource> {
 
     private static final String CHARSET = "UTF-8";
     private static final String TYPE = "application";
@@ -27,7 +27,7 @@ public class FhirMessageConverter extends AbstractHttpMessageConverter<IBaseReso
 
     private IParser parser = FhirContext.forR4().newJsonParser();
 
-    public FhirMessageConverter() {
+    public FhirBaseMessageConverter() {
         super(new MediaType(TYPE, SUBTYPE_1, Charset.forName(CHARSET)));
     }
 
@@ -41,6 +41,7 @@ public class FhirMessageConverter extends AbstractHttpMessageConverter<IBaseReso
             throws HttpMessageNotReadableException {
         try {
             String json = convertStreamToString(inputMessage.getBody());
+            System.out.println("Insurance claims module: Got Base Resource FHIR response message: " + json);
             return parser.parseResource(json);
         }
         catch (IOException e) {

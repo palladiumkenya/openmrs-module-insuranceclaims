@@ -7,9 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.OperationOutcome;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.client.FHIRClient;
-import org.openmrs.module.insuranceclaims.api.client.FhirMessageConverter;
+import org.openmrs.module.insuranceclaims.api.client.FhirBaseMessageConverter;
+import org.openmrs.module.insuranceclaims.api.client.FhirBundleMessageConverter;
+import org.openmrs.module.insuranceclaims.api.client.FhirOperationOutcomeMessageConverter;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -27,7 +31,9 @@ public class FhirRequestClient implements FHIRClient {
 
     private HttpHeaders headers = new HttpHeaders();
 
-    private HttpMessageConverter<IBaseResource> converter = new FhirMessageConverter();
+    private HttpMessageConverter<IBaseResource> baseconverter = new FhirBaseMessageConverter();
+    private HttpMessageConverter<Bundle> bundleconverter = new FhirBundleMessageConverter();
+    private HttpMessageConverter<OperationOutcome> operationoutcomeconverter = new FhirOperationOutcomeMessageConverter();
 
     public <T extends IBaseResource> T getObject(String url, Class<T> objectClass) throws URISyntaxException {
         prepareRestTemplate();
@@ -127,7 +133,9 @@ public class FhirRequestClient implements FHIRClient {
 
     private void prepareRestTemplate() {
         List<HttpMessageConverter<?>> converters = new ArrayList<>();
-        converters.add(converter);
+        converters.add(baseconverter);
+        converters.add(bundleconverter);
+        converters.add(operationoutcomeconverter);
         restTemplate.setMessageConverters(converters);
     }
 
