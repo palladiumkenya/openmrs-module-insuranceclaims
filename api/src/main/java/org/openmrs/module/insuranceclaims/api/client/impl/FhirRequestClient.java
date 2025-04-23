@@ -133,9 +133,9 @@ public class FhirRequestClient implements FHIRClient {
 
     private void prepareRestTemplate() {
         List<HttpMessageConverter<?>> converters = new ArrayList<>();
-        converters.add(baseconverter);
-        converters.add(bundleconverter);
         converters.add(operationoutcomeconverter);
+        converters.add(bundleconverter);
+        converters.add(baseconverter);
         restTemplate.setMessageConverters(converters);
     }
 

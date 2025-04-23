@@ -25,11 +25,12 @@ public class FhirOperationOutcomeMessageConverter extends AbstractHttpMessageCon
     private static final String CHARSET = "UTF-8";
     private static final String TYPE = "application";
     private static final String SUBTYPE_1 = "json";
+    private static final String SUBTYPE_2 = "fhir+json";
 
     private IParser parser = FhirContext.forR4().newJsonParser();
 
     public FhirOperationOutcomeMessageConverter() {
-        super(new MediaType(TYPE, SUBTYPE_1, Charset.forName(CHARSET)));
+        super(new MediaType(TYPE, SUBTYPE_1, Charset.forName(CHARSET)), new MediaType(TYPE, SUBTYPE_2, Charset.forName(CHARSET)));
     }
 
     @Override
@@ -46,7 +47,7 @@ public class FhirOperationOutcomeMessageConverter extends AbstractHttpMessageCon
             return parser.parseResource(OperationOutcome.class, json);
         }
         catch (IOException e) {
-            throw new HttpMessageNotReadableException("Could not read JSON: " + e.getMessage(), e);
+            throw new HttpMessageNotReadableException("Insurance claims module: Operation Outcome : Could not read JSON: " + e.getMessage(), e, inputMessage);
         }
     }
 
