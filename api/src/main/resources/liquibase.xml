@@ -723,7 +723,7 @@
         </comment>
         <addColumn tableName="iclm_claim" >
             <column name="response_UUID" type="varchar(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
         </addColumn>
     </changeSet>
