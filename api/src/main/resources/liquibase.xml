@@ -710,6 +710,24 @@
                                  referencedTableName="users" referencedColumnNames="user_id"/>
     </changeSet>
 
+    <changeSet id="insuranceclaims-addResponseUUID-23042025-113021" author="pwaweru">
+
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim"/>
+            <not>
+                <columnExists tableName="iclm_claim" columnName="responseUUID"/>
+            </not>
+        </preConditions>
+        <comment>
+            Adds a column to store the response UUID which is returned after posting the claim payload
+        </comment>
+        <addColumn tableName="iclm_claim" >
+            <column name="response_UUID" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
     <!-- Add a table to store CoverageEligibilityRequest -->
     <!-- <changeSet id="insuranceclaims-17082024-143021" author="pwaweru">
         <preConditions>

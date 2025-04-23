@@ -22,6 +22,7 @@ import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.Address;
 import org.hl7.fhir.r4.model.Enumerations;
 import org.hl7.fhir.r4.model.Extension;
+import org.hl7.fhir.r4.model.OperationOutcome;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -162,13 +163,23 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
     public ClaimResponse sendClaimToExternalApi(InsuranceClaim claim) throws ClaimRequestException {
         try {
             setUrls();
-//            ClaimResponse claimResponse = claimHttpRequest.sendClaimRequest(claimUrl, claim);
+            // if we get a response of type ClaimResponse
+            // ClaimResponse claimResponse = claimHttpRequest.sendClaimRequest(claimUrl, claim);
             ClaimResponse claimResponse = new ClaimResponse();
             System.err.println("Insurance Claims: Sending claims bundle to: " + claimUrl);
-            Bundle claimBundleResponse = claimHttpRequest.sendClaimBundleRequest(claimUrl, claim);
-            String externalCode = InsuranceClaimUtil.getClaimResponseId(claimResponse);
-            claim.setExternalId(externalCode);
-            insuranceClaimService.saveOrUpdate(claim);
+            // if we get a response of type Bundle
+            // Bundle claimBundleResponse = claimHttpRequest.sendClaimBundleRequest(claimUrl, claim);
+            // if we get a response of type OperationalOutcome
+            OperationOutcome operationOutcome = claimHttpRequest.sendClaimOperationOutcomeRequest(claimUrl, claim);
+            // String externalCode = InsuranceClaimUtil.getClaimResponseId(claimResponse);
+            // claim.setExternalId(externalCode);
+            String responseUUID = operationOutcome.getId();
+            if(responseUUID != null) {
+                claim.setExternalId(responseUUID);
+                claim.setResponseUUID(responseUUID);
+                insuranceClaimService.saveOrUpdate(claim);
+            }
+            
             return claimResponse;
         } catch (URISyntaxException | FHIRException requestException) {
             String exceptionMessage = "Exception occured during processing request: "
