@@ -281,14 +281,14 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         careTeamComponent.setRole(careTeamRole);
 
         Reference practitionerRef = new Reference();
-        String practitionerRegNo = GeneralUtil.getProviderLicenseNo(omrsClaim.getProvider());
-        practitionerRef.setId(practitionerRegNo);
-        practitionerRef.setReference(baseReferenceURL + "/Practitioner/" + practitionerRegNo);
+        String practitionerUniqueIdNo = GeneralUtil.getProviderUniqueIdentifierNo(omrsClaim.getProvider());
+        practitionerRef.setId(practitionerUniqueIdNo);
+        practitionerRef.setReference(baseReferenceURL + "/Practitioner/" + practitionerUniqueIdNo);
         practitionerRef.setType("Practitioner");
         Identifier practitionertIdentifier = new Identifier();
         practitionertIdentifier.setUse(IdentifierUse.OFFICIAL);
         practitionertIdentifier.setSystem("https://fr.kenya-hie.health/api/v4/Practitioner");
-        practitionertIdentifier.setValue(practitionerRegNo);
+        practitionertIdentifier.setValue(practitionerUniqueIdNo);
         practitionerRef.setIdentifier(practitionertIdentifier);
 
         careTeamComponent.setProvider(practitionerRef);
