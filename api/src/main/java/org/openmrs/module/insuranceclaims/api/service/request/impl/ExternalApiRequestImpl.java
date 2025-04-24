@@ -173,11 +173,24 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
             OperationOutcome operationOutcome = claimHttpRequest.sendClaimOperationOutcomeRequest(claimUrl, claim);
             // String externalCode = InsuranceClaimUtil.getClaimResponseId(claimResponse);
             // claim.setExternalId(externalCode);
-            String responseUUID = operationOutcome.getId();
-            if(responseUUID != null) {
-                claim.setExternalId(responseUUID);
-                claim.setResponseUUID(responseUUID);
-                insuranceClaimService.saveOrUpdate(claim);
+            if(operationOutcome != null) {
+                String responseUUID = operationOutcome.getId();
+                
+                if(responseUUID != null) {
+                    String prefix = "OperationOutcome/";
+                    if (responseUUID != null && responseUUID.startsWith(prefix)) {
+                        responseUUID = responseUUID.substring(prefix.length());
+                    }
+                    claim.setExternalId(responseUUID);
+                    claim.setResponseUUID(responseUUID);
+                    insuranceClaimService.saveOrUpdate(claim);
+
+                    System.out.println("Insurance Claims: Saved the response uuid " + responseUUID);
+                } else {
+                    System.err.println("Insurance Claims: Error sending claim: " + operationOutcome.getIssue().toString());
+                }
+            } else {
+                System.err.println("Insurance Claims: Error sending claim: Did not get proper operation outcome");
             }
             
             return claimResponse;

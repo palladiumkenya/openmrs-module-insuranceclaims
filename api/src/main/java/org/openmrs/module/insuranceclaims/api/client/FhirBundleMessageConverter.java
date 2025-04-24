@@ -3,7 +3,7 @@ package org.openmrs.module.insuranceclaims.api.client;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.mchange.v1.io.InputStreamUtils;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r4.model.Bundle;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -19,37 +19,39 @@ import java.nio.charset.StandardCharsets;
 /**
  * Generic message conventer that use application/json type and allows all FHIR Models as response type
  */
-public class FhirMessageConverter extends AbstractHttpMessageConverter<IBaseResource> {
+public class FhirBundleMessageConverter extends AbstractHttpMessageConverter<Bundle> {
 
     private static final String CHARSET = "UTF-8";
     private static final String TYPE = "application";
     private static final String SUBTYPE_1 = "json";
+    private static final String SUBTYPE_2 = "fhir+json";
 
     private IParser parser = FhirContext.forR4().newJsonParser();
 
-    public FhirMessageConverter() {
-        super(new MediaType(TYPE, SUBTYPE_1, Charset.forName(CHARSET)));
+    public FhirBundleMessageConverter() {
+        super(new MediaType(TYPE, SUBTYPE_1, Charset.forName(CHARSET)), new MediaType(TYPE, SUBTYPE_2, Charset.forName(CHARSET)));
     }
 
     @Override
     protected boolean supports(Class<?> clazz) {
-        return IBaseResource.class.isAssignableFrom(clazz);
+        return Bundle.class.isAssignableFrom(clazz);
     }
 
     @Override
-    protected IBaseResource readInternal(Class<? extends IBaseResource> clazz, HttpInputMessage inputMessage)
+    protected Bundle readInternal(Class<? extends Bundle> clazz, HttpInputMessage inputMessage)
             throws HttpMessageNotReadableException {
         try {
             String json = convertStreamToString(inputMessage.getBody());
-            return parser.parseResource(json);
+            System.out.println("Insurance claims module: Got Bundle FHIR response message: " + json);
+            return parser.parseResource(Bundle.class, json);
         }
         catch (IOException e) {
-            throw new HttpMessageNotReadableException("Could not read JSON: " + e.getMessage(), e);
+            throw new HttpMessageNotReadableException("Insurance claims module: Bundle: Could not read JSON: " + e.getMessage(), e, inputMessage);
         }
     }
 
     @Override
-    protected void writeInternal(IBaseResource resource, HttpOutputMessage outputMessage)
+    protected void writeInternal(Bundle resource, HttpOutputMessage outputMessage)
             throws HttpMessageNotWritableException {
         try {
             String json = parser.encodeResourceToString(resource);
