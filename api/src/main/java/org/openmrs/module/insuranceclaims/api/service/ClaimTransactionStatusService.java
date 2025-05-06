@@ -23,7 +23,7 @@ import okhttp3.Response;
  */
 @Service
 public class ClaimTransactionStatusService {
-    private static final String CALLBACK_URL = "http://localhost:3000/api/hie/claim";
+    private static final String CALLBACK_URL = "https://billing.kenyahmis.org/api/hie/claim";
     private static final Log log = LogFactory.getLog(ClaimTransactionStatusService.class);
 
     private final OkHttpClient httpClient = new OkHttpClient();
