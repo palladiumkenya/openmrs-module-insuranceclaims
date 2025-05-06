@@ -13,6 +13,7 @@ public final class ConstantValues {
     public static final String POLICY_NUMBER_ATTRIBUTE_TYPE_FORMAT = "java.lang.String";
 
     public static final String POLICY_NUMBER_ATTRIBUTE_TYPE_UUID = "22ee615f-2d5d-4be9-bdd3-c4da8c8ba91e";
+    public static final String MPESA_DARAJA_API_CALLBACK_URL = "kenyaemr.cashier.mpesa.daraja.api.callback.url";
 
     private ConstantValues() {
     }

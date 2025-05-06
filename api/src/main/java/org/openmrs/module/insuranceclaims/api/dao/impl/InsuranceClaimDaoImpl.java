@@ -58,7 +58,8 @@ public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> im
 	@Override
 	public List<InsuranceClaim> getInsuranceClaims(String uuid, String status, String usetype, String claimCode,
 			Date createdOnOrAfterDate, Date createdOnOrBeforeDate) {
-		System.err.println("Insurance Claims: Searching for claims using: " + uuid + " : " + status + " : " + usetype  + " : " + claimCode + " : " + createdOnOrAfterDate + " : " + createdOnOrBeforeDate + " : ");
+		System.err.println("Insurance Claims: Searching for claims using: " + uuid + " : " + status + " : " + usetype
+				+ " : " + claimCode + " : " + createdOnOrAfterDate + " : " + createdOnOrBeforeDate + " : ");
 
 		Session session = this.sessionFactory.getCurrentSession();
 		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
@@ -69,38 +70,40 @@ public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> im
 		Predicate predicate = criteriaBuilder.conjunction();
 
 		// uuid
-		if(uuid != null && !uuid.isEmpty()) {
+		if (uuid != null && !uuid.isEmpty()) {
 			predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("uuid"), uuid));
 
 		}
 
 		// status
-		if(status != null && !status.isEmpty()) {
+		if (status != null && !status.isEmpty()) {
 			predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("status"), status));
 		}
 
 		// type
-		if(usetype != null && !usetype.isEmpty()) {
+		if (usetype != null && !usetype.isEmpty()) {
 			predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("usetype"), usetype));
 		}
 
 		// type
-		if(claimCode != null && !claimCode.isEmpty()) {
+		if (claimCode != null && !claimCode.isEmpty()) {
 			predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("claimCode"), claimCode));
 		}
 
 		// createdOnOrAfterDate
-		if(createdOnOrAfterDate != null) {
+		if (createdOnOrAfterDate != null) {
 			Path<Date> datePath = root.get("dateCreated");
 
-			predicate = criteriaBuilder.and(predicate, criteriaBuilder.greaterThanOrEqualTo(datePath, createdOnOrAfterDate));
+			predicate = criteriaBuilder.and(predicate,
+					criteriaBuilder.greaterThanOrEqualTo(datePath, createdOnOrAfterDate));
 		}
 
 		// createdOnOrBeforeDate
-		if(createdOnOrBeforeDate != null) {
+		if (createdOnOrBeforeDate != null) {
 			Path<Date> datePath = root.get("dateCreated");
 
-			predicate = criteriaBuilder.and(predicate, criteriaBuilder.lessThanOrEqualTo(datePath, createdOnOrBeforeDate));
+			predicate = criteriaBuilder.and(predicate,
+					criteriaBuilder.lessThanOrEqualTo(datePath, createdOnOrBeforeDate));
 		}
 
 		// criteriaQuery.where(predicate);
@@ -116,7 +119,7 @@ public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> im
 
 		List<InsuranceClaim> results = session.createQuery(criteriaQuery).getResultList();
 
-		return(results);
+		return (results);
 	}
 
 	@Override
@@ -127,5 +130,18 @@ public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> im
 		return findAllByCriteria(crit, false);
 	}
 
+	// @Override
+	// public InsuranceClaim getInsuranceClaimByExternalId(String externalId) {
+	// Criteria criteria = createCriteria();
+	// criteria.createCriteria("external_id")
+	// .add(Restrictions.eq("external_id", externalId));
+	// return findByCriteria(criteria, false);
+	// }
 
+	@Override
+	public InsuranceClaim getInsuranceClaimByExternalId(String externalId) {
+		Criteria criteria = createCriteria();
+		criteria.add(Restrictions.eq("externalId", externalId));
+		return findByCriteria(criteria, false);
+	}
 }
