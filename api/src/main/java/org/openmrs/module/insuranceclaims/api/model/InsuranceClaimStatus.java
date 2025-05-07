@@ -6,7 +6,8 @@ import static org.openmrs.module.insuranceclaims.api.service.fhir.util.Insurance
  * The allowable {@link InsuranceClaim} statuses.
  */
 public enum InsuranceClaimStatus {
-	REJECTED, ENTERED, CHECKED, PROCESSED, VALUATED;
+	REJECTED, ENTERED, CHECKED, PROCESSED, VALUATED, APPROVED, IN_REVIEW, CLINICAL_REVIEW, SENT_FOR_PAYMENT_PROCESSING,
+	SENT_TO_SURVEILLANCE, PAYMENT_COMPLETED, PAYMENT_DECLINED, QUEUED;
 
 	/**
 	 * FHIR associates status with numbers starting from, i.e.:
