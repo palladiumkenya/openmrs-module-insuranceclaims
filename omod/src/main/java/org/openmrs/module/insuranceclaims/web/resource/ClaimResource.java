@@ -13,7 +13,6 @@
  */
 package org.openmrs.module.insuranceclaims.web.resource;
 
-
 import java.util.Date;
 import java.util.List;
 
@@ -42,21 +41,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
 /**
  * REST resource representing a {@link InsuranceClaim}.
  */
-@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.OPTIONS})
-@Resource(name = RestConstants.VERSION_1 +  "/claim", supportedClass = InsuranceClaim.class, supportedOpenmrsVersions = {"2.0 - 2.*"})
+@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
+        RequestMethod.OPTIONS })
+@Resource(name = RestConstants.VERSION_1 + "/claim", supportedClass = InsuranceClaim.class, supportedOpenmrsVersions = {
+        "2.0 - 2.*" })
 @Authorized
 public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
-	@Override
+    @Override
     public InsuranceClaim getByUniqueId(String uniqueId) {
-		InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
+        InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
         return insuranceClaimService.getByUuid(uniqueId);
     }
 
     @Override
     protected void delete(InsuranceClaim claim, String reason, RequestContext context) throws ResponseException {
-		InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
-		claim.setVoided(true);
-		claim.setVoidReason(reason);
+        InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
+        claim.setVoided(true);
+        claim.setVoidReason(reason);
         insuranceClaimService.saveOrUpdate(claim);
     }
 
@@ -67,19 +68,19 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
 
     @Override
     public InsuranceClaim save(InsuranceClaim claim) {
-		InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
-		return insuranceClaimService.saveOrUpdate(claim);
+        InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
+        return insuranceClaimService.saveOrUpdate(claim);
     }
 
     @Override
     public void purge(InsuranceClaim claim, RequestContext context) throws ResponseException {
-		InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
-		insuranceClaimService.delete(claim);
+        InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
+        insuranceClaimService.delete(claim);
     }
 
     @Override
     public DelegatingResourceDescription getRepresentationDescription(Representation representation) {
-        
+
         if (representation instanceof RefRepresentation) {
             DelegatingResourceDescription description = new DelegatingResourceDescription();
             description.addProperty("uuid");
@@ -119,6 +120,7 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("rejectionReason");
             description.addProperty("guaranteeId");
             description.addProperty("externalId");
+            description.addProperty("responseUUID");
             description.addProperty("use");
             description.addProperty("dateProcessed");
             description.addProperty("provider", Representation.FULL);
@@ -152,11 +154,14 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
 
         Date createdOnOrBeforeDate = StringUtils.isNotBlank(createdOnOrBeforeDateStr) ? (Date) ConversionUtil
                 .convert(createdOnOrBeforeDateStr, Date.class) : null;
-        Date createdOnOrAfterDate = StringUtils.isNotBlank(createdOnOrAfterDateStr) ? (Date) ConversionUtil.convert(createdOnOrAfterDateStr, Date.class) : null;
+        Date createdOnOrAfterDate = StringUtils.isNotBlank(createdOnOrAfterDateStr)
+                ? (Date) ConversionUtil.convert(createdOnOrAfterDateStr, Date.class)
+                : null;
 
         InsuranceClaimService service = Context.getService(InsuranceClaimService.class);
 
-        List<InsuranceClaim> result = service.getInsuranceClaims(uuid, status, use, claimCode, createdOnOrAfterDate, createdOnOrBeforeDate);
+        List<InsuranceClaim> result = service.getInsuranceClaims(uuid, status, use, claimCode, createdOnOrAfterDate,
+                createdOnOrBeforeDate);
         return new AlreadyPaged<InsuranceClaim>(context, result, false);
     }
 }
