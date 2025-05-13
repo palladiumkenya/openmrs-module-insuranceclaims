@@ -27,6 +27,8 @@ jobs:
           sudo chown -R cicd2:cicd2 /apps/github-workflows/kenyaemr-modules/openmrs-module-insuranceclaims
           git status
           sudo mvn clean install -DskipTests
+          sudo rm -rf /apps/workflowConfigs/HEI_WORKfLOW/insurance_claims.sh
+          sudo cp /apps/githubworkflows/kenyaemr-modules/openmrs-module-insuranceclaims/insurance_claims.sh /apps/workflowConfigs/HEI_WORKfLOW/
           sudo bash /apps/workflowConfigs/HEI_WORKfLOW/insurance_claims.sh
   dev_server_deployment:
     name: deploying to 3.x dev instance
@@ -54,7 +56,7 @@ jobs:
           mvn license:format
           sudo mvn clean install -DskipTests
           sudo rm -rf /var/lib/OpenMRS/modules/kenyaemr-*.omod
-          sudo cp -r /apps/githubworkflows/kenyaemr-modules/openmrs-module-insuranceclaims/omod/target/kenyaemr-*.omod /var/lib/OpenMRS/modules/
+          sudo cp -r /apps/githubworkflows/kenyaemr-modules/openmrs-module-insuranceclaims/omod/target/insuranceclaims-*.omod /var/lib/OpenMRS/modules/
           sudo chown -R tomcat:tomcat /var/lib/OpenMRS/modules/
           sudo chmod +r /var/lib/OpenMRS/modules/*.omod
           sudo chmod 755 /var/lib/OpenMRS/modules/*.omod
