@@ -30,8 +30,10 @@ import org.openmrs.module.insuranceclaims.api.service.fhir.FHIREligibilityServic
 import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest;
 import org.openmrs.module.insuranceclaims.forms.ClaimFormService;
 import org.openmrs.module.insuranceclaims.forms.NewClaimForm;
+import org.openmrs.module.insuranceclaims.util.ConstantValues;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
+import org.openmrs.util.PrivilegeConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -717,36 +719,72 @@ public class InsuranceClaimResourceController {
             HttpServletRequest request, HttpServletResponse response) throws ResponseException {
         System.out.println("Insurance Claims: REST - Update Claim Status: " + externalId);
 
-        InsuranceClaim claim = insuranceClaimService.getInsuranceClaimByExternalId(externalId);
-        if (claim == null) {
-            System.out.println("Claim not found with externalId: " + externalId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Claim not found");
-        }
-
-        ClaimTransactionStatus status = claimTransactionStatusService.getLatestStatusById(externalId);
-        if (status == null) {
-            System.out.println("Failed to retrieve claim status for externalId: " + externalId);
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                    .body("Failed to retrieve claim status. Please try again later.");
-        }
-
         try {
-            // Update the claim status in the local database
-            InsuranceClaim updateClaim = insuranceClaimService.updateClaimStatus(externalId, status.getStatus());
-            if (updateClaim == null) {
-                System.out.println("Failed to update claim status in the database");
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Failed to update claim status in the database");
+            Context.openSession();
+            Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
+            System.out.println("---> Session opened and privilege added for externalId: " + externalId);
+
+            String callbackUrl = Context.getAdministrationService()
+                    .getGlobalProperty(ConstantValues.HIE_CALLBACK_URL);
+
+
+            String claimResponseUrl = Context.getAdministrationService()
+                    .getGlobalProperty(ConstantValues.CLAIM_RESPONSE_URL);
+
+            String claimResponseSource = Context.getAdministrationService()
+                    .getGlobalProperty(ConstantValues.CLAIM_RESPONSE_SOURCE);
+
+            boolean isHieEnabled = "hie".equalsIgnoreCase(claimResponseSource);
+            String accessToken = null;
+            try {
+                accessToken = GeneralUtil.getJWTAuthToken();
+            } catch (IOException e) {
+                System.out.println("---> Error getting JWT Auth Token: " + e.getMessage());
+                return null;
             }
-            System.out.println(
-                    "Insurance Claims: REST - Successfully updated claim status to: " + updateClaim.getStatus());
-            ObjectMapper mapper = new ObjectMapper();
-            return ResponseEntity.ok(mapper.writeValueAsString(status));
-        } catch (Exception e) {
-            System.out.println("Error updating claim status: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error updating claim status: " + e.getMessage());
+
+            InsuranceClaim claim = insuranceClaimService.getInsuranceClaimByExternalId(externalId);
+            if (claim == null) {
+                System.out.println("Claim not found with externalId: " + externalId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Claim not found");
+            }
+
+            ClaimTransactionStatus status = claimTransactionStatusService.getLatestStatusById(externalId, isHieEnabled, accessToken, claimResponseUrl,  callbackUrl);
+            if (status == null) {
+                System.out.println("Failed to retrieve claim status for externalId: " + externalId);
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                        .body("Failed to retrieve claim status. Please try again later.");
+            }
+
+            try {
+                // Update the claim status in the local database
+                InsuranceClaim updateClaim = insuranceClaimService.updateClaimStatus(externalId, status.getStatus());
+                if (updateClaim == null) {
+                    System.out.println("Failed to update claim status in the database");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Failed to update claim status in the database");
+                }
+                System.out.println(
+                        "Insurance Claims: REST - Successfully updated claim status to: " + updateClaim.getStatus());
+                ObjectMapper mapper = new ObjectMapper();
+                return ResponseEntity.ok(mapper.writeValueAsString(status));
+            } catch (Exception e) {
+                System.out.println("Error updating claim status: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Error updating claim status: " + e.getMessage());
+            }
+        } catch (Exception ex) {
+
+            System.err.println("Insurance- Claims: Update claim status: ERROR: " + ex.getMessage());
+        } finally {
+            try {
+                Context.closeSession();
+                System.out.println("---> Closed OpenMRS session for externalId: " + externalId);
+            } catch (Exception e) {
+                System.out.println("---> Error closing session for externalId: "+ externalId + "error : " + e.getMessage());
+            }
         }
+        return null;
     }
 
 }
