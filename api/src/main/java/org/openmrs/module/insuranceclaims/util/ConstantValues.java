@@ -14,6 +14,9 @@ public final class ConstantValues {
 
     public static final String POLICY_NUMBER_ATTRIBUTE_TYPE_UUID = "22ee615f-2d5d-4be9-bdd3-c4da8c8ba91e";
     public static final String MPESA_DARAJA_API_CALLBACK_URL = "kenyaemr.cashier.mpesa.daraja.api.callback.url";
+    public static final String HIE_CALLBACK_URL = "kenyaemr.hie.claim.callback.url";
+    public static final String CLAIM_RESPONSE_URL = "kenyaemr.hie.claim.response.url";
+    public static final String CLAIM_RESPONSE_SOURCE = "kenyaemr.hie.claim.response.source";
 
     private ConstantValues() {
     }
