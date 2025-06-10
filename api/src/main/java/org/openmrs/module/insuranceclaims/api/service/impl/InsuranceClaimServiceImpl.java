@@ -115,6 +115,8 @@ public class InsuranceClaimServiceImpl extends BaseOpenmrsDataService<InsuranceC
                 return InsuranceClaimStatus.QUEUED;
             case "pending":
                 return InsuranceClaimStatus.PENDING;
+            case "returned back":
+                return InsuranceClaimStatus.RETURNED_BACK;
             default:
                 return InsuranceClaimStatus.ENTERED;
         }

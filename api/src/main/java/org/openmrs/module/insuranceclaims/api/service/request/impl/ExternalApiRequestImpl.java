@@ -183,6 +183,16 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
                     }
                     claim.setExternalId(responseUUID);
                     claim.setResponseUUID(responseUUID);
+                    Integer claimId = claim.getId();
+                    String claimCode;
+                    if (claimId < 10) {
+                        claimCode = String.format("C-%03d", claimId);
+                    } else if (claimId < 100) {
+                        claimCode = String.format("C-%03d", claimId);
+                    } else {
+                        claimCode = String.format("C-%d", claimId);
+                    }
+                    claim.setClaimCode(claimCode);
                     insuranceClaimService.saveOrUpdate(claim);
 
                     System.out.println("Insurance Claims: Saved the response uuid " + responseUUID);
