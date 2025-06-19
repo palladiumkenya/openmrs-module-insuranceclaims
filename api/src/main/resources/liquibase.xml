@@ -734,13 +734,11 @@
             <tableExists tableName="iclm_claim"/>
             <not>
                 <columnExists tableName="iclm_claim" columnName="insurer"/>
-            </not>
-            <not>
                 <columnExists tableName="iclm_claim" columnName="product"/>
             </not>
         </preConditions>
         <comment>
-            Adds two column to store the claim product and claim insurer which are returned after posting the claim payload
+            Adds two columns to store the claim product and claim insurer returned in the response after posting the claim payload
         </comment>
         <addColumn tableName="iclm_claim" >
             <column name="insurer" type="varchar(255)">
