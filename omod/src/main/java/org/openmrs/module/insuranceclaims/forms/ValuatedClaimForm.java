@@ -33,6 +33,7 @@ public class ValuatedClaimForm extends NewClaimForm {
         setVisitType(claim.getVisitType().getName());
         setGuaranteeId(claim.getGuaranteeId());
         setProvider(claim.getProvider().getUuid());
+        setInsurer(claim.getInsurer());
     }
     public void setClaimItems(List<ValuatedClaimItem> claimItems) {
         this.claimItems = claimItems;

@@ -108,6 +108,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
         nextClaim.setUse(form.getUse());
         nextClaim.setStatus(InsuranceClaimStatus.ENTERED);
         nextClaim.setLocation(getClaimLocation(form));
+        nextClaim.setInsurer(form.getInsurer());
 
         System.out.println("Insurance Module: Provider UUID : " + form.getProvider());
         Provider provider = Context.getProviderService().getProviderByUuid(form.getProvider());
