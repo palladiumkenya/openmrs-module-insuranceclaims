@@ -728,6 +728,32 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="insuranceclaims-product-insurer-12062025-122130" author="Ogollah">
+
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim"/>
+            <not>
+                <columnExists tableName="iclm_claim" columnName="insurer"/>
+            </not>
+            <not>
+                <columnExists tableName="iclm_claim" columnName="product"/>
+            </not>
+        </preConditions>
+        <comment>
+            Adds two column to store the claim product and claim insurer which are returned after posting the claim payload
+        </comment>
+        <addColumn tableName="iclm_claim" >
+            <column name="insurer" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="iclm_claim" >
+            <column name="product" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
     <!-- Add a table to store CoverageEligibilityRequest -->
     <!-- <changeSet id="insuranceclaims-17082024-143021" author="pwaweru">
         <preConditions>

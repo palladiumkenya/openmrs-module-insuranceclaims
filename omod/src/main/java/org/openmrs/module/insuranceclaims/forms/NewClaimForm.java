@@ -26,6 +26,8 @@ public class NewClaimForm {
     private String claimCode;
     private String billNumber;
     private String use;
+    private String insurer;
+    private String product;
 
     public String getGuaranteeId() {
         return guaranteeId;
@@ -169,6 +171,22 @@ public class NewClaimForm {
 
     public void setInterventions(List<String> interventions) {
         this.interventions = interventions;
+    }
+
+    public String getInsurer() {
+        return insurer;
+    }
+
+    public void setInsurer(String insurer) {
+        this.insurer = insurer;
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
     }
 }
 

@@ -109,6 +109,14 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	@Column(name = "guarantee_id", length = 255)
 	private String guaranteeId;
 
+	@Basic
+	@Column(name = "insurer", length = 255)
+	private String insurer;
+
+	@Basic
+	@Column(name = "product", length = 255)
+	private String product;
+
 	@ManyToOne
 	@JoinColumn(name = "visit")
 	private Visit visit;
@@ -321,5 +329,21 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 
 	public void setEncounter(Encounter encounter) {
 		this.encounter = encounter;
+	}
+
+	public String getInsurer() {
+		return insurer;
+	}
+
+	public void setInsurer(String insurer) {
+		this.insurer = insurer;
+	}
+
+	public String getProduct() {
+		return product;
+	}
+
+	public void setProduct(String product) {
+		this.product = product;
 	}
 }
