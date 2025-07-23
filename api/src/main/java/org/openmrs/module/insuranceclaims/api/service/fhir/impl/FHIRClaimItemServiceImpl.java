@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.DateType;
 import org.hl7.fhir.r4.model.Money;
+import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.r4.model.PositiveIntType;
 import org.hl7.fhir.r4.model.Quantity;
 import org.hl7.fhir.r4.model.StringType;
@@ -191,6 +192,12 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             // Format the current date as a String
             String formattedDate = dateFormat.format(currentDate);
             next.setServiced(new DateType(formattedDate));
+
+            // Set the serviced period
+            Period servicedPeriod = new Period();
+            servicedPeriod.setStart(new Date());
+            servicedPeriod.setEnd(new Date());
+            next.setServiced(servicedPeriod);
 
             newItemComponents.add(next);
         }
