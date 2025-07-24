@@ -27,12 +27,13 @@ public class FhirToClaimTransactionStatusConverter {
     public ClaimTransactionStatus convertFhirBundleToClaimStatus(String fhirBundleJson) throws Exception {
         JsonNode bundle = objectMapper.readTree(fhirBundleJson);
         JsonNode entries = bundle.get("entry");
+		log.info("Starting claim processing");
 
         if (entries == null || !entries.isArray()) {
             throw new IllegalArgumentException("--> Invalid FHIR Bundle: no entries found");
         }
 
-        log.info("--> Found " + entries.size() + " entries in bundle");
+		log.info("--> Found " + entries.size() + " entries in bundle");
 
         JsonNode claimResource = null;
         JsonNode claimResponseResource = null;
@@ -46,17 +47,17 @@ public class FhirToClaimTransactionStatusConverter {
             }
 
             String resourceType = resource.get("resourceType").asText();
-            log.info("--> Found resource type: " + resourceType);
+           log.info("--> Found resource type: " + resourceType);
 
             if ("Claim".equals(resourceType)) {
                 claimResource = resource;
-                log.info("--> Found Claim resource with ID: " + resource.get("id").asText());
+               log.info("--> Found Claim resource with ID: " + resource.get("id").asText());
             } else if ("ClaimResponse".equals(resourceType)) {
                 claimResponseResource = resource;
-                log.info("--> Found ClaimResponse resource with ID: " + resource.get("id").asText());
+               log.info("--> Found ClaimResponse resource with ID: " + resource.get("id").asText());
             } else if ("Task".equals(resourceType)) {
                 taskResource = resource;
-                log.info("--> Found Task resource with ID: " + resource.get("id").asText());
+               log.info("--> Found Task resource with ID: " + resource.get("id").asText());
             }
         }
 
@@ -87,32 +88,22 @@ public class FhirToClaimTransactionStatusConverter {
         if (taskResource != null) {
             statusValue = extractStatusFromTaskOutput(taskResource);
             if (!statusValue.isEmpty()) {
-                log.info("--> Using Task resource output status: " + statusValue);
+               log.info("--> Using Task resource output status: " + statusValue);
             }
         }
 
         // If no status from Task, try ClaimResponse
-        if (statusValue.isEmpty() && claimResponseResource != null && claimResponseResource.has("outcome")) {
-            statusValue = claimResponseResource.get("outcome").asText();
-            log.info("--> Using ClaimResponse outcome: " + statusValue);
-        } else if (statusValue.isEmpty() && claimResponseResource != null && claimResponseResource.has("extension")) {
-            // Check for claim-state-extension as fallback
-            JsonNode extensions = claimResponseResource.get("extension");
-            for (JsonNode ext : extensions) {
-                String url = ext.has("url") ? ext.get("url").asText() : "";
-                if (url.contains("claim-state-extension") && ext.has("valueCodeableConcept")) {
-                    JsonNode coding = ext.get("valueCodeableConcept").get("coding");
-                    if (coding.isArray() && coding.size() > 0) {
-                        statusValue = coding.get(0).get("code").asText();
-                        log.info("--> Using ClaimResponse extension status: " + statusValue);
-                        break;
-                    }
-                }
-            }
+        if (statusValue.isEmpty() && claimResponseResource != null && claimResponseResource.has("status")) {
+            statusValue = claimResponseResource.get("status").asText();
+           log.info("--> Using ClaimResponse status: " + statusValue);
+        } else if (statusValue.isEmpty() && claimResponseResource != null && claimResource.has("status")) {
+			statusValue = claimResource.get("status").asText();
+			log.info("--> Using ClaimResource status: " + statusValue);
+
         }
 
         if (statusValue.isEmpty()) {
-            log.info("--> No status found in Task, ClaimResponse, or extensions, using default: unknown");
+           log.info("--> No status found in Task, ClaimResponse, or extensions, using default: unknown");
             statusValue = "unknown";
         }
 
@@ -131,34 +122,14 @@ public class FhirToClaimTransactionStatusConverter {
     }
 
     private String extractStatusFromTaskOutput(JsonNode taskResource) {
-        if (!taskResource.has("output") || !taskResource.get("output").isArray()) {
-            log.info("--> Task resource has no output array");
+        if (!taskResource.has("status")) {
+           log.info("--> Task resource has no status extension");
             return "";
         }
+		String lastClaimStateDisplay = "";
+		lastClaimStateDisplay =  taskResource.get("status").asText();
 
-        JsonNode outputArray = taskResource.get("output");
-        String lastClaimStateDisplay = "";
-
-        // Iterate through output array to find the last entry with claim-state system
-        for (JsonNode output : outputArray) {
-            if (output.has("valueCodeableConcept")) {
-                JsonNode valueCodeableConcept = output.get("valueCodeableConcept");
-                if (valueCodeableConcept.has("coding") && valueCodeableConcept.get("coding").isArray()) {
-                    JsonNode codingArray = valueCodeableConcept.get("coding");
-
-                    for (JsonNode coding : codingArray) {
-                        if (coding.has("system") && coding.has("display")) {
-                            String system = coding.get("system").asText();
-                            if (system.contains("claim-state")) {
-                                lastClaimStateDisplay = coding.get("display").asText();
-                                log.info("--> Found claim-state in Task output with display: " + lastClaimStateDisplay);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        System.out.println("--> Last claim state display: " + lastClaimStateDisplay);
+		log.info("--> Last claim state display: " + lastClaimStateDisplay);
 
         return lastClaimStateDisplay;
     }
