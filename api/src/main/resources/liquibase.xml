@@ -15,7 +15,7 @@
     -->
 
     <changeSet id="insuranceclaims-27.10.2019:20:15" author="Dawid Ruchniewicz">
-        <preConditions>
+        <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="iclm_bill"/>
             </not>
@@ -71,7 +71,7 @@
     </changeSet>
 
     <changeSet id="insuranceclaims-27.10.2019:19:45" author="Dawid Ruchniewicz">
-        <preConditions>
+        <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="iclm_provided_item"/>
             </not>
@@ -539,7 +539,7 @@
     </changeSet>
 
     <changeSet id="insuranceclaims-27.01.2020:16:30" author="Bartlomiej Kaminski">
-        <preConditions>
+        <preConditions onFail="MARK_RAN">
             <tableExists tableName="iclm_bill"/>
             <not>
                 <columnExists tableName="iclm_bill" columnName="patient"/>
@@ -557,7 +557,7 @@
     </changeSet>
 
     <changeSet id="insuranceclaims-28.01.2020:15:40" author="Bartlomiej Kaminski">
-        <preConditions>
+        <preConditions onFail="MARK_RAN">
             <tableExists tableName="iclm_provided_item"/>
             <not>
                 <columnExists tableName="iclm_provided_item" columnName="number_of_consumptions"/>
@@ -782,5 +782,74 @@
                                  baseTableName="iclm_coverage_eligibility" baseColumnNames="voided_by"
                                  referencedTableName="users" referencedColumnNames="user_id"/>
     </changeSet> -->
+
+    <changeSet id="insuranceclaims-packages-table-20250811-090220" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="iclm_packages"/>
+            </not>
+        </preConditions>
+        <comment>
+            Creating the packages table
+        </comment>
+
+        <createTable tableName="iclm_packages">
+
+            <!-- Primary key -->
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" unique="true" nullable="false" primaryKeyName="iclm_packages_pk"/>
+            </column>
+
+            <!-- Business fields -->
+            <column name="intervention_code" type="varchar(255)"/>
+            <column name="code" type="varchar(255)"/>
+            <column name="sha_category" type="varchar(255)"/>
+            <column name="intervention_name" type="varchar(255)"/>
+            <column name="access_code" type="varchar(255)"/>
+            <column name="gender" type="varchar(50)"/>
+            <column name="sub_category_benefits_package" type="varchar(255)"/>
+            <column name="needs_pre_auth" type="boolean"/>
+            <column name="provider_payment_mechanism" type="varchar(255)"/>
+            <column name="applies_to_schemes" type="varchar(255)"/>
+            <column name="min_age" type="int"/>
+            <column name="max_age" type="int"/>
+            <column name="category_health_facility" type="varchar(255)"/>
+            <column name="tariffs" type="varchar(255)"/>
+            <column name="effective_from" type="date"/>
+            <column name="effective_till" type="date"/>
+            <column name="last_modified_by" type="varchar(255)"/>
+            <column name="group_name" type="varchar(255)"/>
+            <column name="is_per_diem_club" type="boolean"/>
+            <column name="bed_type" type="varchar(255)"/>
+
+            <!-- AbstractBaseOpenmrsData standard columns -->
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="voided" type="boolean" defaultValueBoolean="false"/>
+            <column name="date_voided" type="datetime"/>
+            <column name="voided_by" type="int"/>
+            <column name="void_reason" type="varchar(255)"/>
+            <column name="date_created" type="datetime"/>
+            <column name="creator" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="changed_by" type="int"/>
+
+        </createTable>
+
+        <!-- Add foreign keys for OpenMRS User references -->
+        <addForeignKeyConstraint constraintName="fk_iclm_packages_creator"
+                                  baseTableName="iclm_packages" baseColumnNames="creator"
+                                  referencedTableName="users" referencedColumnNames="user_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_iclm_packages_changed_by"
+                                  baseTableName="iclm_packages" baseColumnNames="changed_by"
+                                  referencedTableName="users" referencedColumnNames="user_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_iclm_packages_voided_by"
+                                  baseTableName="iclm_packages" baseColumnNames="voided_by"
+                                  referencedTableName="users" referencedColumnNames="user_id"/>
+
+    </changeSet>
 
 </databaseChangeLog>

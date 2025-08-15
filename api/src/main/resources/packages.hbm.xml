@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.openmrs.module.insuranceclaims.api.model">
+
+    <class name="InsuranceClaimPackage" table="iclm_packages" lazy="false">
+        
+        <!-- Primary key -->
+        <id name="id" column="id">
+            <generator class="native"/>
+        </id>
+
+        <!-- Fields -->
+        <property name="interventionCode" column="intervention_code" type="string"/>
+        <property name="code" column="code" type="string"/>
+        <property name="shaCategory" column="sha_category" type="string"/>
+        <property name="interventionName" column="intervention_name" type="string"/>
+        <property name="accessCode" column="access_code" type="string"/>
+        <property name="gender" column="gender" type="string"/>
+        <property name="subCategoryBenefitsPackage" column="sub_category_benefits_package" type="string"/>
+        <property name="needsPreAuth" column="needs_pre_auth" type="boolean"/>
+        <property name="providerPaymentMechanism" column="provider_payment_mechanism" type="string"/>
+        <property name="appliesToSchemes" column="applies_to_schemes" type="string"/>
+        <property name="minAge" column="min_age" type="integer"/>
+        <property name="maxAge" column="max_age" type="integer"/>
+        <property name="categoryHealthFacility" column="category_health_facility" type="string"/>
+        <property name="tariffs" column="tariffs" type="string"/>
+        <property name="effectiveFrom" column="effective_from" type="date"/>
+        <property name="effectiveTill" column="effective_till" type="date"/>
+        <property name="lastModifiedBy" column="last_modified_by" type="string"/>
+        <property name="groupName" column="group_name" type="string"/>
+        <property name="isPerDiemClub" column="is_per_diem_club" type="boolean"/>
+        <property name="bedType" column="bed_type" type="string"/>
+
+        <!-- AbstractBaseOpenmrsData common fields -->
+        <property name="uuid" column="uuid" type="string" not-null="true" unique="true"/>
+        <property name="voided" column="voided" type="boolean"/>
+        <property name="dateVoided" column="date_voided" type="timestamp"/>
+        <many-to-one name="voidedBy" class="org.openmrs.User" column="voided_by"/>
+        <property name="voidReason" column="void_reason" type="string"/>
+        <property name="dateCreated" column="date_created" type="timestamp"/>
+        <many-to-one name="creator" class="org.openmrs.User" column="creator"/>
+        <property name="dateChanged" column="date_changed" type="timestamp"/>
+        <many-to-one name="changedBy" class="org.openmrs.User" column="changed_by"/>
+
+    </class>
+
+</hibernate-mapping>

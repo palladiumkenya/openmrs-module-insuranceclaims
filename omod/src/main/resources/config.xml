@@ -48,6 +48,10 @@
         <aware_of_module>org.openmrs.module.idgen</aware_of_module>
     </aware_of_modules>
 
+    <!-- Maps hibernate file's, if present -->
+	<mappingFiles>
+		packages.hbm.xml
+	</mappingFiles>
 
     <!-- AOP
     <advice>
