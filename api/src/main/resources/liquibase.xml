@@ -801,26 +801,26 @@
             </column>
 
             <!-- Business fields -->
-            <column name="intervention_code" type="varchar(255)"/>
-            <column name="code" type="varchar(255)"/>
-            <column name="sha_category" type="varchar(255)"/>
-            <column name="intervention_name" type="varchar(255)"/>
-            <column name="access_code" type="varchar(255)"/>
+            <column name="intervention_code" type="varchar(512)"/>
+            <column name="code" type="varchar(512)"/>
+            <column name="sha_category" type="varchar(512)"/>
+            <column name="intervention_name" type="varchar(512)"/>
+            <column name="access_code" type="varchar(512)"/>
             <column name="gender" type="varchar(50)"/>
-            <column name="sub_category_benefits_package" type="varchar(255)"/>
-            <column name="needs_pre_auth" type="boolean"/>
-            <column name="provider_payment_mechanism" type="varchar(255)"/>
-            <column name="applies_to_schemes" type="varchar(255)"/>
+            <column name="sub_category_benefits_package" type="varchar(512)"/>
+            <column name="needs_pre_auth" type="varchar(512)"/>
+            <column name="provider_payment_mechanism" type="varchar(512)"/>
+            <column name="applies_to_schemes" type="varchar(512)"/>
             <column name="min_age" type="int"/>
             <column name="max_age" type="int"/>
-            <column name="category_health_facility" type="varchar(255)"/>
-            <column name="tariffs" type="varchar(255)"/>
+            <column name="category_health_facility" type="varchar(512)"/>
+            <column name="tariffs" type="varchar(512)"/>
             <column name="effective_from" type="date"/>
             <column name="effective_till" type="date"/>
-            <column name="last_modified_by" type="varchar(255)"/>
-            <column name="group_name" type="varchar(255)"/>
-            <column name="is_per_diem_club" type="boolean"/>
-            <column name="bed_type" type="varchar(255)"/>
+            <column name="last_modified_by" type="varchar(512)"/>
+            <column name="group_name" type="varchar(512)"/>
+            <column name="is_per_diem_club" type="varchar(512)"/>
+            <column name="bed_type" type="varchar(512)"/>
 
             <!-- AbstractBaseOpenmrsData standard columns -->
             <column name="uuid" type="char(38)">
@@ -829,7 +829,7 @@
             <column name="voided" type="boolean" defaultValueBoolean="false"/>
             <column name="date_voided" type="datetime"/>
             <column name="voided_by" type="int"/>
-            <column name="void_reason" type="varchar(255)"/>
+            <column name="void_reason" type="varchar(512)"/>
             <column name="date_created" type="datetime"/>
             <column name="creator" type="int"/>
             <column name="date_changed" type="datetime"/>

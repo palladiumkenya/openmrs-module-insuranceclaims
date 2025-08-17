@@ -65,7 +65,7 @@ public class InsuranceClaimsProvidersServiceImpl extends BaseOpenmrsService impl
 	}
 	
 	@Override
-	public List<InsuranceClaimPackage> getAllPatientRiskScore() {
+	public List<InsuranceClaimPackage> getAllPackages() {
 		return insuranceClaimPackagesDao.getAllPackages();
 	}
 

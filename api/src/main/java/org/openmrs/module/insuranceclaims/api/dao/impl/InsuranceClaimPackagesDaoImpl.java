@@ -25,14 +25,13 @@ public class InsuranceClaimPackagesDaoImpl implements InsuranceClaimPackagesDao 
 
     @Override
     public InsuranceClaimPackage saveOrUpdatePackage(InsuranceClaimPackage pkg) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'saveOrUpdatePackage'");
+        getSession().saveOrUpdate(pkg);
+		return pkg;
     }
 
     @Override
     public List<InsuranceClaimPackage> getAllPackages() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllPacakges'");
+        return (List<InsuranceClaimPackage>) getSession().createCriteria(InsuranceClaimPackage.class).list();
     }
     
 }

@@ -45,7 +45,7 @@ public interface InsuranceClaimsProvidersService extends OpenmrsService {
 	 * @return
 	 */
 	@Transactional
-	List<InsuranceClaimPackage> getAllPatientRiskScore();
+	List<InsuranceClaimPackage> getAllPackages();
 
 
 }
