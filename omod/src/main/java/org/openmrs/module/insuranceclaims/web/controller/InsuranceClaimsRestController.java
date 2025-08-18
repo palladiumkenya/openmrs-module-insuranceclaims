@@ -79,7 +79,7 @@ public class InsuranceClaimsRestController extends BaseRestController {
     protected final Log log = LogFactory.getLog(getClass());
 
     /**
-	 * Gets the patients IIT score given the patient UUID using local PMML
+	 * Gets the list of insurace packages
 	 * @return
 	 */
 	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
@@ -100,5 +100,38 @@ public class InsuranceClaimsRestController extends BaseRestController {
         }
 
 		return(ret);
+	}
+
+    /**
+	 * Gets the list of insurace interventions
+	 * @return
+	 */
+	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
+	@RequestMapping(method = RequestMethod.GET, value = "/interventions")
+	@ResponseBody
+	public SimpleObject getInsuranceInterventions() {
+        SimpleObject result = new SimpleObject();
+		List<SimpleObject> data = new ArrayList<>();
+        InsuranceClaimsProvidersService insuranceClaimsProvidersService = Context.getService(InsuranceClaimsProvidersService.class);
+
+        List<InsuranceClaimPackage> packages = insuranceClaimsProvidersService.getAllPackages();
+        result.add("status", "SUCCESS");
+        result.add("customerMessage", "Benefit details successfully retrieved");
+        result.add("debugMessage", null);
+
+        for(InsuranceClaimPackage icp : packages) {
+            SimpleObject prep = new SimpleObject();
+            prep.add("interventionName", icp.getInterventionName());
+            prep.add("interventionCode", icp.getInterventionCode());
+            prep.add("interventionPackage", icp.getCode());
+            prep.add("interventionSubPackage", icp.getInterventionCode());
+            prep.add("interventionDescription", null);
+            prep.add("insuranceSchemes", null);
+            data.add(prep);
+        }
+
+        result.add("data", data);
+
+		return(result);
 	}
 }
