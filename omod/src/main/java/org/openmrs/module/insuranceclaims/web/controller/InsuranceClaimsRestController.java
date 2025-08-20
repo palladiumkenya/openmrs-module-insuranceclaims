@@ -85,11 +85,11 @@ public class InsuranceClaimsRestController extends BaseRestController {
 	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 	@RequestMapping(method = RequestMethod.GET, value = "/packages")
 	@ResponseBody
-	public List<SimpleObject> getInsurancePackages() {
+	public List<SimpleObject> getInsurancePackages(@RequestParam("gender") String gender) {
 		List<SimpleObject> ret = new ArrayList<>();
         InsuranceClaimsProvidersService insuranceClaimsProvidersService = Context.getService(InsuranceClaimsProvidersService.class);
 
-        List<InsuranceClaimPackage> packages = insuranceClaimsProvidersService.getAllPackages();
+        List<InsuranceClaimPackage> packages = insuranceClaimsProvidersService.getPackages(gender);
 
         for(InsuranceClaimPackage icp : packages) {
             SimpleObject prep = new SimpleObject();
@@ -109,12 +109,12 @@ public class InsuranceClaimsRestController extends BaseRestController {
 	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 	@RequestMapping(method = RequestMethod.GET, value = "/interventions")
 	@ResponseBody
-	public SimpleObject getInsuranceInterventions() {
+	public SimpleObject getInsuranceInterventions(@RequestParam("gender") String gender) {
         SimpleObject result = new SimpleObject();
 		List<SimpleObject> data = new ArrayList<>();
         InsuranceClaimsProvidersService insuranceClaimsProvidersService = Context.getService(InsuranceClaimsProvidersService.class);
 
-        List<InsuranceClaimPackage> packages = insuranceClaimsProvidersService.getAllPackages();
+        List<InsuranceClaimPackage> packages = insuranceClaimsProvidersService.getPackages(gender);
         result.add("status", "SUCCESS");
         result.add("customerMessage", "Benefit details successfully retrieved");
         result.add("debugMessage", null);

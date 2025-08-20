@@ -29,11 +29,16 @@ public interface InsuranceClaimPackagesDao {
 	public InsuranceClaimPackage saveOrUpdatePackage(InsuranceClaimPackage pkg);
 	
 	/**
-	 * Gets a list of risk score for a patient
+	 * Gets a list of packages
 	 * 
 	 * @return
 	 */
 	public List<InsuranceClaimPackage> getAllPackages();
 
-
+	/**
+	 * Gets a list of packages given a gender filter
+	 * 
+	 * @return
+	 */
+	public List<InsuranceClaimPackage> getPackages(String gender);
 }

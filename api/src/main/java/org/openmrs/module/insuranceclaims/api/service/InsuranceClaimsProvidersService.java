@@ -48,4 +48,11 @@ public interface InsuranceClaimsProvidersService extends OpenmrsService {
 	List<InsuranceClaimPackage> getAllPackages();
 
 
+	/**
+	 * Gets a list of packages given a gender filter
+	 * 
+	 * @return
+	 */
+	@Transactional
+	List<InsuranceClaimPackage> getPackages(String gender);
 }

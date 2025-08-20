@@ -53,12 +53,16 @@
 		packages.hbm.xml
 	</mappingFiles>
 
-    <!-- AOP
-    <advice>
+    <!-- AOP -->
+    <!-- <advice>
         <point>org.openmrs.api.FormService</point>
         <class>@MODULE_PACKAGE@.advice.DuplicateFormAdvisor</class>
-    </advice>
-     /AOP -->
+    </advice> -->
+
+    <advice>
+		<point>org.openmrs.api.VisitService</point>
+		<class>org.openmrs.module.insuranceclaims.advice.CreateClaimOnCheckout</class>
+	</advice> 
 
     <!--<privilege>
         <name>Insurance Claims Privilege</name>

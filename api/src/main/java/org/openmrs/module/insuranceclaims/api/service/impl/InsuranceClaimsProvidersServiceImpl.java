@@ -69,4 +69,9 @@ public class InsuranceClaimsProvidersServiceImpl extends BaseOpenmrsService impl
 		return insuranceClaimPackagesDao.getAllPackages();
 	}
 
+	@Override
+	public List<InsuranceClaimPackage> getPackages(String gender) {
+		return insuranceClaimPackagesDao.getPackages(gender);
+	}
+
 }
