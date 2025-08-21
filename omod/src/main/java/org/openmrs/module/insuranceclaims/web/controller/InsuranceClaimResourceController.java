@@ -463,7 +463,7 @@ public class InsuranceClaimResourceController {
     @ResponseBody
     public ResponseEntity<JSONArray> getCoverageEligibilityRequestGET(
             @RequestParam(value = "patientUuid",required = false) String patientUuid,
-            @RequestParam(value = "nationalId", required = false) String nationalId, HttpServletRequest request,
+            @RequestParam(value = "nationalId") String nationalId, HttpServletRequest request,
             HttpServletResponse response) throws ResponseException, IOException {
 
         JSONArray coreArray = new JSONArray();
