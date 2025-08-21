@@ -27,7 +27,7 @@ import java.util.Collection;
  * The main service of this module, which is exposed for other modules. See
  * moduleApplicationContext.xml on how it is wired up.
  */
-public interface InsuranceClaimsProvidersService extends OpenmrsService {
+public interface InsuranceClaimsPackagesService extends OpenmrsService {
 		
 	/**
 	 * Saves or updates package

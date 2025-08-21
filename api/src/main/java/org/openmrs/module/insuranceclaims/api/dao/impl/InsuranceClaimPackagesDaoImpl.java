@@ -1,10 +1,12 @@
 package org.openmrs.module.insuranceclaims.api.dao.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.transform.Transformers;
 import org.hibernate.Session;
 import org.openmrs.module.insuranceclaims.api.dao.InsuranceClaimPackagesDao;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimPackage;
@@ -49,12 +51,6 @@ public class InsuranceClaimPackagesDaoImpl implements InsuranceClaimPackagesDao 
 		String lgender = "";
 		Criteria criteria = getSession().createCriteria(InsuranceClaimPackage.class);
 
-		// For packages, "code" is distinct
-		// distinct on "code"
-		criteria.setProjection(
-			Projections.distinct(Projections.property("code"))
-		);
-
 		if(gender != null && !gender.trim().isEmpty()) {
 			lgender = gender.trim().toLowerCase();
 			if(lgender.equalsIgnoreCase("MALE") || lgender.equalsIgnoreCase("M")) {
@@ -72,7 +68,27 @@ public class InsuranceClaimPackagesDaoImpl implements InsuranceClaimPackagesDao 
 			System.err.println("Insurance Claims Module: Getting Packages: No gender filter provided. We return the full list");
 		}
 
-		return(criteria.list());
+		// For packages, "code" is distinct
+		// group by code
+		criteria.setProjection(
+			Projections.projectionList()
+				.add(Projections.groupProperty("code"))
+				.add(Projections.min("id"), "id")   // pick one representative, e.g. with min(id)
+		);
+
+		// rebuild entities from grouped results
+		criteria.setResultTransformer(Transformers.aliasToBean(InsuranceClaimPackage.class));
+
+		List<InsuranceClaimPackage> results = criteria.list();
+
+		List<Integer> ids = results.stream()
+			.map(InsuranceClaimPackage::getId)
+			.collect(Collectors.toList());
+
+		Criteria fullCriteria = getSession().createCriteria(InsuranceClaimPackage.class);
+		fullCriteria.add(Restrictions.in("id", ids));
+
+		return(fullCriteria.list());
 	}
 
 	/**
