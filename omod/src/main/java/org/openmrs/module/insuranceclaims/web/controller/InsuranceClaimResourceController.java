@@ -462,7 +462,7 @@ public class InsuranceClaimResourceController {
     @RequestMapping(value = "/CoverageEligibilityRequest", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity<JSONArray> getCoverageEligibilityRequestGET(
-            @RequestParam(value = "patientUuid") String patientUuid,
+            @RequestParam(value = "patientUuid",required = false) String patientUuid,
             @RequestParam(value = "nationalId", required = false) String nationalId, HttpServletRequest request,
             HttpServletResponse response) throws ResponseException, IOException {
 
