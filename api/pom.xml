@@ -13,6 +13,12 @@
     <description>API project for Insurance Claims</description>
 
     <dependencies>
+        <!-- <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>insuranceclaims-omod</artifactId>
+            <version>1.1.0</version>
+        </dependency> -->
+
         <dependency>
             <groupId>org.openmrs.web</groupId>
             <artifactId>openmrs-web</artifactId>

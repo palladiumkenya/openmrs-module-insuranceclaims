@@ -166,6 +166,19 @@ public class GeneralUtil {
 	}
 
 	/**
+	 * Checks if claims automation is enabled in the global properties to send claims automatically upon checkout
+	 * @return
+	 */
+	public static Boolean getClaimAutomationEnabled() {
+		Boolean ret = false;
+		String claimsEnabled = Context.getAdministrationService().getGlobalProperty("insuranceclaims.claims.automation.enabled");
+		if(claimsEnabled != null && claimsEnabled.trim().equalsIgnoreCase("true")) {
+			ret = true;
+		}
+		return(ret);
+	}
+
+	/**
 	 * Get the CR number of patient
 	 *
 	 * @return

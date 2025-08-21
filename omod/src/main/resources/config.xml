@@ -230,4 +230,9 @@
         <defaultValue>https://uat-mis.apeiro-digital.com/fhir</defaultValue>
         <description>Base URL to be used in the final claim payload references</description>
     </globalProperty>
+    <globalProperty>
+        <property>${project.parent.artifactId}.claims.automation.enabled</property>
+        <defaultValue>false</defaultValue>
+        <description>Whether to send a claim automatically upon checkout or not (true or false)</description>
+    </globalProperty>
 </module>
