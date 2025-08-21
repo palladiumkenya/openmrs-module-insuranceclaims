@@ -74,4 +74,16 @@ public class InsuranceClaimsProvidersServiceImpl extends BaseOpenmrsService impl
 		return insuranceClaimPackagesDao.getPackages(gender);
 	}
 
+	/**
+	 * Gets a list of Interventions with gender and package code filter
+	 * 
+	 * @param gender
+	 * @param packageCode
+	 * @return
+	 */
+	@Override
+	public List<InsuranceClaimPackage> getInterventions(String gender, String packageCode) {
+		return insuranceClaimPackagesDao.getInterventions(gender, packageCode);
+	}
+
 }

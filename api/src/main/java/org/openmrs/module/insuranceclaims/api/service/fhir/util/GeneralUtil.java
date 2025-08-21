@@ -49,13 +49,13 @@ public class GeneralUtil {
 			String auth = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.custom.encodedpass");
 			String hieJwtUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiejwt.url");
 			if (hieJwtAuthMode == null || hieJwtAuthMode.trim().isEmpty()) {
-				System.out.println("Jwt Auth mode  configs not updated: ");
+				System.out.println("Insurance Claims Module: ERROR: Jwt Auth mode  configs not updated: ");
 			}
 			if (auth == null || auth.trim().isEmpty()) {
-				System.out.println("Jwt encoded auths configs not updated: ");
+				System.out.println("Insurance Claims Module: ERROR: Jwt encoded auths configs not updated: ");
 			}
 			if (hieJwtUrl == null || hieJwtUrl.trim().isEmpty()) {
-				System.out.println("Jwt token url configs not updated: ");
+				System.out.println("Insurance Claims Module: ERROR: Jwt token url configs not updated: ");
 			}
 
 			//Config to toggle GET and POST requests
@@ -66,13 +66,13 @@ public class GeneralUtil {
 					.build();
 				Response response = client.newCall(request).execute();
 				if (!response.isSuccessful()) {
-					System.err.println("Insurance- Claims: Get HIE Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
+					System.err.println("Insurance Claims Module: Get HIE Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
 				} else {
 					return response.body().string();
 				}
 			} else if (hieJwtAuthMode.trim().equalsIgnoreCase("post")) {
 				// Build the POST request
-				System.out.println("Auth mode is post: ");
+				System.out.println("Insurance Claims Module: Auth mode is post: ");
 				okhttp3.MediaType mediaType = okhttp3.MediaType.parse("text/plain");
 				okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "");
 				Request postRequest = new Request.Builder()
@@ -83,10 +83,10 @@ public class GeneralUtil {
 					.build();
 				Response postResponse = client.newCall(postRequest).execute();
 				if (!postResponse.isSuccessful()) {
-					System.err.println("Get HIE Post Auth: ERROR: Request failed: " + postResponse.code() + " - " + postResponse.message());
+					System.err.println("Insurance Claims Module: Get HIE Post Auth: ERROR: Request failed: " + postResponse.code() + " - " + postResponse.message());
 				} else {
 					String payload = postResponse.body().string();
-					System.out.println("Got HIE Post Auth token payload: " + payload);
+					System.out.println("Insurance Claims Module: Got HIE Post Auth token payload: " + payload);
 					com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 					com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(payload);
 					ret = rootNode.path("access_token").asText();
@@ -94,7 +94,7 @@ public class GeneralUtil {
 			}
 
 		} catch (Exception ex) {
-			System.err.println("Insurance- Claims: Get HIE Auth: ERROR: Request failed: " + ex.getMessage());
+			System.err.println("Insurance Claims Module: Get HIE Auth: ERROR: Request failed: " + ex.getMessage());
 			ex.printStackTrace();
 		}
 		return (ret);
@@ -114,7 +114,7 @@ public class GeneralUtil {
 			String auth = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiestaging.custom.encodedpass");
 			String hieStagingAuthUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hiestaging.auth.url");
 			if (auth != null && hieStagingAuthUrl != null && StringUtils.isNotEmpty(auth) && StringUtils.isNotEmpty(hieStagingAuthUrl)) {
-				System.out.println("Insurance- Claims: Get HIE Staging Auth token URL: " + hieStagingAuthUrl + " Auth: " + auth);
+				System.out.println("Insurance Claims Module: Get HIE Staging Auth token URL: " + hieStagingAuthUrl + " Auth: " + auth);
 				okhttp3.MediaType mediaType = okhttp3.MediaType.parse("text/plain");
 				okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "");
 				Request request = new Request.Builder()
@@ -125,19 +125,19 @@ public class GeneralUtil {
 					.build();
 				Response response = client.newCall(request).execute();
 				if (!response.isSuccessful()) {
-					System.err.println("Insurance- Claims: Get HIE Staging Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
+					System.err.println("Insurance Claims Module: Get HIE Staging Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
 				} else {
 					String payload = response.body().string();
-					System.out.println("Insurance- Claims: Got HIE Staging Auth token payload: " + payload);
+					System.out.println("Insurance Claims Module: Got HIE Staging Auth token payload: " + payload);
 					ObjectMapper objectMapper = new ObjectMapper();
 					JsonNode rootNode = objectMapper.readTree(payload);
 					return rootNode.path("access_token").asText();
 				}
 			} else {
-				System.err.println("Insurance- Claims: Get HIE Staging Auth: ERROR: Request failed: The global properties for hie Staging must be set");
+				System.err.println("Insurance Claims Module: Get HIE Staging Auth: ERROR: Request failed: The global properties for hie Staging must be set");
 			}
 		} catch (Exception ex) {
-			System.err.println("Insurance- Claims: Get HIE Staging Auth: ERROR: Request failed: " + ex.getMessage());
+			System.err.println("Insurance Claims Module: Get HIE Staging Auth: ERROR: Request failed: " + ex.getMessage());
 			ex.printStackTrace();
 		}
 		return (ret);

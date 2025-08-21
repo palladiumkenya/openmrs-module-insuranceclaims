@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.HumanName;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Meta;
 import org.hl7.fhir.r4.model.Reference;
+import org.openmrs.Encounter;
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
@@ -154,7 +155,9 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 									// 		System.out
 									// 		        .println("rmsdataexchange Module: Wonder Health: The patient is not female and not below 7 years old");
 									// }
-									System.out.println("Insurance Claims Module: A patient was checked out");
+									System.out.println("Insurance Claims Module: A patient was checked out. Checking for diagnosis");
+									VisitService visitService = Context.getVisitService();
+									Set<Encounter> encounters = visit.getEncounters();
 								} else {
 									// if (debugMode)
 										System.out
