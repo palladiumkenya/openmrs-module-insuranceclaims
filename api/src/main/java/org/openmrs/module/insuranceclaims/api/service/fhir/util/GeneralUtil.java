@@ -5,10 +5,13 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.Practitioner;
+import org.openmrs.Encounter;
+import org.openmrs.EncounterProvider;
 import org.openmrs.GlobalProperty;
 import org.openmrs.Location;
 import org.openmrs.LocationAttribute;
 import org.openmrs.LocationAttributeType;
+import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientIdentifierType;
@@ -26,6 +29,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.util.Optional;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -176,6 +180,38 @@ public class GeneralUtil {
 			ret = true;
 		}
 		return(ret);
+	}
+
+	/**
+	 * Gets the current location id
+	 * @return
+	 */
+	public static Integer getCurrentLocationId() {
+		Location location = Context.getLocationService().getDefaultLocation();
+		if (location != null) {
+			return location.getLocationId();  // returns Integer ID
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the provider for an encounter
+	 * @param encounter
+	 * @return
+	 */
+	public static Provider getProviderForEncounter(Encounter encounter) {
+		if (encounter == null) {
+			return null;
+		}
+
+		// Each encounter can have multiple providers, linked with encounter roles
+		Set<EncounterProvider> encounterProviders = encounter.getEncounterProviders();
+		if (!encounterProviders.isEmpty()) {
+			// Just return the first one, or filter by role if you need a specific type (e.g. "Clinician")
+			return encounterProviders.iterator().next().getProvider();
+		}
+
+		return null;
 	}
 
 	/**
