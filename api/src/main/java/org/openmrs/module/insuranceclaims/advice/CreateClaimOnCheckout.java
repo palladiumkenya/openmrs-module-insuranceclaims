@@ -59,6 +59,7 @@ import org.openmrs.api.context.Daemon;
 import org.openmrs.module.fhir2.FhirConstants;
 import org.openmrs.module.fhir2.api.translators.LocationTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientTranslator;
+import org.openmrs.module.insuranceclaims.InsuranceClaimsActivator;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
@@ -163,9 +164,19 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 								InsuranceClaim claim = claimFormService.createClaim(newClaimForm);
 
 								// Send the claim in a thread
-								SendClaimRunnable runner = new SendClaimRunnable(claim);
-								Thread claimSender = new Thread(runner);
-								claimSender.start();
+								// SendClaimRunnable runner = new SendClaimRunnable(claim);
+								// Thread claimSender = new Thread(runner);
+								// claimSender.start();
+								// Daemon.runInDaemonThread(runner, InsuranceClaimsActivator.getDaemonToken());
+
+								try {
+									System.out.println("Insurance Claims Module: Thread Attempting to send the claim");
+									ExternalApiRequest externalApiRequest = Context.getService(ExternalApiRequest.class);
+									externalApiRequest.sendClaimToExternalApi(claim);
+								} catch (Exception ex) {
+									System.err.println("Insurance Claims Module: Thread Claim Sending Error: " + ex.getMessage());
+									ex.printStackTrace();
+								}
 
 							} else {
 								// We found a diagnosis
