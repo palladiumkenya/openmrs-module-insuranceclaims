@@ -1,6 +1,8 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Organization;
@@ -28,6 +30,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 
@@ -617,6 +620,16 @@ public class GeneralUtil {
 		}
 
 		return (ret);
+	}
+
+	/**
+	 * Format date using a given format
+	 * @param date
+	 * @return
+	 */
+	public static String formatDate(Date date, String format) {
+		DateFormat dateFormatter = new SimpleDateFormat(format);
+		return date == null ? "" : dateFormatter.format(date);
 	}
 
 }

@@ -364,7 +364,8 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         encounterSubject.setIdentifier(encounterPatientIdentifier);
         fHIREncounter.setSubject(encounterSubject);
         // participant (practitioner)
-        String providerRegNo = GeneralUtil.getProviderLicenseNo(provider);
+        // String providerRegNo = GeneralUtil.getProviderLicenseNo(provider);
+        String providerRegNo = GeneralUtil.getProviderUniqueIdentifierNo(provider);
         List<Encounter.EncounterParticipantComponent> encounterParticipant = new ArrayList<>();
         Encounter.EncounterParticipantComponent participant = new Encounter.EncounterParticipantComponent();
         Reference participantIndividualRef = new Reference();

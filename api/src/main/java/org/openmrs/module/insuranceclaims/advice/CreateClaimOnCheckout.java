@@ -138,6 +138,8 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 								// claim.setStatus(InsuranceClaimStatus.ENTERED);
 								NewClaimForm newClaimForm = new NewClaimForm();
 								newClaimForm.setPatient(patient.getUuid());
+								newClaimForm.setStartDate(GeneralUtil.formatDate(new Date(), "yyyy-MM-dd"));
+								newClaimForm.setEndDate(GeneralUtil.formatDate(new Date(), "yyyy-MM-dd"));
 								newClaimForm.setVisitType(visit.getVisitType().getUuid());
 								newClaimForm.setVisitUuid(visit.getUuid());
 								newClaimForm.setEncounterUuid(encounterUuid);
@@ -160,16 +162,10 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 								ClaimFormService claimFormService = Context.getService(ClaimFormService.class);
 								InsuranceClaim claim = claimFormService.createClaim(newClaimForm);
 
-								// Sending claim to external server
-								// Even if immediate sending fails, we can send later
-								try {
-									System.out.println("Insurance Claims Module: Attempting to send the claim");
-									ExternalApiRequest externalApiRequest = Context.getService(ExternalApiRequest.class);
-									externalApiRequest.sendClaimToExternalApi(claim);
-								} catch (Exception ex) {
-									System.err.println("Insurance Claims Module: Claim Sending Error: " + ex.getMessage());
-									ex.printStackTrace();
-								}
+								// Send the claim in a thread
+								SendClaimRunnable runner = new SendClaimRunnable(claim);
+								Thread claimSender = new Thread(runner);
+								claimSender.start();
 
 							} else {
 								// We found a diagnosis
@@ -179,7 +175,7 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 							System.out.println("Insurance Claims Module: Error: No patient attached to the visit");
 						}
 					} else {
-						System.out.println("Insurance Claims Module: Wonder Health: Not a new visit. We ignore.");
+						System.out.println("Insurance Claims Module: Automation Error: Not a checkout. We ignore.");
 					}
 				}
 			} else {
@@ -188,115 +184,44 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 		}
 		catch (Exception ex) {
 			// if (debugMode)
-				System.err.println("Insurance Claims Module: Error getting new patient: " + ex.getMessage());
+				System.err.println("Insurance Claims Module: Error creating automated claim: " + ex.getMessage());
 			ex.printStackTrace();
 		}
 	}
 	
 	/**
-	 * Prepare the claim
-	 * 
-	 * @param patient
-	 * @return
-	 */
-	// private String preparePatientClaim(@NotNull Patient patient) {
-	// 	String ret = "";
-		
-	// 	try {
-	
-	// 	}
-	// 	catch (Exception ex) {
-	// 		System.err.println("Insurance Claims Module: Error preparing claim: " + ex.getMessage());
-	// 		ex.printStackTrace();
-	// 	}
-	// 	finally {
-	// 		// Context.closeSession();
-	// 	}
-		
-	// 	return (ret);
-	// }
-	
-	/**
 	 * A thread to free up the frontend
 	 */
-	// private class syncPatientRunnable implements Runnable {
+	private class SendClaimRunnable implements Runnable {
 		
-	// 	String payload = "";
+		InsuranceClaim insuranceClaim = null;
 		
-	// 	Patient patient = null;
-		
-	// 	Boolean debugMode = false;
-		
-	// 	public syncPatientRunnable(@NotNull String payload, @NotNull Patient patient) {
-	// 		this.payload = payload;
-	// 		this.patient = patient;
-	// 	}
-		
-	// 	@Override
-	// 	public void run() {
-			
-	// 		try {
-	// 			
-				
-	// 		}
-	// 		catch (Exception ex) {
-	// 			if (debugMode)
-	// 				System.err.println("rmsdataexchange Module: Error. Failed to send patient to Wonder Health: "
-	// 				        + ex.getMessage());
-	// 			ex.printStackTrace();
-	// 		}
-	// 		finally {
-	// 			// Context.closeSession();
-	// 		}
-	// 	}
-	// }
-	
-	/**
-	 * Trust all certs
-	 */
-	public static void trustAllCerts() {
-		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-			
-			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-				return null;
-			}
-			
-			@Override
-			public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-			}
-			
-			@Override
-			public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-			}
-		} };
-		
-		SSLContext sc = null;
-		try {
-			sc = SSLContext.getInstance("SSL");
+		public SendClaimRunnable(@NotNull InsuranceClaim claim) {
+			this.insuranceClaim = claim;
 		}
-		catch (NoSuchAlgorithmException e) {
-			System.out.println(e.getMessage());
-		}
-		try {
-			sc.init(null, trustAllCerts, new java.security.SecureRandom());
-		}
-		catch (KeyManagementException e) {
-			System.out.println(e.getMessage());
-		}
-		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		
-		// Optional 
-		// Create all-trusting host name verifier
-		HostnameVerifier validHosts = new HostnameVerifier() {
+		@Override
+		public void run() {
 			
-			@Override
-			public boolean verify(String arg0, SSLSession arg1) {
-				return true;
+			try {
+				if(insuranceClaim != null) {
+					// Sending claim to external server
+					// Even if immediate sending fails, we can send later
+					try {
+						System.out.println("Insurance Claims Module: Thread Attempting to send the claim");
+						ExternalApiRequest externalApiRequest = Context.getService(ExternalApiRequest.class);
+						externalApiRequest.sendClaimToExternalApi(insuranceClaim);
+					} catch (Exception ex) {
+						System.err.println("Insurance Claims Module: Thread Claim Sending Error: " + ex.getMessage());
+						ex.printStackTrace();
+					}
+				}
 			}
-		};
-		// All hosts will be valid
-		HttpsURLConnection.setDefaultHostnameVerifier(validHosts);
-		
+			catch (Exception ex) {
+				System.err.println("Insurance Claims Module: ERROR: " + ex.getMessage());
+				ex.printStackTrace();
+			}
+		}
 	}
 	
 }
