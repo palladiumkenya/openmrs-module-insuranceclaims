@@ -85,7 +85,7 @@ public class InsuranceClaimsRestController extends BaseRestController {
 	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 	@RequestMapping(method = RequestMethod.GET, value = "/packages")
 	@ResponseBody
-	public List<SimpleObject> getInsurancePackages(@RequestParam(value = "gender", required = false) String gender) {
+	public List<SimpleObject> getInsurancePackages(@RequestParam(value = "applicable_gender", required = false) String gender) {
 		List<SimpleObject> ret = new ArrayList<>();
         InsuranceClaimsPackagesService insuranceClaimsPackagesService = Context.getService(InsuranceClaimsPackagesService.class);
 
@@ -111,7 +111,7 @@ public class InsuranceClaimsRestController extends BaseRestController {
 	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 	@RequestMapping(method = RequestMethod.GET, value = "/interventions")
 	@ResponseBody
-	public SimpleObject getInsuranceInterventions(@RequestParam(value = "gender", required = false) String gender, @RequestParam(value = "package_code", required = false) String packageCode) {
+	public SimpleObject getInsuranceInterventions(@RequestParam(value = "applicable_gender", required = false) String gender, @RequestParam(value = "package_code", required = false) String packageCode) {
         SimpleObject result = new SimpleObject();
 		List<SimpleObject> data = new ArrayList<>();
         InsuranceClaimsPackagesService insuranceClaimsPackagesService = Context.getService(InsuranceClaimsPackagesService.class);
