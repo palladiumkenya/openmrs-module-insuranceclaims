@@ -67,7 +67,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimsProvidersService;
+import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimsPackagesService;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimPackage;
 
 /**
@@ -85,11 +85,13 @@ public class InsuranceClaimsRestController extends BaseRestController {
 	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 	@RequestMapping(method = RequestMethod.GET, value = "/packages")
 	@ResponseBody
-	public List<SimpleObject> getInsurancePackages() {
+	public List<SimpleObject> getInsurancePackages(@RequestParam(value = "applicable_gender", required = false) String gender) {
 		List<SimpleObject> ret = new ArrayList<>();
-        InsuranceClaimsProvidersService insuranceClaimsProvidersService = Context.getService(InsuranceClaimsProvidersService.class);
+        InsuranceClaimsPackagesService insuranceClaimsPackagesService = Context.getService(InsuranceClaimsPackagesService.class);
 
-        List<InsuranceClaimPackage> packages = insuranceClaimsProvidersService.getAllPackages();
+        List<InsuranceClaimPackage> packages = insuranceClaimsPackagesService.getPackages(gender);
+
+        System.err.println("Insurance Claims Module: Got packages list: " + packages.size());
 
         for(InsuranceClaimPackage icp : packages) {
             SimpleObject prep = new SimpleObject();
@@ -109,12 +111,12 @@ public class InsuranceClaimsRestController extends BaseRestController {
 	@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 	@RequestMapping(method = RequestMethod.GET, value = "/interventions")
 	@ResponseBody
-	public SimpleObject getInsuranceInterventions() {
+	public SimpleObject getInsuranceInterventions(@RequestParam(value = "applicable_gender", required = false) String gender, @RequestParam(value = "package_code", required = false) String packageCode) {
         SimpleObject result = new SimpleObject();
 		List<SimpleObject> data = new ArrayList<>();
-        InsuranceClaimsProvidersService insuranceClaimsProvidersService = Context.getService(InsuranceClaimsProvidersService.class);
+        InsuranceClaimsPackagesService insuranceClaimsPackagesService = Context.getService(InsuranceClaimsPackagesService.class);
 
-        List<InsuranceClaimPackage> packages = insuranceClaimsProvidersService.getAllPackages();
+        List<InsuranceClaimPackage> packages = insuranceClaimsPackagesService.getInterventions(gender, packageCode);
         result.add("status", "SUCCESS");
         result.add("customerMessage", "Benefit details successfully retrieved");
         result.add("debugMessage", null);

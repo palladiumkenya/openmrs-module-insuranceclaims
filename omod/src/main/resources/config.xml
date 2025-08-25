@@ -53,12 +53,16 @@
 		packages.hbm.xml
 	</mappingFiles>
 
-    <!-- AOP
-    <advice>
+    <!-- AOP -->
+    <!-- <advice>
         <point>org.openmrs.api.FormService</point>
         <class>@MODULE_PACKAGE@.advice.DuplicateFormAdvisor</class>
-    </advice>
-     /AOP -->
+    </advice> -->
+
+    <advice>
+		<point>org.openmrs.api.VisitService</point>
+		<class>org.openmrs.module.insuranceclaims.advice.CreateClaimOnCheckout</class>
+	</advice> 
 
     <!--<privilege>
         <name>Insurance Claims Privilege</name>
@@ -225,5 +229,10 @@
         <property>${project.parent.artifactId}.base.resource.url</property>
         <defaultValue>https://uat-mis.apeiro-digital.com/fhir</defaultValue>
         <description>Base URL to be used in the final claim payload references</description>
+    </globalProperty>
+    <globalProperty>
+        <property>${project.parent.artifactId}.claims.automation.enabled</property>
+        <defaultValue>false</defaultValue>
+        <description>Whether to send a claim automatically upon checkout or not (true or false)</description>
     </globalProperty>
 </module>

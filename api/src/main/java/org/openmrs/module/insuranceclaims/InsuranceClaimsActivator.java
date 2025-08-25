@@ -17,7 +17,7 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	private static final String MODULE_START_MESSAGE = "Started Insurance Claims";
 	private static final String MODULE_STOP_MESSAGE  = "Stopped Insurance Claims";
 
-	private DaemonToken daemonToken;
+	private static DaemonToken daemonToken;
 
 	/**
 	 * @see #started()
@@ -43,6 +43,8 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 
 	@Override
 	public void setDaemonToken(DaemonToken token) {
+		System.err.println("Insurance Claims Module: Got daemon token as: " + token);
+		// InsuranceClaimsActivator.daemonToken = token;
 		daemonToken = token;
 	}
 
@@ -85,5 +87,9 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	@Override
 	public void contextRefreshed() {
 		System.err.println("Insurance Claims Module refreshing context");
+	}
+	
+	public static DaemonToken getDaemonToken() {
+		return daemonToken;
 	}
 }

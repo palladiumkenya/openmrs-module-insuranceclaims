@@ -186,9 +186,11 @@ public class ClaimFormServiceImpl implements ClaimFormService {
     private List<InsuranceClaimItem> generateClaimItems(Map<String, ProvidedItemInForm> allProvidedItems, Patient patient) {
         List<InsuranceClaimItem> consumptions = new ArrayList<>();
 
-        for (ProvidedItemInForm itemConsumptions:  allProvidedItems.values()) {
-            List<InsuranceClaimItem> items = getConsumedItemsOfType(itemConsumptions, patient);
-            consumptions.addAll(items);
+        if(allProvidedItems != null && allProvidedItems.size() > 0) {
+            for (ProvidedItemInForm itemConsumptions:  allProvidedItems.values()) {
+                List<InsuranceClaimItem> items = getConsumedItemsOfType(itemConsumptions, patient);
+                consumptions.addAll(items);
+            }
         }
 
         return consumptions;

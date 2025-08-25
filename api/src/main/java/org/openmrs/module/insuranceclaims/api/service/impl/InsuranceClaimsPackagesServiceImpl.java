@@ -29,7 +29,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.insuranceclaims.api.dao.InsuranceClaimPackagesDao;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimPackage;
-import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimsProvidersService;
+import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimsPackagesService;
 // import org.openmrs.module.kenyaemr.api.KenyaEmrService;
 // import org.openmrs.module.kenyaemrml.ModuleConstants;
 // import org.openmrs.module.kenyaemrml.api.MLinKenyaEMRService;
@@ -38,7 +38,7 @@ import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimsProvidersSe
 // import org.openmrs.module.kenyaemrml.iit.PatientRiskScore;
 // import org.openmrs.ui.framework.SimpleObject;
 
-public class InsuranceClaimsProvidersServiceImpl extends BaseOpenmrsService implements InsuranceClaimsProvidersService {
+public class InsuranceClaimsPackagesServiceImpl extends BaseOpenmrsService implements InsuranceClaimsPackagesService {
 	
 	InsuranceClaimPackagesDao insuranceClaimPackagesDao;
 	
@@ -67,6 +67,23 @@ public class InsuranceClaimsProvidersServiceImpl extends BaseOpenmrsService impl
 	@Override
 	public List<InsuranceClaimPackage> getAllPackages() {
 		return insuranceClaimPackagesDao.getAllPackages();
+	}
+
+	@Override
+	public List<InsuranceClaimPackage> getPackages(String gender) {
+		return insuranceClaimPackagesDao.getPackages(gender);
+	}
+
+	/**
+	 * Gets a list of Interventions with gender and package code filter
+	 * 
+	 * @param gender
+	 * @param packageCode
+	 * @return
+	 */
+	@Override
+	public List<InsuranceClaimPackage> getInterventions(String gender, String packageCode) {
+		return insuranceClaimPackagesDao.getInterventions(gender, packageCode);
 	}
 
 }

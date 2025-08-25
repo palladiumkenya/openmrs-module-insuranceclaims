@@ -100,8 +100,17 @@
     <bean parent="serviceContext">
         <property name="moduleService">
             <list>
-                <value>org.openmrs.module.insuranceclaims.api.service.ProvidedItemService</value>
-                <ref bean="insuranceclaims.ProvidedItemService"/>
+                <value>org.openmrs.module.insuranceclaims.forms.ClaimFormService</value>
+                <ref bean="insuranceclaims.InsuranceClaimFormService"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
+                <value>org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest</value>
+                <ref bean="insuranceclaims.ExternalApiRequest"/>
             </list>
         </property>
     </bean>
@@ -115,19 +124,19 @@
         </property>
     </bean>
 
-    <!-- Adds InsuranceClaimsProvidersService to OpenMRS context so it can be accessed - moduleService
-    calling Context.getService(InsuranceClaimsProvidersService.class) -->
+    <!-- Adds InsuranceClaimsPackagesService to OpenMRS context so it can be accessed - moduleService
+    calling Context.getService(InsuranceClaimsPackagesService.class) -->
 
     <bean parent="serviceContext">
         <property name="moduleService">
             <list>
-                <value>org.openmrs.module.insuranceclaims.api.service.InsuranceClaimsProvidersService</value>
+                <value>org.openmrs.module.insuranceclaims.api.service.InsuranceClaimsPackagesService</value>
                 <bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
                     <property name="transactionManager">
                         <ref bean="transactionManager" />
                     </property>
                     <property name="target">
-                        <bean id="InsuranceClaimsProvidersService" class="org.openmrs.module.insuranceclaims.api.service.impl.InsuranceClaimsProvidersServiceImpl">
+                        <bean id="InsuranceClaimsPackagesService" class="org.openmrs.module.insuranceclaims.api.service.impl.InsuranceClaimsPackagesServiceImpl">
                             <property name="insuranceClaimPackagesDao">
                                 <bean id="InsuranceClaimPackagesDao" class="org.openmrs.module.insuranceclaims.api.dao.impl.InsuranceClaimPackagesDaoImpl">
                                     <property name="sessionFactory">

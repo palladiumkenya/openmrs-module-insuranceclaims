@@ -27,7 +27,7 @@ import java.util.Collection;
  * The main service of this module, which is exposed for other modules. See
  * moduleApplicationContext.xml on how it is wired up.
  */
-public interface InsuranceClaimsProvidersService extends OpenmrsService {
+public interface InsuranceClaimsPackagesService extends OpenmrsService {
 		
 	/**
 	 * Saves or updates package
@@ -48,4 +48,20 @@ public interface InsuranceClaimsProvidersService extends OpenmrsService {
 	List<InsuranceClaimPackage> getAllPackages();
 
 
+	/**
+	 * Gets a list of packages given a gender filter
+	 * 
+	 * @return
+	 */
+	@Transactional
+	List<InsuranceClaimPackage> getPackages(String gender);
+
+	/**
+	 * Gets a list of Interventions with gender and package code filter
+	 * 
+	 * @param gender
+	 * @param packageCode
+	 * @return
+	 */
+	public List<InsuranceClaimPackage> getInterventions(String gender, String packageCode);
 }
