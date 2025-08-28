@@ -7,6 +7,7 @@ import org.openmrs.module.BaseModuleActivator;
 import org.openmrs.module.DaemonToken;
 import org.openmrs.module.DaemonTokenAware;
 import org.openmrs.module.insuranceclaims.activator.concept.ModuleConceptSetup;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
 import org.openmrs.module.insuranceclaims.util.ConstantValues;
 
 /**
@@ -24,7 +25,7 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	 */
 	@Override
 	public void started() {
-		System.err.println("Insurance Claims Module started");
+		System.err.println("Insurance Claims Module started: " + GeneralUtil.getCurrentDateTime());
 		addConcepts();
 
 		createInsureNumberAttribute();
@@ -37,13 +38,13 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	 */
 	@Override
 	public void stopped() {
-		System.err.println("Insurance Claims Module stopped");
+		System.err.println("Insurance Claims Module: stopped module: " + GeneralUtil.getCurrentDateTime());
 		System.err.println(MODULE_STOP_MESSAGE);
 	}
 
 	@Override
 	public void setDaemonToken(DaemonToken token) {
-		System.err.println("Insurance Claims Module: Got daemon token as: " + token);
+		System.err.println("Insurance Claims Module: Got daemon token as: " + token + " : "  + GeneralUtil.getCurrentDateTime());
 		// InsuranceClaimsActivator.daemonToken = token;
 		daemonToken = token;
 	}
@@ -71,22 +72,22 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 
 	@Override
 	public void willRefreshContext() {
-		System.err.println("Insurance Claims Module refreshing context");
+		System.err.println("Insurance Claims Module: Will refresh context: " + GeneralUtil.getCurrentDateTime());
 	}
  
 	@Override
 	public void willStart() {
-		System.err.println("Insurance Claims Module starting");
+		System.err.println("Insurance Claims Module: Will start: " + GeneralUtil.getCurrentDateTime());
 	}
  
 	@Override
 	public void willStop() {
-		System.err.println("Insurance Claims Module stopping");
+		System.err.println("Insurance Claims Module: Will stop: " + GeneralUtil.getCurrentDateTime());
 	}
 
 	@Override
 	public void contextRefreshed() {
-		System.err.println("Insurance Claims Module refreshing context");
+		System.err.println("Insurance Claims Module: finished refreshing context: " + GeneralUtil.getCurrentDateTime());
 	}
 	
 	public static DaemonToken getDaemonToken() {
