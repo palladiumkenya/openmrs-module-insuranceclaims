@@ -155,4 +155,12 @@ public class Bill extends AbstractBaseOpenmrsData {
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this, "id", "uuid", "creator");
     }
+
+    @Override
+    public String toString() {
+        return "Bill [id=" + id + ", startDate=" + startDate + ", endDate=" + endDate + ", totalAmount=" + totalAmount
+                + ", paymentStatus=" + paymentStatus + ", paymentType=" + paymentType + ", diagnosis=" + diagnosis
+                + ", patient=" + patient + "]";
+    }
+
 }

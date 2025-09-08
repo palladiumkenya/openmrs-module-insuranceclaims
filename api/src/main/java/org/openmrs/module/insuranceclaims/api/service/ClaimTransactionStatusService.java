@@ -42,7 +42,7 @@ public class ClaimTransactionStatusService {
             System.out.println("---> Status from API for transactionId: " + transactionId);
 
             if (status == null) {
-                log.error("---> API call failed or returned null status for transactionId: " + transactionId);
+                System.err.println("---> API call failed or returned null status for transactionId: " + transactionId);
             }
             return status;
         } catch (Exception e) {
@@ -62,17 +62,17 @@ public class ClaimTransactionStatusService {
      */
     private ClaimTransactionStatus getStatusFromApi(String transactionId, boolean isHieEnabled, String accessToken, String claimResponseUrl,  String callbackUrl) {
         if (transactionId == null || transactionId.trim().isEmpty()) {
-            log.error("---> Transaction ID is null or empty.");
+            System.err.println("---> Transaction ID is null or empty.");
             return null;
         }
 
         try {
             ClaimTransactionStatus status;
             if (!isHieEnabled) {
-                log.info("---> Using aggregator API for claim status.");
+                System.err.println("---> Using aggregator API for claim status.");
                 status = getStatusFromAggregatorApi(transactionId, callbackUrl);
             } else {
-                log.info("---> Using HIE API for claim status.");
+                System.err.println("---> Using HIE API for claim status.");
                 status = getStatusFromHieApi(transactionId, accessToken, claimResponseUrl);
             }
             return status;
@@ -104,7 +104,7 @@ public class ClaimTransactionStatusService {
                     .addHeader("Authorization", "Bearer " + accessToken)
                     .build();
 
-            log.info("---> Requesting claim status from HIE API: " + url);
+            System.err.println("---> Requesting claim status from HIE API: " + url);
             Response response = httpClient.newCall(request).execute();
             if (response.isSuccessful() && response.body() != null) {
                 String jsonResponse = response.body().string();
@@ -115,18 +115,21 @@ public class ClaimTransactionStatusService {
                 ClaimTransactionStatus status = null;
                 try {
                     status = converter.convertFhirBundleToClaimStatus(jsonResponse);
+                    // status = converter.convertFhirOperationOutputToClaimStatus(jsonResponse);
                 } catch (Exception ex) {
-                    log.error("---> Error converting FHIR Bundle to ClaimTransactionStatus: " + ex.getMessage(), ex);
+                    System.err.println("---> Error converting FHIR Bundle to ClaimTransactionStatus: " + ex.getMessage());
+                    ex.printStackTrace();
                     return null;
                 }
                 return status;
             } else {
-                log.error("---> HIE API returned unsuccessful response: " +
+                System.err.println("---> HIE API returned unsuccessful response: " +
                         (response.code()) +
                         (response.body() != null ? " with body: " + response.body().string() : " with no body"));
             }
         } catch (IOException e) {
-            log.error("---> Error making HTTP request to HIE API: " + e.getMessage(), e);
+            System.err.println("---> Error making HTTP request to HIE API: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return null;
@@ -148,7 +151,7 @@ public class ClaimTransactionStatusService {
             Request request = new Request.Builder()
                     .url(url)
                     .build();
-            log.info("---> Requesting claim status from API: " + url);
+            System.err.println("---> Requesting claim status from API: " + url);
             Response response = httpClient.newCall(request).execute();
             if (response.isSuccessful() && response.body() != null) {
                 String jsonResponse = response.body().string();
@@ -167,12 +170,13 @@ public class ClaimTransactionStatusService {
 
                 claimStatus = status;
             } else {
-                log.error("---> API returned unsuccessful response: " +
+                System.err.println("---> API returned unsuccessful response: " +
                         (response.code()) +
                         (response.body() != null ? " with body: " + response.body().string() : " with no body"));
             }
         } catch (IOException e) {
-            log.error("---> Error making HTTP request: " + e.getMessage(), e);
+            System.err.println("---> Error making HTTP request: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return claimStatus;
