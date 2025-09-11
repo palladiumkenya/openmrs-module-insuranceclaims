@@ -65,17 +65,19 @@ public class FhirToClaimTransactionStatusConverter {
         JsonNode entries = response.get("entry");
 		
         if (error != null && error.isObject()) {
+            System.err.println("Insurance Claims: Claim Status: Got error response");
             JsonNode errorMesg = error.get("message");
             String msg = (errorMesg != null && errorMesg.isTextual() && errorMesg.textValue() != null) ? errorMesg.textValue() : "General Error";
             throw new IllegalArgumentException("Insurance Claims: ERROR: " + msg);
         } else if(resType != null && resType.isTextual() && resType.textValue() != null && resType.textValue().trim().equalsIgnoreCase("OperationOutcome")) {
             // The pro way
+            System.err.println("Insurance Claims: Claim Status: Got an issue in a OperationOutcome");
             OperationOutcome operationOutcome = ClaimsUtils.getOperationOutcomeFromJson(fhirJson);
             String issues = ClaimsUtils.operationOutcomeIssuesToString(operationOutcome.getIssue());
             throw new IllegalArgumentException("Insurance Claims: ERROR: " + issues);
         } else if (resType != null && resType.isTextual() && resType.textValue() != null && resType.textValue().trim().equalsIgnoreCase("Bundle") && entries != null && entries.isArray()) {
             // We have a Bundle
-            System.err.println("Insurance Claims: Found " + entries.size() + " entries in bundle");
+            System.err.println("Insurance Claims: Claim Status: Found " + entries.size() + " entries in response Bundle");
 
             JsonNode claimResource = null;
             JsonNode claimResponseResource = null;
