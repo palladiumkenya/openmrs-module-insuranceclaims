@@ -499,7 +499,7 @@ public class InsuranceClaimResourceController {
         try {
 
             if (hieBaseUrl == null || hieBaseUrl.trim().isEmpty()) {
-                System.err.println("Insurance- Claims: Get Packages: ERROR: HIE URL is not set");
+                System.err.println("Insurance Claims: Get Packages: ERROR: HIE URL is not set");
             } else {
                 if (token != null && StringUtils.isNotEmpty(token)) {
                     String benefitsUrl = hieBaseUrl + "/benefit-package";
@@ -518,11 +518,11 @@ public class InsuranceClaimResourceController {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(toReturn);
                 } else {
-                    System.err.println("Insurance- Claims: Get Packages: ERROR: Failed to get HIE Auth Token");
+                    System.err.println("Insurance Claims: Get Packages: ERROR: Failed to get HIE Auth Token");
                 }
             }
         } catch (Exception ex) {
-            System.err.println("Insurance- Claims: Get Packages: ERROR: " + ex.getMessage());
+            System.err.println("Insurance Claims: Get Packages: ERROR: " + ex.getMessage());
             ex.printStackTrace();
         }
 
@@ -549,7 +549,7 @@ public class InsuranceClaimResourceController {
         try {
 
             if (hieBaseUrl == null || hieBaseUrl.trim().isEmpty()) {
-                System.err.println("Insurance- Claims: Get Sub Packages: ERROR: HIE URL is not set");
+                System.err.println("Insurance Claims: Get Sub Packages: ERROR: HIE URL is not set");
             } else {
                 if (token != null && StringUtils.isNotEmpty(token)) {
                     String benefitsUrl = hieBaseUrl + "/benefit-sub-package";
@@ -568,11 +568,11 @@ public class InsuranceClaimResourceController {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(toReturn);
                 } else {
-                    System.err.println("Insurance- Claims: Get Sub Packages: ERROR: Failed to get HIE Auth Token");
+                    System.err.println("Insurance Claims: Get Sub Packages: ERROR: Failed to get HIE Auth Token");
                 }
             }
         } catch (Exception ex) {
-            System.err.println("Insurance- Claims: Get Sub Packages: ERROR: " + ex.getMessage());
+            System.err.println("Insurance Claims: Get Sub Packages: ERROR: " + ex.getMessage());
             ex.printStackTrace();
         }
 
@@ -599,7 +599,7 @@ public class InsuranceClaimResourceController {
         try {
 
             if (hieBaseUrl == null || hieBaseUrl.trim().isEmpty()) {
-                System.err.println("Insurance- Claims: Get interventions: ERROR: HIE URL is not set");
+                System.err.println("Insurance Claims: Get interventions: ERROR: HIE URL is not set");
             } else {
                 if (token != null && StringUtils.isNotEmpty(token)) {
                     String benefitsUrl = hieBaseUrl + "/interventions";
@@ -618,11 +618,11 @@ public class InsuranceClaimResourceController {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(toReturn);
                 } else {
-                    System.err.println("Insurance- Claims: Get interventions: ERROR: Failed to get HIE Auth Token");
+                    System.err.println("Insurance Claims: Get interventions: ERROR: Failed to get HIE Auth Token");
                 }
             }
         } catch (Exception ex) {
-            System.err.println("Insurance- Claims: Get interventions: ERROR: " + ex.getMessage());
+            System.err.println("Insurance Claims: Get interventions: ERROR: " + ex.getMessage());
             ex.printStackTrace();
         }
 
@@ -652,7 +652,7 @@ public class InsuranceClaimResourceController {
         for (String output = ""; (output = requestReader.readLine()) != null; requestBody = requestBody
                 + output) {
         }
-        System.out.println("Insurance- Claims: Get intervention codes by scheme: details: " + requestBody);
+        System.out.println("Insurance Claims: Get intervention codes by scheme: details: " + requestBody);
 
         String token = GeneralUtil.getJWTAuthToken();
         String hieBaseUrl = Context.getAdministrationService().getGlobalProperty("insuranceclaims.hie.base.url");
@@ -660,7 +660,7 @@ public class InsuranceClaimResourceController {
         try {
 
             if (hieBaseUrl == null || hieBaseUrl.trim().isEmpty()) {
-                System.err.println("Insurance- Claims: Get intervention codes by scheme: ERROR: HIE URL is not set");
+                System.err.println("Insurance Claims: Get intervention codes by scheme: ERROR: HIE URL is not set");
             } else {
                 if (token != null && StringUtils.isNotEmpty(token)) {
                     String benefitsUrl = hieBaseUrl + "/interventions/query";
@@ -683,11 +683,11 @@ public class InsuranceClaimResourceController {
                             .body(toReturn);
                 } else {
                     System.err.println(
-                            "Insurance- Claims: Get intervention codes by scheme: ERROR: Failed to get HIE Auth Token");
+                            "Insurance Claims: Get intervention codes by scheme: ERROR: Failed to get HIE Auth Token");
                 }
             }
         } catch (Exception ex) {
-            System.err.println("Insurance- Claims: Get intervention codes by scheme: ERROR: " + ex.getMessage());
+            System.err.println("Insurance Claims: Get intervention codes by scheme: ERROR: " + ex.getMessage());
             ex.printStackTrace();
         }
 
@@ -722,7 +722,7 @@ public class InsuranceClaimResourceController {
         try {
             Context.openSession();
             Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
-            System.out.println("---> Session opened and privilege added for externalId: " + externalId);
+            System.out.println("Insurance Claims: Session opened and privilege added for externalId: " + externalId);
 
             String callbackUrl = Context.getAdministrationService()
                     .getGlobalProperty(ConstantValues.HIE_CALLBACK_URL);
@@ -739,19 +739,19 @@ public class InsuranceClaimResourceController {
             try {
                 accessToken = GeneralUtil.getJWTAuthToken();
             } catch (IOException e) {
-                System.out.println("---> Error getting JWT Auth Token: " + e.getMessage());
+                System.out.println("Insurance Claims: Error getting JWT Auth Token: " + e.getMessage());
                 return null;
             }
 
             InsuranceClaim claim = insuranceClaimService.getInsuranceClaimByExternalId(externalId);
             if (claim == null) {
-                System.out.println("Claim not found with externalId: " + externalId);
+                System.out.println("Insurance Claims: Claim not found with externalId: " + externalId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Claim not found");
             }
 
             ClaimTransactionStatus status = claimTransactionStatusService.getLatestStatusById(externalId, isHieEnabled, accessToken, claimResponseUrl,  callbackUrl);
             if (status == null) {
-                System.out.println("Failed to retrieve claim status for externalId: " + externalId);
+                System.out.println("Insurance Claims: Failed to retrieve claim status for externalId: " + externalId);
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                         .body("Failed to retrieve claim status. Please try again later.");
             }
@@ -760,7 +760,7 @@ public class InsuranceClaimResourceController {
                 // Update the claim status in the local database
                 InsuranceClaim updateClaim = insuranceClaimService.updateClaimStatus(externalId, status.getStatus());
                 if (updateClaim == null) {
-                    System.out.println("Failed to update claim status in the database");
+                    System.out.println("Insurance Claims: Failed to update claim status in the database");
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .body("Failed to update claim status in the database");
                 }
@@ -769,19 +769,19 @@ public class InsuranceClaimResourceController {
                 ObjectMapper mapper = new ObjectMapper();
                 return ResponseEntity.ok(mapper.writeValueAsString(status));
             } catch (Exception e) {
-                System.out.println("Error updating claim status: " + e.getMessage());
+                System.out.println("Insurance Claims: Error updating claim status: " + e.getMessage());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Error updating claim status: " + e.getMessage());
             }
         } catch (Exception ex) {
 
-            System.err.println("Insurance- Claims: Update claim status: ERROR: " + ex.getMessage());
+            System.err.println("Insurance Claims: Update claim status: ERROR: " + ex.getMessage());
         } finally {
             try {
                 Context.closeSession();
-                System.out.println("---> Closed OpenMRS session for externalId: " + externalId);
+                System.out.println("Insurance Claims: Closed OpenMRS session for externalId: " + externalId);
             } catch (Exception e) {
-                System.out.println("---> Error closing session for externalId: "+ externalId + "error : " + e.getMessage());
+                System.out.println("Insurance Claims: Error closing session for externalId: "+ externalId + "error : " + e.getMessage());
             }
         }
         return null;
