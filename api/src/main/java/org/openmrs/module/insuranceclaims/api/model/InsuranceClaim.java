@@ -322,4 +322,17 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	public void setEncounter(Encounter encounter) {
 		this.encounter = encounter;
 	}
+
+	@Override
+	public String toString() {
+		return "InsuranceClaim [id=" + id + ", provider=" + provider + ", patient=" + patient + ", location=" + location
+				+ ", claimCode=" + claimCode + ", responseUUID=" + responseUUID + ", use=" + use + ", billNumber="
+				+ billNumber + ", dateFrom=" + dateFrom + ", dateTo=" + dateTo + ", adjustment=" + adjustment
+				+ ", claimedTotal=" + claimedTotal + ", approvedTotal=" + approvedTotal + ", dateProcessed="
+				+ dateProcessed + ", explanation=" + explanation + ", rejectionReason=" + rejectionReason
+				+ ", guaranteeId=" + guaranteeId + ", visit=" + visit + ", encounter=" + encounter + ", externalId="
+				+ externalId + ", visitType=" + visitType + ", status=" + status + ", bill=" + bill + "]";
+	}
+
+	
 }

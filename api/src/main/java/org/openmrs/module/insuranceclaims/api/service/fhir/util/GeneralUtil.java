@@ -3,6 +3,8 @@ package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Organization;
@@ -630,6 +632,22 @@ public class GeneralUtil {
 	public static String formatDate(Date date, String format) {
 		DateFormat dateFormatter = new SimpleDateFormat(format);
 		return date == null ? "" : dateFormatter.format(date);
+	}
+
+	/**
+	 * get the current date and time
+	 * 
+	 * @return
+	 */
+	public static String getCurrentDateTime() {
+		// Get the current date and time
+		LocalDateTime currentDateTime = LocalDateTime.now();
+		
+		// Format the date and time for better readability
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+		String formattedDateTime = currentDateTime.format(formatter);
+		
+		return (formattedDateTime);
 	}
 
 }

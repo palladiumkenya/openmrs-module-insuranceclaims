@@ -9,11 +9,20 @@
  */
 package org.openmrs.module.insuranceclaims.util;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r4.model.OperationOutcome;
+import org.hl7.fhir.r4.model.OperationOutcome.OperationOutcomeIssueComponent;
 import org.openmrs.LocationAttributeType;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.ProviderAttributeType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.client.ClientConstants;
+
+import ca.uhn.fhir.context.FhirContext;
+import liquibase.hub.model.Operation.OperationStatus;
 
 public class ClaimsUtils {
 
@@ -52,4 +61,54 @@ public class ClaimsUtils {
 		return Context.getAdministrationService().getGlobalPropertyValue(ClientConstants.KMHFL_SYSTEM_URL, "");
 	}
 
+	/**
+	 * Convert FHIR Resource to string
+	 * @param theResource
+	 * @return
+	 */
+	public static String convertFHIRObjectToString(IBaseResource theResource) {
+		String ret = "";
+		if(theResource != null) {
+			try {
+				FhirContext fhirContext = FhirContext.forR4();
+				String result = fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(theResource);
+				return(result);
+			} catch (Exception ex) {}
+		}
+		return(ret);
+	}
+
+	/**
+	 * Convert operation output issues to a string
+	 * @param issues
+	 * @return
+	 */
+	public static String operationOutcomeIssuesToString(List<OperationOutcomeIssueComponent> issues) {
+		String ret = "";
+		if(issues != null) {
+			return issues.stream()
+				.map(issue -> String.format(
+					"[severity=%s, code=%s, diagnostics=%s]",
+					issue.getSeverity(),
+					issue.getCode(),
+					issue.getDiagnostics()
+				))
+				.collect(Collectors.joining(" | "));
+		}
+		return(ret);
+    }
+
+	/**
+	 * converts a json payload of OperationOutcome to an object
+	 * @param payload
+	 * @return
+	 */
+	public static OperationOutcome getOperationOutcomeFromJson(String payload) {
+		OperationOutcome operationOutcome = null;
+		try {
+			FhirContext ctx = FhirContext.forR4();
+        	return (OperationOutcome) ctx.newJsonParser().parseResource(OperationOutcome.class, payload);
+		} catch (Exception ex) {}
+		return(operationOutcome);
+	}
 }

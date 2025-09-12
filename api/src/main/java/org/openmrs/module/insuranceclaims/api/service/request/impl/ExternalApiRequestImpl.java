@@ -68,6 +68,7 @@ import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRInsuranceClaimSer
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.IdentifierUtil;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimUtil;
 import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest;
+import org.openmrs.module.insuranceclaims.util.ClaimsUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpServerErrorException;
@@ -177,6 +178,7 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
                 String responseUUID = operationOutcome.getId();
                 
                 if(responseUUID != null) {
+                    System.out.println("Insurance Claims: Setting external id for claim: " + claim.toString());
                     String prefix = "OperationOutcome/";
                     if (responseUUID != null && responseUUID.startsWith(prefix)) {
                         responseUUID = responseUUID.substring(prefix.length());
@@ -193,11 +195,13 @@ public class ExternalApiRequestImpl implements ExternalApiRequest {
                         claimCode = String.format("C-%d", claimId);
                     }
                     claim.setClaimCode(claimCode);
-                    insuranceClaimService.saveOrUpdate(claim);
+                    System.out.println("Insurance Claims: Saving claim: " + claim.toString());
+                    InsuranceClaim savedClaim = insuranceClaimService.saveOrUpdate(claim);
+                    System.out.println("Insurance Claims: Saving claim: " + savedClaim.toString());
 
-                    System.out.println("Insurance Claims: Saved the response uuid " + responseUUID);
+                    System.out.println("Insurance Claims: Saved the external response uuid " + responseUUID);
                 } else {
-                    System.err.println("Insurance Claims: Error sending claim: " + operationOutcome.getIssue().toString());
+                    System.err.println("Insurance Claims: Error sending claim: " + ClaimsUtils.operationOutcomeIssuesToString(operationOutcome.getIssue()));
                 }
             } else {
                 System.err.println("Insurance Claims: Error sending claim: Did not get proper operation outcome");
