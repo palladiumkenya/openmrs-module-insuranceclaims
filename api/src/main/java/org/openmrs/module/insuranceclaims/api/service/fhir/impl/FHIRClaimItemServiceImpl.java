@@ -42,6 +42,8 @@ import org.hl7.fhir.r4.model.Quantity;
 import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.Type;
 import org.openmrs.Concept;
+import org.openmrs.VisitType;
+import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimIntervention;
@@ -50,6 +52,7 @@ import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
 import org.openmrs.module.insuranceclaims.api.service.db.InterventionDbService;
 import org.openmrs.module.insuranceclaims.api.service.db.ItemDbService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants;
 
 public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
 
@@ -76,10 +79,11 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
 //        return fhirClaim;
 //    }
 
+    // HKMBS
     @Override
     public Claim assignItemsWithInformationToClaim(Claim fhirClaim, InsuranceClaim claim) {
         List<InsuranceClaimIntervention> insuranceClaimInterventions = interventionDbService.findInsuranceClaimIntervention(claim.getId());
-        List<Claim.ItemComponent> fhirItems = generateClaimItemComponent(insuranceClaimInterventions);
+        List<Claim.ItemComponent> fhirItems = generateClaimItemComponent(insuranceClaimInterventions, claim);
 
         fhirClaim.setItem(fhirItems);
         return fhirClaim;
@@ -94,7 +98,7 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
     @Override
     public List<Claim.ItemComponent> generateClaimItemComponent(InsuranceClaim claim) {
         List<InsuranceClaimIntervention> insuranceClaimInterventions = interventionDbService.findInsuranceClaimIntervention(claim.getId());
-        return generateClaimItemComponent(insuranceClaimInterventions);
+        return generateClaimItemComponent(insuranceClaimInterventions, claim);
     }
 
 //    @Override
@@ -134,16 +138,26 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
 //        return newItemComponents;
 //    }
 
+    // HKMBS
     @Override
-    public List<Claim.ItemComponent> generateClaimItemComponent(List<InsuranceClaimIntervention> insuranceClaimInterventions) {
+    public List<Claim.ItemComponent> generateClaimItemComponent(List<InsuranceClaimIntervention> insuranceClaimInterventions, InsuranceClaim claim) {
         List<Claim.ItemComponent> newItemComponents = new ArrayList<>();
         int counter = 1;
+
+        // Get visit type
+        VisitService visitService = Context.getVisitService();
+        VisitType inpatientVisitType = visitService.getVisitTypeByUuid(InsuranceClaimConstants.INPATIENT_VISIT_TYPE);
+        VisitType claimVisitType = claim.getVisitType();
+        // Get total bill
+        BigDecimal billTotal = claim.getBill().getTotalAmount();
+        System.out.println("Insurance Module: Got bill total 2 as: " + billTotal);
+
         for (InsuranceClaimIntervention item: insuranceClaimInterventions) {
             Claim.ItemComponent next = new Claim.ItemComponent();
 
             // Set the sequence
             next.setSequence(counter);
-            counter++;
+            
             // Set product or service
             // Create a CodeableConcept for the product or service
             CodeableConcept productOrService = new CodeableConcept();
@@ -166,7 +180,15 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             // Set the net value
             Money total = new Money();
             total.setCurrency("KES");
-            total.setValue(0); // TODO: in future set the correct net value
+
+            if(counter == 1 && claimVisitType.equals(inpatientVisitType)) {
+                // For now, the first intervention takes the whole invoice amount
+                System.out.println("Insurance Module: inpatient payload 1");
+                total.setValue(billTotal);
+            } else {
+                total.setValue(0); // TODO: in future set the correct net value
+            }
+
             next.setNet(total);
 
             // Set the factor
@@ -180,7 +202,14 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             // Set the unit price
             Money unitPrice = new Money();
             unitPrice.setCurrency("KES");
-            unitPrice.setValue(0); // TODO: In future, set the correct unit price
+
+            if(counter == 1 && claimVisitType.equals(inpatientVisitType)) {
+                // For now, the first intervention takes the whole invoice amount
+                System.out.println("Insurance Module: inpatient payload 2");
+                unitPrice.setValue(billTotal);
+            } else {
+                unitPrice.setValue(0); // TODO: In future, set the correct unit price
+            }
             next.setUnitPrice(unitPrice);
 
             // Set the service date
@@ -200,6 +229,7 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
             next.setServiced(servicedPeriod);
 
             newItemComponents.add(next);
+            counter++;
         }
         return newItemComponents;
     }
@@ -216,7 +246,7 @@ public class FHIRClaimItemServiceImpl implements FHIRClaimItemService {
                 item.setExplanation(linkedExplanation);
                 insuranceClaimItems.add(item);
             } catch (FHIRException e) {
-                error.add("Could not found explanation linked to item with code "
+                error.add("Could not find explanation linked to item with code "
                         + component.getProductOrService().getText());
             }
 

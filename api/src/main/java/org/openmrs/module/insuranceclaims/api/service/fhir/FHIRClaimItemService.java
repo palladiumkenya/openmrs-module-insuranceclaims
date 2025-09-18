@@ -16,7 +16,7 @@ public interface FHIRClaimItemService {
 
 //    List<Claim.ItemComponent> generateClaimItemComponent(List<InsuranceClaimItem> items);
 
-    List<Claim.ItemComponent> generateClaimItemComponent(List<InsuranceClaimIntervention> interventions);
+    List<Claim.ItemComponent> generateClaimItemComponent(List<InsuranceClaimIntervention> interventions, InsuranceClaim claim);
 
     List<InsuranceClaimItem> generateOmrsClaimItems(Claim claim, List<String> error);
 
