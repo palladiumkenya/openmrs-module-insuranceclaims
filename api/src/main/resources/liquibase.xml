@@ -852,4 +852,83 @@
 
     </changeSet>
 
+    <!-- A claim can have various supporting file attachments -->
+    <changeSet id="insuranceclaims-attachments-table-20250918-140220" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="iclm_claim_attachment"/>
+            </not>
+        </preConditions>
+        <comment>
+            Creating the packages table
+        </comment>
+        <createTable tableName="iclm_claim_attachment">
+            <column name="iclm_claim_attachment_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_iclm_claim_attachment"/>
+            </column>
+
+            <column name="iclm_claim_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="consent_token" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="file_blob" type="LONGBLOB">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="document_type" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="intervention_code" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- AbstractBaseOpenmrsData inherited columns -->
+            <column name="creator" type="int"/>
+            <column name="date_created" type="datetime"/>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="voided" type="tinyint(1)" defaultValueNumeric="0"/>
+            <column name="voided_by" type="int"/>
+            <column name="date_voided" type="datetime"/>
+            <column name="void_reason" type="varchar(255)"/>
+            <column name="uuid" type="char(38)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Add foreign key for claim id -->
+    <changeSet id="insuranceclaims-iclm-claim-attachment-fk-20250918-144520" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="fk_claim_attachment_claim"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint 
+                constraintName="fk_claim_attachment_claim"
+                baseTableName="iclm_claim_attachment"
+                baseColumnNames="iclm_claim_id"
+                referencedTableName="iclm_claim"
+                referencedColumnNames="iclm_claim_id"/>
+    </changeSet>
+
+    <!-- To make search faster -->
+    <changeSet id="insuranceclaims-iclm-claim-attachment-index-20250918-143520" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="iclm_claim_attachment" indexName="idx_claim_attachment_claim"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="idx_claim_attachment_claim" tableName="iclm_claim_attachment">
+            <column name="iclm_claim_id"/>
+        </createIndex>
+    </changeSet>
+
+
+
 </databaseChangeLog>
