@@ -1,12 +1,15 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
 import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.Practitioner;
 import org.openmrs.Encounter;
@@ -41,7 +44,49 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.*;
 
+
+// import java.net.URI;
+// // import java.net.http.HttpClient;
+// // import java.net.http.HttpRequest;
+// // import java.net.http.HttpResponse;
+// import java.net.URLEncoder;
+// import java.nio.charset.StandardCharsets;
+
 public class GeneralUtil {
+
+	/**
+	 * Gets the HIE IL Mediator auth token
+	 *
+	 * @return
+	 * @throws IOException
+	 */
+	public static String getILMediatorAuthToken() throws IOException {
+		String ret = null;
+		try {
+			OkHttpClient client = new OkHttpClient().newBuilder().build();
+			okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/x-www-form-urlencoded");
+			okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "client_id=apisix-test-client&client_secret=rYvzoHsiWUBLbeabXYelRfvWawghOXn3&grant_type=client_credentials");
+			Request request = new Request.Builder()
+			.url("https://accounts-uat.dha.go.ke/realms/hie/protocol/openid-connect/token")
+			.method("POST", body)
+			.addHeader("Content-Type", "application/x-www-form-urlencoded")
+			.build();
+			Response response = client.newCall(request).execute();
+
+			// Print the response
+			// System.out.println("Status Code: " + response.statusCode());
+			// System.out.println("Response Body: " + response.body());
+			if (!response.isSuccessful()) {
+				System.err.println("Insurance Claims Module: Get HIE IL Mediator Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
+			} else {
+				return response.body().string();
+			}
+		} catch (Exception ex) {
+			System.err.println("Insurance Claims Module: Get IL Mediator HIE Auth: ERROR: Request failed: " + ex.getMessage());
+			ex.printStackTrace();
+		}
+		return (ret);
+	}
 
 
 	/**

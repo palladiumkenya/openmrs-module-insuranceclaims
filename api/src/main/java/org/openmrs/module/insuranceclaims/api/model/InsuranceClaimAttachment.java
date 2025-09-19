@@ -40,6 +40,22 @@ public class InsuranceClaimAttachment extends AbstractBaseOpenmrsData {
     @Column(name = "intervention_code", length = 255, nullable = false)
     private String interventionCode;
 
+    @Basic
+    @Column(name = "url", length = 512)
+    private String url;
+
+    @Basic
+    @Column(name = "filename", length = 255)
+    private String filename;
+
+    @Basic
+    @Column(name = "retrieval_id", length = 255)
+    private String retrievalId;
+
+    @Basic
+    @Column(name = "status", length = 64)
+    private String status;
+
     @Override
     public Integer getId() {
         return this.id;
@@ -90,14 +106,48 @@ public class InsuranceClaimAttachment extends AbstractBaseOpenmrsData {
         this.interventionCode = interventionCode;
     }
 
-    @Override
-    public String toString() {
-        return "InsuranceClaimAttachment [id=" + id +
-                ", claim=" + (claim != null ? claim.getId() : null) +
-                ", consentToken=" + consentToken +
-                ", documentType=" + documentType +
-                ", interventionCode=" + interventionCode + "]";
+    public String getUrl() {
+        return url;
     }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public String getRetrievalId() {
+        return retrievalId;
+    }
+
+    public void setRetrievalId(String retrievalId) {
+        this.retrievalId = retrievalId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    // @Override
+    // public String toString() {
+    //     return "InsuranceClaimAttachment [id=" + id +
+    //             ", claim=" + (claim != null ? claim.getId() : null) +
+    //             ", consentToken=" + consentToken +
+    //             ", documentType=" + documentType +
+    //             ", interventionCode=" + interventionCode + "]";
+    // }
+
+    
 
     public enum DocumentType {
         CLAIM_FORM,
@@ -108,6 +158,19 @@ public class InsuranceClaimAttachment extends AbstractBaseOpenmrsData {
         INVOICE,
         BIO_DETAILS,
         IMAGING_ORDER
+    }
+
+    @Override
+    public String toString() {
+        return "InsuranceClaimAttachment [id=" + id + 
+            ", claim=" + claim + 
+            ", consentToken=" + consentToken + 
+            ", documentType=" + documentType + 
+            ", interventionCode=" + interventionCode + 
+            ", url=" + url + 
+            ", filename=" + filename + 
+            ", retrievalId=" + retrievalId + 
+            ", status=" + status + "]";
     }
 }
 

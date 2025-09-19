@@ -905,6 +905,7 @@
     <!-- Add foreign key for claim id -->
     <changeSet id="insuranceclaims-iclm-claim-attachment-fk-20250918-144520" author="pwaweru">
         <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim_attachment"/>
             <not>
                 <foreignKeyConstraintExists foreignKeyName="fk_claim_attachment_claim"/>
             </not>
@@ -917,9 +918,10 @@
                 referencedColumnNames="iclm_claim_id"/>
     </changeSet>
 
-    <!-- To make search faster -->
+    <!-- To make searching claim attachments faster -->
     <changeSet id="insuranceclaims-iclm-claim-attachment-index-20250918-143520" author="pwaweru">
         <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim_attachment"/>
             <not>
                 <indexExists tableName="iclm_claim_attachment" indexName="idx_claim_attachment_claim"/>
             </not>
@@ -929,6 +931,56 @@
         </createIndex>
     </changeSet>
 
+    <!-- add url column to claims attachments table -->
+    <changeSet id="insuranceclaims-iclm-url-column-20250919-103520" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim_attachment"/>
+            <not>
+                <columnExists tableName="iclm_claim_attachment" columnName="url"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="iclm_claim_attachment">
+            <column name="url" type="varchar(512)"/>
+        </addColumn>
+    </changeSet>
 
+    <!-- add url column to claims attachments table -->
+    <changeSet id="insuranceclaims-filename-column-20250919-103620" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim_attachment"/>
+            <not>
+                <columnExists tableName="iclm_claim_attachment" columnName="filename"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="iclm_claim_attachment">
+            <column name="filename" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- add url column to claims attachments table -->
+    <changeSet id="insuranceclaims-filename-column-20250919-103720" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim_attachment"/>
+            <not>
+                <columnExists tableName="iclm_claim_attachment" columnName="retrieval_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="iclm_claim_attachment">
+            <column name="retrieval_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- add url column to claims attachments table -->
+    <changeSet id="insuranceclaims-status-column-20250919-103820" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim_attachment"/>
+            <not>
+                <columnExists tableName="iclm_claim_attachment" columnName="status"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="iclm_claim_attachment">
+            <column name="status" type="varchar(64)"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>
