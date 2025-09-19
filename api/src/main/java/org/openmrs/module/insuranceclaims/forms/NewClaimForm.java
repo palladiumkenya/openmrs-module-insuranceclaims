@@ -3,6 +3,8 @@ package org.openmrs.module.insuranceclaims.forms;
 import java.util.List;
 import java.util.Map;
 
+import org.openmrs.module.insuranceclaims.api.model.SupportingDocuments;
+
 /**
  * Class used as storage for data used in creating new insurance claim
  */
@@ -26,6 +28,7 @@ public class NewClaimForm {
     private String claimCode;
     private String billNumber;
     private String use;
+    private List<SupportingDocuments> supportingDocuments;
 
     public String getGuaranteeId() {
         return guaranteeId;
@@ -169,6 +172,14 @@ public class NewClaimForm {
 
     public void setInterventions(List<String> interventions) {
         this.interventions = interventions;
+    }
+
+    public List<SupportingDocuments> getSupportingDocuments() {
+        return supportingDocuments;
+    }
+
+    public void setSupportingDocuments(List<SupportingDocuments> supportingDocuments) {
+        this.supportingDocuments = supportingDocuments;
     }
 }
 

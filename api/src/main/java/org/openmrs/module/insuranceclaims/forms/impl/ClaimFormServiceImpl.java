@@ -2,6 +2,8 @@ package org.openmrs.module.insuranceclaims.forms.impl;
 
 
 import ca.uhn.fhir.util.DateUtils;
+
+import org.apache.commons.codec.binary.Base64;
 import org.openmrs.Concept;
 import org.openmrs.ConceptMap;
 import org.openmrs.ConceptMapType;
@@ -15,11 +17,13 @@ import org.openmrs.Visit;
 import org.openmrs.VisitType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimAttachment;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimDiagnosis;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimIntervention;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
 import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
+import org.openmrs.module.insuranceclaims.api.model.SupportingDocuments;
 import org.openmrs.module.insuranceclaims.api.model.PaymentType;
 import org.openmrs.module.insuranceclaims.api.model.ProcessStatus;
 import org.openmrs.module.insuranceclaims.api.model.Bill;
@@ -143,6 +147,9 @@ public class ClaimFormServiceImpl implements ClaimFormService {
 
         List<InsuranceClaimIntervention> interventions = generateClaimInterventions(form.getInterventions(), nextClaim);
         interventions.stream().forEach(intervention -> insuranceClaimInterventionService.saveOrUpdate(intervention));
+
+        // Add attachments
+        addAttachmentsToClaim(form.getSupportingDocuments(), nextClaim);
 
         return nextClaim;
     }
@@ -268,13 +275,34 @@ public class ClaimFormServiceImpl implements ClaimFormService {
     }
 
     private void assignDatesFromFormToClaim(InsuranceClaim claim, NewClaimForm form) {
-        System.err.println("Insurance Claims; Got API form dates as: date to: " + form.getStartDate() + " and date from: " + form.getEndDate());
+        System.err.println("Insurance Claims: Got API form dates as: date to: " + form.getStartDate() + " and date from: " + form.getEndDate());
         Date startDate = parseDate(form.getStartDate(), FORM_DATE_FORMAT);
         Date endDate = parseDate(form.getEndDate(), FORM_DATE_FORMAT);
         claim.setDateFrom(startDate);
         claim.setDateTo(endDate);
-        System.err.println("Insurance Claims; Setting date to: " + startDate + " and date from: " + endDate);
+        System.err.println("Insurance Claims: Setting date to: " + startDate + " and date from: " + endDate);
         // claim.setProvider(Context.getProviderService().getProviderByUuid(form.getProvider()));
+    }
+
+    /** 
+     * Add attachments to the claim
+     */
+    private void addAttachmentsToClaim(List<SupportingDocuments> supportingDocuments, InsuranceClaim nextClaim) {
+        try {
+            if(supportingDocuments != null && supportingDocuments.size() > 0) {
+                for(SupportingDocuments doc : supportingDocuments) {
+                    InsuranceClaimAttachment att = new InsuranceClaimAttachment();
+                    att.setClaim(nextClaim);
+                    att.setFilename(doc.getName());
+                    att.setFileBlob(Base64.decodeBase64(doc.getBase64()));
+
+                    nextClaim.addAttachment(att);
+                }
+            }
+        } catch(Exception ex) {
+            System.err.println("Insurance Claims: ERROR: setting claim attachments: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 
     private void createClaimBill(InsuranceClaim claim, List<ProvidedItem> claimProvidedItems) {

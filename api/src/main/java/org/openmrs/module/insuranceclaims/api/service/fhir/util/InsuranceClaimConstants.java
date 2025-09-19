@@ -84,6 +84,12 @@ public final class InsuranceClaimConstants {
     public static final String PATIENT_HIE_NATIONAL_ID = "49af6cdc-7968-4abb-bf46-de10d7f4859f";
     public static final String PATIENT_HIE_TELEPHONE_CONTACT = "b2c38640-2603-4629-aebd-3b54f33f1e3a";
 	public static final String PROVIDER_UNIQUE_IDENTIFIER = "dace9d99-9f29-4653-9eae-c05929f34a32";
+
+    // Visit Types
+    public static final String OUTPATIENT_VISIT_TYPE = "3371a4d4-f66f-4454-a86d-92c7b3da990c";
+    public static final String INPATIENT_VISIT_TYPE = "a73e2ac6-263b-47fc-99fc-e0f2c09fc914";
+    public static final String CASUALTY_VISIT_TYPE = "0419d15f-67ad-4fd0-97a1-9b5246b2d0d7";
+    public static final String MORGUE_VISIT_TYPE = "6307dbe2-f336-4c11-a393-50c2769f455a";
 	
     private InsuranceClaimConstants() {}
 }

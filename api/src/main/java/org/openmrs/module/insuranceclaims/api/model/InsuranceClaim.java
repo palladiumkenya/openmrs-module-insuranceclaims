@@ -16,6 +16,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -23,9 +24,12 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Model class that represents an insurance claim.
@@ -135,6 +139,27 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 	@JoinColumn(name = "bill", nullable = true)
 	@JsonIgnore
 	private Bill bill;
+
+	@OneToMany(mappedBy = "claim", fetch = FetchType.LAZY, cascade = javax.persistence.CascadeType.ALL, orphanRemoval = true)
+    private Set<InsuranceClaimAttachment> attachments = new HashSet<>();
+
+	public Set<InsuranceClaimAttachment> getAttachments() {
+		return attachments;
+	}
+
+	public void setAttachments(Set<InsuranceClaimAttachment> attachments) {
+		this.attachments = attachments;
+	}
+
+	public void addAttachment(InsuranceClaimAttachment attachment) {
+        attachments.add(attachment);
+        attachment.setClaim(this);
+    }
+
+    public void removeAttachment(InsuranceClaimAttachment attachment) {
+        attachments.remove(attachment);
+        attachment.setClaim(null);
+    }
 
 	@Override
 	public Integer getId() {
@@ -331,8 +356,8 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 				+ ", claimedTotal=" + claimedTotal + ", approvedTotal=" + approvedTotal + ", dateProcessed="
 				+ dateProcessed + ", explanation=" + explanation + ", rejectionReason=" + rejectionReason
 				+ ", guaranteeId=" + guaranteeId + ", visit=" + visit + ", encounter=" + encounter + ", externalId="
-				+ externalId + ", visitType=" + visitType + ", status=" + status + ", bill=" + bill + "]";
+				+ externalId + ", visitType=" + visitType + ", status=" + status + ", bill=" + bill + ", attachments="
+				+ attachments + "]";
 	}
 
-	
 }

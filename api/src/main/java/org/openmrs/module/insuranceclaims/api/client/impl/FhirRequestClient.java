@@ -102,6 +102,26 @@ public class FhirRequestClient implements FHIRClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
     }
 
+    private void setILMediatorRequestHeaders() {
+        headers = new HttpHeaders();
+        String token = "";
+        try {
+            System.out.println("InsuranceClaims: Getting HIE IL Mediator Bearer token");
+        
+            token = GeneralUtil.getILMediatorAuthToken();
+            System.out.println("InsuranceClaims: Got HIE IL Mediator Bearer token as: " + token);
+        } catch(Exception ex) {
+            System.err.println("InsuranceClaims: Failed to get HIE IL Mediator Bearer token: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        String authHeader = "Bearer " + token;
+        headers.set(HttpHeaders.AUTHORIZATION, authHeader);
+        headers.set(HttpHeaders.REFERER, "");
+        headers.set(HttpHeaders.USER_AGENT, "ClientHelperUserAgent");
+        headers.setContentType(MediaType.APPLICATION_JSON);
+    }
+
     private void setApiKeyRequestHeaders() {
         headers = new HttpHeaders();
         String token = "";
@@ -174,7 +194,8 @@ public class FhirRequestClient implements FHIRClient {
             HttpServerErrorException {
         prepareRestTemplate();
         // setJWTRequestHeaders(); // For JWT HIE Auth
-        setStagingRequestHeaders(); // For HIE staging server
+        // setStagingRequestHeaders(); // For HIE staging server
+        setILMediatorRequestHeaders(); // For HIE IL Mediator server
         url = GeneralUtil.removeTrailingSlash(url);
         System.out.println("InsuranceClaims: Sending claim bundle to: " + url);
         ClientHttpEntity clientHttpEntity = createClientHttpEntity(url, HttpMethod.POST, object);

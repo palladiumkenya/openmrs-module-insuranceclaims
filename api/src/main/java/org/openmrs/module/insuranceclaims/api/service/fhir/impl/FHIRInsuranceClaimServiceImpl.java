@@ -14,6 +14,7 @@ import static org.openmrs.module.insuranceclaims.api.service.fhir.util.Insurance
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimUtil.getClaimGuaranteeId;
 import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimUtil.getClaimUuid;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -67,6 +68,7 @@ import org.openmrs.ProviderAttributeType;
 import org.openmrs.User;
 import org.openmrs.VisitType;
 import org.openmrs.api.ProviderService;
+import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.api.translators.EncounterTranslator;
 import org.openmrs.module.fhir2.api.translators.LocationTranslator;
@@ -79,6 +81,7 @@ import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimDiagnosisSer
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRInsuranceClaimService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.PatientUtil;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.PractitionerUtil;
 
@@ -241,8 +244,20 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
 
         //Set total
         Money total = new Money();
-        // total.setValue(omrsClaim.getClaimedTotal());
-        total.setValue(0); // TODO: in future, set the correct claim total
+            // Get visit type
+            VisitService visitService = Context.getVisitService();
+            VisitType inpatientVisitType = visitService.getVisitTypeByUuid(InsuranceClaimConstants.INPATIENT_VISIT_TYPE);
+            VisitType claimVisitType = omrsClaim.getVisitType();
+            // Get total bill
+            BigDecimal billTotal = omrsClaim.getBill().getTotalAmount();
+            System.out.println("Insurance Module: Got bill total 1 as: " + billTotal);
+
+            if(claimVisitType.equals(inpatientVisitType)) {
+                // total.setValue(omrsClaim.getClaimedTotal());
+                total.setValue(billTotal);
+            } else {
+                total.setValue(0); // TODO: in future, set the correct claim total
+            }
         claim.setTotal(total);
 
         //Set created
@@ -260,7 +275,7 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         // claim.setType(createClaimVisitType(omrsClaim));
 
         //Set items
-        claimItemService.assignItemsWithInformationToClaim(claim, omrsClaim);
+        claimItemService.assignItemsWithInformationToClaim(claim, omrsClaim); // HKMBS
 
         //Set diagnosis
         claim.setDiagnosis(claimDiagnosisService.generateClaimDiagnosisComponent(omrsClaim));
