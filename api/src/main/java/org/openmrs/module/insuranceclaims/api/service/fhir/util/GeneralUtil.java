@@ -81,7 +81,8 @@ public class GeneralUtil {
 
 			if (!response.isSuccessful()) {
 				// Failed to send attachment
-				System.err.println("Insurance Claims Module: send claim supporting docs: ERROR: Sending failed: " + response.code() + " - " + response.message());
+				System.err.println("Insurance Claims Module: send claim supporting docs: ERROR: Sending failed external: " + response.code() + " - " + response.message());
+				System.err.println("Insurance Claims Module: send claim supporting docs: ERROR: " + response.body().string());
 				ret.setSuccess(false);
 				return(ret);
 			} else {
@@ -103,7 +104,7 @@ public class GeneralUtil {
 				}
 			}
 		} catch(Exception ex) {
-			System.err.println("Insurance Claims Module: send claim supporting docs: ERROR: Sending failed: " + ex.getMessage());
+			System.err.println("Insurance Claims Module: send claim supporting docs: ERROR: Sending failed internal: " + ex.getMessage());
 			ex.printStackTrace();
 		}
 

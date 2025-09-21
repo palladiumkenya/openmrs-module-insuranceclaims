@@ -316,7 +316,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
     private void addAttachmentsToClaim(List<SupportingDocuments> supportingDocuments, InsuranceClaim nextClaim) {
         try {
             if(supportingDocuments != null && supportingDocuments.size() > 0) {
-                System.err.println("Insurance Claims: ERROR: Now setting claim attachments");
+                System.err.println("Insurance Claims: Now setting claim attachments");
                 for(SupportingDocuments doc : supportingDocuments) {
                     InsuranceClaimAttachment att = new InsuranceClaimAttachment();
                     att.setClaim(nextClaim);
