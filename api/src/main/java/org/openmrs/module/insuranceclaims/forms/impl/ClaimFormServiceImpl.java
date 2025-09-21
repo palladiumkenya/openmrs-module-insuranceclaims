@@ -4,6 +4,7 @@ package org.openmrs.module.insuranceclaims.forms.impl;
 import ca.uhn.fhir.util.DateUtils;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.tika.mime.MimeTypeException;
 import org.openmrs.Concept;
 import org.openmrs.ConceptMap;
 import org.openmrs.ConceptMapType;
@@ -24,20 +25,26 @@ import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimItem;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
 import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
 import org.openmrs.module.insuranceclaims.api.model.SupportingDocuments;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimAttachment.DocumentType;
 import org.openmrs.module.insuranceclaims.api.model.PaymentType;
 import org.openmrs.module.insuranceclaims.api.model.ProcessStatus;
 import org.openmrs.module.insuranceclaims.api.model.Bill;
+import org.openmrs.module.insuranceclaims.api.model.FileUploadResponse;
 import org.openmrs.module.insuranceclaims.api.service.BillService;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimDiagnosisService;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimItemService;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
 import org.openmrs.module.insuranceclaims.api.service.ProvidedItemService;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
 import org.openmrs.module.insuranceclaims.forms.ClaimFormService;
 import org.openmrs.module.insuranceclaims.forms.ItemDetails;
 import org.openmrs.module.insuranceclaims.forms.NewClaimForm;
 import org.openmrs.module.insuranceclaims.forms.ProvidedItemInForm;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpServerErrorException;
+
+import com.mchange.net.MimeUtils;
+
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimInterventionService;
 
 import javax.transaction.Transactional;
@@ -56,6 +63,10 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
+import java.util.UUID;
+import org.apache.tika.mime.MimeTypes;
+import org.apache.tika.mime.MimeTypeException;
+
 public class ClaimFormServiceImpl implements ClaimFormService {
 
     private BillService billService;
@@ -73,6 +84,21 @@ public class ClaimFormServiceImpl implements ClaimFormService {
     private static final String[] FORM_DATE_FORMAT = {"yyyy-MM-dd"};
 
     private static final String INVALID_LOCATION_ERROR = "You must select valid location";
+
+    private static final Map<String, String> MIME_TO_EXT;
+
+    static {
+        MIME_TO_EXT = new HashMap<>();
+        MIME_TO_EXT.put("image/jpeg", ".jpg");
+        MIME_TO_EXT.put("image/png", ".png");
+        MIME_TO_EXT.put("image/gif", ".gif");
+        MIME_TO_EXT.put("image/bmp", ".bmp");
+        MIME_TO_EXT.put("image/webp", ".webp");
+        MIME_TO_EXT.put("application/pdf", ".pdf");
+        MIME_TO_EXT.put("text/plain", ".txt");
+        MIME_TO_EXT.put("text/html", ".html");
+        MIME_TO_EXT.put("application/json", ".json");
+    }
 
     @Override
     @Transactional
@@ -290,19 +316,92 @@ public class ClaimFormServiceImpl implements ClaimFormService {
     private void addAttachmentsToClaim(List<SupportingDocuments> supportingDocuments, InsuranceClaim nextClaim) {
         try {
             if(supportingDocuments != null && supportingDocuments.size() > 0) {
+                System.err.println("Insurance Claims: Now setting claim attachments");
                 for(SupportingDocuments doc : supportingDocuments) {
                     InsuranceClaimAttachment att = new InsuranceClaimAttachment();
                     att.setClaim(nextClaim);
                     att.setFilename(doc.getName());
-                    att.setFileBlob(Base64.decodeBase64(doc.getBase64()));
+                    byte[] payload = Base64.decodeBase64(doc.getBase64());
+                    att.setFileBlob(payload);
+                    att.setInterventionCode(doc.getIntervention());
+                    att.setDocumentType(doc.getPurpose());
+                    att.setFileSize(doc.getSize());
+                    att.setMimeType(doc.getType());
 
-                    nextClaim.addAttachment(att);
+                    // Send file to remote - if unsuccessfull, no need to save
+                    String filename = generateNewFileName(doc.getName(), doc.getType());
+                    if(filename != null && !filename.isEmpty())
+                    {
+                        FileUploadResponse fileUploadResponse = GeneralUtil.sendClaimAttachmentToRemote(payload, filename);
+                        if(fileUploadResponse != null && fileUploadResponse.getSuccess() == true) {
+                            att.setConsentToken("test");
+                            att.setUrl(fileUploadResponse.getUrl());
+                            att.setRetrievalId(fileUploadResponse.getRetrievalId());
+                            att.setStatus(fileUploadResponse.getStatus());
+                            // Give the attachment a new name (UUID prevents file name collisions)
+                            att.setFilename(filename);
+
+                            nextClaim.addAttachment(att);
+                        }
+                    }
                 }
+            } else {
+                System.err.println("Insurance Claims: ERROR: Found No claim attachments");
             }
         } catch(Exception ex) {
             System.err.println("Insurance Claims: ERROR: setting claim attachments: " + ex.getMessage());
             ex.printStackTrace();
         }
+    }
+
+    /**
+     * Generate a new file name for a file based on its file type
+     * @param type
+     * @return
+     */
+    private String generateNewFileName (String originalFileName, String mimeType) {
+        String ret = null;
+
+        // Get a v4 uuid
+        String uuid = UUID.randomUUID().toString();
+        String extension = null;
+
+        // Get the file extension
+        // 1. Try from filename
+        if (originalFileName != null && originalFileName.contains(".")) {
+            int dotIndex = originalFileName.lastIndexOf('.');
+            if (dotIndex != -1 && dotIndex < originalFileName.length() - 1) {
+                extension = originalFileName.substring(dotIndex).toLowerCase();
+            }
+        }
+
+        if(extension == null || extension.isEmpty()) {
+            // 2. Try with Apache Tika
+            try {
+                MimeTypes allTypes = MimeTypes.getDefaultMimeTypes();
+                String tikaExt = allTypes.forName(mimeType).getExtension();
+                if (tikaExt != null && !tikaExt.isEmpty()) {
+                    extension = tikaExt.toLowerCase();
+                }
+            } catch (Exception ex) {}
+        }
+
+        if(extension == null || extension.isEmpty()) {
+            // 3. Try custom MimeUtils
+            String customExt = MIME_TO_EXT.getOrDefault(mimeType.toLowerCase(), "");
+            if (customExt != null && !customExt.isEmpty()) {
+                extension = customExt.toLowerCase();
+            }
+        }
+
+        if(extension == null || extension.isEmpty()) {
+            extension = ".jpg";
+        }
+
+        ret = uuid + extension;
+        System.err.println("Insurance Claims: Got claim attachment file name as: " + ret);
+
+        return(ret);
     }
 
     private void createClaimBill(InsuranceClaim claim, List<ProvidedItem> claimProvidedItems) {

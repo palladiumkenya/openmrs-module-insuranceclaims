@@ -8,6 +8,8 @@ public class SupportingDocuments {
     private String type;
     private long size;
     private String base64;
+    private String purpose;
+    private String intervention;
     private ZonedDateTime uploadedAt;
 
     public SupportingDocuments() {
@@ -53,6 +55,22 @@ public class SupportingDocuments {
         this.base64 = base64;
     }
 
+    public String getPurpose() {
+        return purpose;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
+    }
+
+    public String getIntervention() {
+        return intervention;
+    }
+
+    public void setIntervention(String intervention) {
+        this.intervention = intervention;
+    }
+
     public ZonedDateTime getUploadedAt() {
         return uploadedAt;
     }
@@ -63,12 +81,7 @@ public class SupportingDocuments {
 
     @Override
     public String toString() {
-        return "SupportingDocuments{" +
-                "name='" + name + '\'' +
-                ", type='" + type + '\'' +
-                ", size=" + size +
-                ", base64='" + base64 + '\'' +
-                ", uploadedAt=" + uploadedAt +
-                '}';
+        return "SupportingDocuments [name=" + name + ", type=" + type + ", size=" + size + ", purpose=" + purpose
+                + ", intervention=" + intervention + ", uploadedAt=" + uploadedAt + "]";
     }
 }
