@@ -54,18 +54,20 @@ public class GeneralUtil {
 	/**
 	 * Sends file attachments to support a claim
 	 */
-	public static FileUploadResponse sendClaimAttachmentToRemote(byte[] payload, String fileName) {
+	public static FileUploadResponse sendClaimAttachmentToRemote(byte[] payload, String fileName, String mimeType) {
 		FileUploadResponse ret = new FileUploadResponse();
 
 		try {
 			OkHttpClient client = new OkHttpClient().newBuilder().build();
+			// String mimeType = "application/octet-stream";
+			// String mimeType = "image/jpeg";
 
 			okhttp3.RequestBody body = new MultipartBody.Builder()
 					.setType(MultipartBody.FORM)
 					.addFormDataPart(
 							"files",
 							fileName,
-							okhttp3.RequestBody.create(okhttp3.MediaType.parse("application/octet-stream"), payload)
+							okhttp3.RequestBody.create(okhttp3.MediaType.parse(mimeType), payload)
 					)
 					.build();
 

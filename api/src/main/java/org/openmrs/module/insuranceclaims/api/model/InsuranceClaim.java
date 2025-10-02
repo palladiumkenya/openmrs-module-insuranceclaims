@@ -357,7 +357,7 @@ public class InsuranceClaim extends AbstractBaseOpenmrsData {
 				+ dateProcessed + ", explanation=" + explanation + ", rejectionReason=" + rejectionReason
 				+ ", guaranteeId=" + guaranteeId + ", visit=" + visit + ", encounter=" + encounter + ", externalId="
 				+ externalId + ", visitType=" + visitType + ", status=" + status + ", bill=" + bill + ", attachments="
-				+ attachments + "]";
+				+ attachments.size() + "]";
 	}
 
 }

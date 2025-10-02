@@ -198,7 +198,8 @@ public class InsuranceClaimAttachment extends AbstractBaseOpenmrsData {
     @Override
     public String toString() {
         return "InsuranceClaimAttachment [id=" + id + 
-            ", claim=" + claim + ", consentToken=" + consentToken + 
+            ", claim=" + claim + 
+            ", consentToken=" + consentToken + 
             ", documentType=" + documentType + 
             ", interventionCode=" + interventionCode + 
             ", url=" + url + 
