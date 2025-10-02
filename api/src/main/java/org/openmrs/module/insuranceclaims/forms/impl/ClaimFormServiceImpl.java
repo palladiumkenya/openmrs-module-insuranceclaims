@@ -332,7 +332,7 @@ public class ClaimFormServiceImpl implements ClaimFormService {
                     String filename = generateNewFileName(doc.getName(), doc.getType());
                     if(filename != null && !filename.isEmpty())
                     {
-                        FileUploadResponse fileUploadResponse = GeneralUtil.sendClaimAttachmentToRemote(payload, filename);
+                        FileUploadResponse fileUploadResponse = GeneralUtil.sendClaimAttachmentToRemote(payload, filename, doc.getType());
                         if(fileUploadResponse != null && fileUploadResponse.getSuccess() == true) {
                             att.setConsentToken("test");
                             att.setUrl(fileUploadResponse.getUrl());
