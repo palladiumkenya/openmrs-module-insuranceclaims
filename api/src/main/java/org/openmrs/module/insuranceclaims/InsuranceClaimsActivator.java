@@ -19,13 +19,14 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	private static final String MODULE_STOP_MESSAGE  = "Stopped Insurance Claims";
 
 	private static DaemonToken daemonToken;
+	private static Boolean debugMode = false;
 
 	/**
 	 * @see #started()
 	 */
 	@Override
 	public void started() {
-		System.err.println("Insurance Claims Module started: " + GeneralUtil.getCurrentDateTime());
+		if(debugMode == true) System.err.println("Insurance Claims Module started: " + GeneralUtil.getCurrentDateTime());
 		addConcepts();
 
 		createInsureNumberAttribute();
@@ -38,13 +39,13 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	 */
 	@Override
 	public void stopped() {
-		System.err.println("Insurance Claims Module: stopped module: " + GeneralUtil.getCurrentDateTime());
+		if(debugMode == true) System.err.println("Insurance Claims Module: stopped module: " + GeneralUtil.getCurrentDateTime());
 		System.err.println(MODULE_STOP_MESSAGE);
 	}
 
 	@Override
 	public void setDaemonToken(DaemonToken token) {
-		System.err.println("Insurance Claims Module: Got daemon token as: " + token + " : "  + GeneralUtil.getCurrentDateTime());
+		if(debugMode == true) System.err.println("Insurance Claims Module: Got daemon token as: " + token + " : "  + GeneralUtil.getCurrentDateTime());
 		// InsuranceClaimsActivator.daemonToken = token;
 		daemonToken = token;
 	}
@@ -72,22 +73,22 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 
 	@Override
 	public void willRefreshContext() {
-		System.err.println("Insurance Claims Module: Will refresh context: " + GeneralUtil.getCurrentDateTime());
+		if(debugMode == true) System.err.println("Insurance Claims Module: Will refresh context: " + GeneralUtil.getCurrentDateTime());
 	}
  
 	@Override
 	public void willStart() {
-		System.err.println("Insurance Claims Module: Will start: " + GeneralUtil.getCurrentDateTime());
+		if(debugMode == true) System.err.println("Insurance Claims Module: Will start: " + GeneralUtil.getCurrentDateTime());
 	}
  
 	@Override
 	public void willStop() {
-		System.err.println("Insurance Claims Module: Will stop: " + GeneralUtil.getCurrentDateTime());
+		if(debugMode == true) System.err.println("Insurance Claims Module: Will stop: " + GeneralUtil.getCurrentDateTime());
 	}
 
 	@Override
 	public void contextRefreshed() {
-		System.err.println("Insurance Claims Module: finished refreshing context: " + GeneralUtil.getCurrentDateTime());
+		if(debugMode == true) System.err.println("Insurance Claims Module: finished refreshing context: " + GeneralUtil.getCurrentDateTime());
 	}
 	
 	public static DaemonToken getDaemonToken() {

@@ -76,6 +76,7 @@ import org.openmrs.module.insuranceclaims.forms.NewClaimForm;
  * Detects when a new visit has ended and creates a claim
  */
 public class CreateClaimOnCheckout implements AfterReturningAdvice {
+	private static Boolean debugMode = false;
 	
 	@Override
 	public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
@@ -190,7 +191,7 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 					}
 				}
 			} else {
-				System.out.println("Insurance Claims Module: Automated claims is disabled");
+				if(debugMode == true) System.out.println("Insurance Claims Module: Automated claims is disabled. Not processing visit");
 			}
 		}
 		catch (Exception ex) {
