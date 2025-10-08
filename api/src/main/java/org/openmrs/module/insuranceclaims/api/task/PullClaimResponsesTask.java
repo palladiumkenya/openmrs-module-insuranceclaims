@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Prepares payload and performs remote login to CHAI system
+ * Pulls claim status from remote
  */
 public class PullClaimResponsesTask extends AbstractTask {
 
@@ -27,7 +27,6 @@ public class PullClaimResponsesTask extends AbstractTask {
 
     @Autowired
     private InsuranceClaimService insuranceClaimService;
-    // InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
 
     /**
      * @see AbstractTask#execute()
@@ -42,6 +41,9 @@ public class PullClaimResponsesTask extends AbstractTask {
             URLConnection connection = new URL(url).openConnection();
             connection.connect();
             try {
+                if(insuranceClaimService == null) {
+                    insuranceClaimService = Context.getService(InsuranceClaimService.class);
+                }
                 // Get list of claims with no responses
                 List<InsuranceClaim> unprocessedClaims = insuranceClaimService.getUnProcessedInsuranceClaims();
 
@@ -66,7 +68,7 @@ public class PullClaimResponsesTask extends AbstractTask {
                 }
 
             } catch (Exception ex) {
-                System.err.println("Insurance Claims: Unable to execute task that pushes viral load lab manifest" + ex.getMessage());
+                System.err.println("Insurance Claims: Unable to execute task that pulls claim responses" + ex.getMessage());
                 ex.printStackTrace();
             } finally {
                 System.out.println("Insurance Claims: PULL CLAIM RESPONSES TASK Finished");
