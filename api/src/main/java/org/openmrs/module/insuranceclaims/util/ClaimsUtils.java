@@ -15,11 +15,13 @@ import java.util.stream.Collectors;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.OperationOutcome;
 import org.hl7.fhir.r4.model.OperationOutcome.OperationOutcomeIssueComponent;
+import org.openmrs.GlobalProperty;
 import org.openmrs.LocationAttributeType;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.ProviderAttributeType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.client.ClientConstants;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants;
 
 import ca.uhn.fhir.context.FhirContext;
 import liquibase.hub.model.Operation.OperationStatus;
@@ -110,5 +112,84 @@ public class ClaimsUtils {
         	return (OperationOutcome) ctx.newJsonParser().parseResource(OperationOutcome.class, payload);
 		} catch (Exception ex) {}
 		return(operationOutcome);
+	}
+
+	/**
+	 * Checks whether Insurance Claims Logging is enabled
+	 * 
+	 * @return true (Enabled) and false (Disabled)
+	 */
+	public static Boolean isClaimsLoggingEnabled() {
+		Boolean ret = false;
+		
+		GlobalProperty globalLoggingEnabled = Context.getAdministrationService().getGlobalPropertyObject(
+		    InsuranceClaimConstants.CLAIMS_LOGGING_ENABLED);
+		String isClaimsLoggingEnabled = globalLoggingEnabled.getPropertyValue();
+		
+		if (isClaimsLoggingEnabled != null && isClaimsLoggingEnabled.trim().equalsIgnoreCase("true")) {
+			ret = true;
+		}
+		
+		return (ret);
+	}
+
+	/**
+	 * Gets the Insurance Claims Attachments URL
+	 * 
+	 * @return
+	 */
+	public static String getClaimsAttachmentsURL() {
+		String ret = "";
+		
+		GlobalProperty globalPostUrl = Context.getAdministrationService().getGlobalPropertyObject(
+		    InsuranceClaimConstants.CLAIM_ATTACHMENTS_URL);
+		String baseURL = globalPostUrl.getPropertyValue();
+		
+		if (baseURL == null || baseURL.trim().isEmpty()) {
+			baseURL = "https://ilm-dev.dha.go.ke/fs/fs/api/v1/media/upload";
+		}
+		ret = baseURL.trim();
+		
+		return (ret);
+	}
+
+	/**
+	 * Gets the Insurance Claims Attachments USERNAME
+	 * 
+	 * @return
+	 */
+	public static String getClaimsAttachmentsUsername() {
+		String ret = "";
+		
+		GlobalProperty globalAttachmentUsername = Context.getAdministrationService().getGlobalPropertyObject(
+		    InsuranceClaimConstants.CLAIM_ATTACHMENTS_USERNAME);
+		String baseUsername = globalAttachmentUsername.getPropertyValue();
+		
+		if (baseUsername == null || baseUsername.trim().isEmpty()) {
+			baseUsername = "test";
+		}
+		ret = baseUsername.trim();
+		
+		return (ret);
+	}
+
+	/**
+	 * Gets the Insurance Claims Attachments PASSWORD
+	 * 
+	 * @return
+	 */
+	public static String getClaimsAttachmentsPassword() {
+		String ret = "";
+		
+		GlobalProperty globalAttachmentPassword = Context.getAdministrationService().getGlobalPropertyObject(
+		    InsuranceClaimConstants.CLAIM_ATTACHMENTS_URL);
+		String basePassword = globalAttachmentPassword.getPropertyValue();
+		
+		if (basePassword == null || basePassword.trim().isEmpty()) {
+			basePassword = "test";
+		}
+		ret = basePassword.trim();
+		
+		return (ret);
 	}
 }

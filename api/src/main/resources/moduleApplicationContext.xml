@@ -100,24 +100,6 @@
     <bean parent="serviceContext">
         <property name="moduleService">
             <list>
-                <value>org.openmrs.module.insuranceclaims.forms.ClaimFormService</value>
-                <ref bean="insuranceclaims.InsuranceClaimFormService"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean parent="serviceContext">
-        <property name="moduleService">
-            <list>
-                <value>org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest</value>
-                <ref bean="insuranceclaims.ExternalApiRequest"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean parent="serviceContext">
-        <property name="moduleService">
-            <list>
                 <value>org.openmrs.module.insuranceclaims.activator.concept.ModuleConceptSetup</value>
                 <ref bean="insuranceclaims.ModuleConceptSetup"/>
             </list>

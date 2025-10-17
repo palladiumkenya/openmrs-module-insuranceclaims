@@ -90,6 +90,14 @@ public final class InsuranceClaimConstants {
     public static final String INPATIENT_VISIT_TYPE = "a73e2ac6-263b-47fc-99fc-e0f2c09fc914";
     public static final String CASUALTY_VISIT_TYPE = "0419d15f-67ad-4fd0-97a1-9b5246b2d0d7";
     public static final String MORGUE_VISIT_TYPE = "6307dbe2-f336-4c11-a393-50c2769f455a";
+
+    // Logging GP
+    public static final String CLAIMS_LOGGING_ENABLED = "insuranceclaims.debugmode.enabled";
+
+    // Claim Attachments
+    public static final String CLAIM_ATTACHMENTS_URL = "insuranceclaims.attachments.url";
+	public static final String CLAIM_ATTACHMENTS_USERNAME = "insuranceclaims.attachments.username";
+	public static final String CLAIM_ATTACHMENTS_PASSWORD = "insuranceclaims.attachments.password";
 	
     private InsuranceClaimConstants() {}
 }

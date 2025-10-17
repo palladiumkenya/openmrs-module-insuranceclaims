@@ -185,54 +185,87 @@
         <description>Default strategy used for consummed items
         </description>
     </globalProperty>
+
     <globalProperty>
         <property>${project.parent.artifactId}.coverage.custom.url</property>
         <defaultValue></defaultValue>
         <description>Custom url for checking client insurance coverage status
         </description>
     </globalProperty>
+
     <globalProperty>
         <property>${project.parent.artifactId}.hiejwt.custom.encodedpass</property>
         <defaultValue></defaultValue>
         <description>Base64 Encoded  ( Username + : + password) for custom coverage jwt token generation
         </description>
     </globalProperty>
+
     <globalProperty>
         <property>${project.parent.artifactId}.hiejwt.url</property>
         <defaultValue>https://api.dha.go.ke/v1/hie-auth?key=kenya_emr</defaultValue>
         <description>HIE url for generating jwt token
         </description>
     </globalProperty>
+
     <globalProperty>
         <property>${project.parent.artifactId}.hie.base.url</property>
         <defaultValue>https://api.dha.go.ke/api/v1</defaultValue>
         <description>Base HIE url
         </description>
     </globalProperty>
+
     <globalProperty>
         <property>${project.parent.artifactId}.apiero.apikey</property>
         <defaultValue></defaultValue>
         <description>Apiero API Key</description>
     </globalProperty>
+
     <globalProperty>
         <property>${project.parent.artifactId}.hiestaging.custom.encodedpass</property>
         <defaultValue>dXNlcjpzZXRtZQ==</defaultValue>
         <description>Base64 Encoded  ( Username + : + password) for custom coverage hie staging token generation
         </description>
     </globalProperty>
+
     <globalProperty>
         <property>${project.parent.artifactId}.hiestaging.auth.url</property>
         <defaultValue>https://apistg.safaricom.co.ke/oauth2/v1/generate?grant_type=client_credentials</defaultValue>
         <description>HIE url for generating staging bearer token</description>
     </globalProperty>
+
     <globalProperty>
         <property>${project.parent.artifactId}.base.resource.url</property>
         <defaultValue>https://uat-mis.apeiro-digital.com/fhir</defaultValue>
         <description>Base URL to be used in the final claim payload references</description>
     </globalProperty>
+
     <globalProperty>
         <property>${project.parent.artifactId}.claims.automation.enabled</property>
         <defaultValue>false</defaultValue>
         <description>Whether to send a claim automatically upon checkout or not (true or false)</description>
+    </globalProperty>
+
+    <globalProperty>
+        <property>${project.parent.artifactId}.debugmode.enabled</property>
+        <defaultValue>false</defaultValue>
+        <description>Is the insurance claims debug mode enabled? true or false</description>
+    </globalProperty>
+
+    <globalProperty>
+        <property>${project.parent.artifactId}.attachments.url</property>
+        <defaultValue>https://ilm-dev.dha.go.ke/fs/fs/api/v1/media/upload</defaultValue>
+        <description>The URL for claims file attachments</description>
+    </globalProperty>
+
+    <globalProperty>
+        <property>${project.parent.artifactId}.attachments.username</property>
+        <defaultValue>test</defaultValue>
+        <description>The USERNAME for claims file attachments</description>
+    </globalProperty>
+
+    <globalProperty>
+        <property>${project.parent.artifactId}.attachments.password</property>
+        <defaultValue>test</defaultValue>
+        <description>The PASSWORD for claims file attachments</description>
     </globalProperty>
 </module>

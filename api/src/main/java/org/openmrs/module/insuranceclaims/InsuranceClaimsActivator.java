@@ -31,7 +31,7 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 
 		createInsureNumberAttribute();
 
-		System.err.println(MODULE_START_MESSAGE);
+		if(debugMode == true) System.err.println(MODULE_START_MESSAGE);
 	}
 
 	/**
@@ -40,7 +40,7 @@ public class InsuranceClaimsActivator extends BaseModuleActivator implements Dae
 	@Override
 	public void stopped() {
 		if(debugMode == true) System.err.println("Insurance Claims Module: stopped module: " + GeneralUtil.getCurrentDateTime());
-		System.err.println(MODULE_STOP_MESSAGE);
+		if(debugMode == true) System.err.println(MODULE_STOP_MESSAGE);
 	}
 
 	@Override

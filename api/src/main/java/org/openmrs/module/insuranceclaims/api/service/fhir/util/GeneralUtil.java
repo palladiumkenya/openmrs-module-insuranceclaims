@@ -37,7 +37,9 @@ import org.openmrs.Provider;
 import org.openmrs.ProviderAttribute;
 import org.openmrs.ProviderAttributeType;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.insuranceclaims.ClaimUtils;
 import org.openmrs.module.insuranceclaims.api.model.FileUploadResponse;
+import org.openmrs.module.insuranceclaims.util.ClaimsUtils;
 import org.openmrs.util.PrivilegeConstants;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -72,7 +74,7 @@ public class GeneralUtil {
 					.build();
 
 			Request request = new Request.Builder()
-					.url("https://ilm-dev.dha.go.ke/fs/fs/api/v1/media/upload")
+					.url(ClaimsUtils.getClaimsAttachmentsURL())
 					.method("POST", body)
 					.addHeader("X-Source-System", "hie-cr")
 					.addHeader("Cookie", "1ae5f2424651e0d04841ebe37574e87f=cda81a133d2cf0fc92dc21ae218b1d0c")
