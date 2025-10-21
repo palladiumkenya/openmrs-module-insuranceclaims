@@ -123,20 +123,41 @@ public class GeneralUtil {
 	 */
 	public static String getILMediatorAuthToken() throws IOException {
 		String ret = null;
+		// Utility function to get auth token
+		
+		GlobalProperty globalGetJwtTokenUrl = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.sha.token.jwt.get.api");
+		String shaJwtTokenUrl = globalGetJwtTokenUrl.getPropertyValue();
+		if (shaJwtTokenUrl == null || shaJwtTokenUrl.trim().isEmpty()) {
+			System.out.println("Jwt token url configs not updated: ");
+		}
+		GlobalProperty globalGetJwtUsername = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.sha.jwt.token.username");
+		String shaJwtUsername = globalGetJwtUsername.getPropertyValue();
+		if (shaJwtUsername == null || shaJwtUsername.trim().isEmpty()) {
+			System.out.println("Jwt token username not updated: ");
+		}
+		GlobalProperty globalGetJwtPassword = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.sha.jwt.token.password");
+		String shaJwtPassword = globalGetJwtPassword.getPropertyValue();
+		if (shaJwtPassword == null || shaJwtPassword.trim().isEmpty()) {
+			System.out.println("Jwt token password not updated: ");
+		}
+		
 		try {
 			OkHttpClient client = new OkHttpClient().newBuilder().build();
 			okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/x-www-form-urlencoded");
-			okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "client_id=apisix-test-client&client_secret=rYvzoHsiWUBLbeabXYelRfvWawghOXn3&grant_type=client_credentials");
+			okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "client_id=" + shaJwtUsername + "&client_secret=" + shaJwtPassword + "&grant_type=client_credentials");			
 			Request request = new Request.Builder()
-			.url("https://accounts-uat.dha.go.ke/realms/hie/protocol/openid-connect/token")
+			.url(shaJwtTokenUrl)
 			.method("POST", body)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.build();
 			Response response = client.newCall(request).execute();
 
 			// Print the response
-			// System.out.println("Status Code: " + response.statusCode());
-			// System.out.println("Response Body: " + response.body());
+			 System.out.println("Insurance url" + shaJwtTokenUrl);
+			// System.out.println("Insurance request body" + body);
 			if (!response.isSuccessful()) {
 				System.err.println("Insurance Claims Module: Get HIE IL Mediator Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
 			} else {
