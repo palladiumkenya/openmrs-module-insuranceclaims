@@ -1,83 +1,54 @@
 package org.openmrs.module.insuranceclaims.advice;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.hl7.fhir.r4.model.Address;
-import org.hl7.fhir.r4.model.BooleanType;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Enumerations.AdministrativeGender;
-import org.hl7.fhir.r4.model.Extension;
-import org.hl7.fhir.r4.model.HumanName;
-import org.hl7.fhir.r4.model.Identifier;
-import org.hl7.fhir.r4.model.Meta;
-import org.hl7.fhir.r4.model.Reference;
 import org.openmrs.Concept;
 import org.openmrs.Diagnosis;
 import org.openmrs.Encounter;
-import org.openmrs.Location;
 import org.openmrs.Patient;
-import org.openmrs.PatientIdentifier;
-import org.openmrs.PatientIdentifierType;
-import org.openmrs.Person;
-import org.openmrs.PersonAddress;
-import org.openmrs.PersonName;
 import org.openmrs.Provider;
-import org.openmrs.Relationship;
-import org.openmrs.RelationshipType;
 import org.openmrs.Visit;
-import org.openmrs.VisitAttributeType;
 import org.openmrs.api.DiagnosisService;
-import org.openmrs.api.ProviderService;
 import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
-import org.openmrs.api.context.Daemon;
-import org.openmrs.module.fhir2.FhirConstants;
-import org.openmrs.module.fhir2.api.translators.LocationTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientTranslator;
-import org.openmrs.module.insuranceclaims.InsuranceClaimsActivator;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
-import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimStatus;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
 import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest;
-import org.openmrs.util.PrivilegeConstants;
-import org.springframework.aop.AfterReturningAdvice;
-
-import ca.uhn.fhir.context.FhirContext;
-
+// import org.openmrs.module.insuranceclaims.api.service.request.impl.ExternalApiRequestImpl;
 import org.openmrs.module.insuranceclaims.forms.ClaimFormService;
 import org.openmrs.module.insuranceclaims.forms.NewClaimForm;
+import org.springframework.aop.AfterReturningAdvice;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 /**
  * Detects when a new visit has ended and creates a claim
  */
+@Component
 public class CreateClaimOnCheckout implements AfterReturningAdvice {
 	private static Boolean debugMode = false;
+
+	@Autowired
+	@Qualifier("insuranceclaims.ExternalApiRequest")
+    private ExternalApiRequest externalApiRequest;
 	
+	// public ExternalApiRequest getExternalApiRequest() {
+	// 	return externalApiRequest;
+	// }
+
+	// public void setExternalApiRequest(ExternalApiRequest externalApiRequest) {
+	// 	System.err.println("Insurance Claims Module: setting externalApiRequest: " + (externalApiRequest == null));
+	// 	this.externalApiRequest = externalApiRequest;
+	// }
+
 	@Override
 	public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
 
@@ -97,7 +68,7 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 						Patient patient = visit.getPatient();
 						
 						if (patient != null) {
-							System.out.println("Insurance Claims Module: A patient was checked out. Checking for diagnosis");
+							System.out.println("Insurance Claims Module: A patient was checked out. Checking for diagnosis: " + (externalApiRequest == null));
 							Boolean diagnosisFound = false;
 							String encounterUuid = "";
 							String providerUuid = "";
@@ -171,11 +142,18 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 								// Daemon.runInDaemonThread(runner, InsuranceClaimsActivator.getDaemonToken());
 
 								try {
-									System.out.println("Insurance Claims Module: Thread Attempting to send the claim");
-									ExternalApiRequest externalApiRequest = Context.getService(ExternalApiRequest.class);
+									System.out.println("Insurance Claims Module: Now Attempting to send the claim");
+									// ExternalApiRequest externalApiRequest = Context.getService(ExternalApiRequest.class);
+									if(externalApiRequest == null) {
+										System.out.println("Insurance Claims Module: Manually create ExternalApiRequest");
+										externalApiRequest = Context.getRegisteredComponent("insuranceclaims.ExternalApiRequest", ExternalApiRequest.class);
+										if(externalApiRequest == null) {
+											System.err.println("Insurance Claims Module: All attempts failed to load ExternalApiRequest");
+										}
+									}
 									externalApiRequest.sendClaimToExternalApi(claim);
 								} catch (Exception ex) {
-									System.err.println("Insurance Claims Module: Thread Claim Sending Error: " + ex.getMessage());
+									System.err.println("Insurance Claims Module: Now with Claim Sending Error: " + ex.getMessage());
 									ex.printStackTrace();
 								}
 
@@ -221,7 +199,14 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 					// Even if immediate sending fails, we can send later
 					try {
 						System.out.println("Insurance Claims Module: Thread Attempting to send the claim");
-						ExternalApiRequest externalApiRequest = Context.getService(ExternalApiRequest.class);
+						// ExternalApiRequest externalApiRequest = Context.getService(ExternalApiRequest.class);
+						if(externalApiRequest == null) {
+							System.out.println("Insurance Claims Module: Manually create ExternalApiRequest");
+							externalApiRequest = Context.getRegisteredComponent("insuranceclaims.ExternalApiRequest", ExternalApiRequest.class);
+							if(externalApiRequest == null) {
+								System.err.println("Insurance Claims Module: All attempts failed to load ExternalApiRequest");
+							}
+						}
 						externalApiRequest.sendClaimToExternalApi(insuranceClaim);
 					} catch (Exception ex) {
 						System.err.println("Insurance Claims Module: Thread Claim Sending Error: " + ex.getMessage());
