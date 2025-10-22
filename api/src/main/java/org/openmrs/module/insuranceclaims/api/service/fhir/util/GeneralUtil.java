@@ -159,9 +159,14 @@ public class GeneralUtil {
 			 System.out.println("Insurance url" + shaMediatorTokenUrl);
 			// System.out.println("Insurance request body" + body);
 			if (!response.isSuccessful()) {
-				System.err.println("Insurance Claims Module: Get HIE IL Mediator Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
+				System.err.println("Get HIE IL Mediator Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
 			} else {
-				return response.body().string();
+				System.err.println("Get HIE IL Mediator Auth: Request successful: " + response.code() + " - " + response.message());
+				//Extract token
+				org.codehaus.jackson.map.ObjectMapper mapper = new org.codehaus.jackson.map.ObjectMapper();
+				org.codehaus.jackson.JsonNode node = mapper.readTree(response.body().string());
+				ret = node.get("access_token").asText();
+				System.out.println("Token "+ret);
 			}
 		} catch (Exception ex) {
 			System.err.println("Insurance Claims Module: Get IL Mediator HIE Auth: ERROR: Request failed: " + ex.getMessage());
@@ -193,7 +198,6 @@ public class GeneralUtil {
 			if (hieJwtUrl == null || hieJwtUrl.trim().isEmpty()) {
 				System.out.println("Insurance Claims Module: ERROR: Jwt token url configs not updated: ");
 			}
-
 			//Config to toggle GET and POST requests
 			if (hieJwtAuthMode.trim().equalsIgnoreCase("get")) {
 				Request request = new Request.Builder()
@@ -229,7 +233,7 @@ public class GeneralUtil {
 				}
 			} else if (hieJwtAuthMode.trim().equalsIgnoreCase("mediator")) {
 				// Build the Mediator request
-				System.out.println("Auth mode is mediator here");
+				System.out.println("Auth mode is mediator");
 				ret = getILMediatorAuthToken();
 			}
 		} catch (Exception ex) {
