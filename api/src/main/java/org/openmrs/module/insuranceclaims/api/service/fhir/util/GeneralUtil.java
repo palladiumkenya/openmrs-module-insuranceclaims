@@ -125,38 +125,38 @@ public class GeneralUtil {
 		String ret = null;
 		// Utility function to get auth token
 		
-		GlobalProperty globalGetJwtTokenUrl = Context.getAdministrationService()
-			.getGlobalPropertyObject("kenyaemr.sha.token.jwt.get.api");
-		String shaJwtTokenUrl = globalGetJwtTokenUrl.getPropertyValue();
-		if (shaJwtTokenUrl == null || shaJwtTokenUrl.trim().isEmpty()) {
-			System.out.println("Jwt token url configs not updated: ");
+		GlobalProperty globalGetMediatorTokenUrl = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.post.api");
+		String shaMediatorTokenUrl = globalGetMediatorTokenUrl.getPropertyValue();
+		if (shaMediatorTokenUrl == null || shaMediatorTokenUrl.trim().isEmpty()) {
+			System.out.println("Mediator token url configs not updated: ");
 		}
-		GlobalProperty globalGetJwtUsername = Context.getAdministrationService()
-			.getGlobalPropertyObject("kenyaemr.sha.jwt.token.username");
-		String shaJwtUsername = globalGetJwtUsername.getPropertyValue();
-		if (shaJwtUsername == null || shaJwtUsername.trim().isEmpty()) {
-			System.out.println("Jwt token username not updated: ");
+		GlobalProperty globalGetMediatorClientID = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.client.id");
+		String shaJwtMediatorClientId = globalGetMediatorClientID.getPropertyValue();
+		if (shaJwtMediatorClientId == null || shaJwtMediatorClientId.trim().isEmpty()) {
+			System.out.println("Mediator client Id not updated: ");
 		}
-		GlobalProperty globalGetJwtPassword = Context.getAdministrationService()
-			.getGlobalPropertyObject("kenyaemr.sha.jwt.token.password");
-		String shaJwtPassword = globalGetJwtPassword.getPropertyValue();
-		if (shaJwtPassword == null || shaJwtPassword.trim().isEmpty()) {
-			System.out.println("Jwt token password not updated: ");
+		GlobalProperty globalGetMediatorClientSecret = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.client.secret");
+		String shaMediatorClientSecret = globalGetMediatorClientSecret.getPropertyValue();
+		if (shaMediatorClientSecret == null || shaMediatorClientSecret.trim().isEmpty()) {
+			System.out.println("Mediator client secret not updated: ");
 		}
 		
 		try {
 			OkHttpClient client = new OkHttpClient().newBuilder().build();
 			okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/x-www-form-urlencoded");
-			okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "client_id=" + shaJwtUsername + "&client_secret=" + shaJwtPassword + "&grant_type=client_credentials");			
+			okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "client_id=" + shaJwtMediatorClientId + "&client_secret=" + shaMediatorClientSecret + "&grant_type=client_credentials");			
 			Request request = new Request.Builder()
-			.url(shaJwtTokenUrl)
+			.url(shaMediatorTokenUrl)
 			.method("POST", body)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.build();
 			Response response = client.newCall(request).execute();
 
 			// Print the response
-			 System.out.println("Insurance url" + shaJwtTokenUrl);
+			 System.out.println("Insurance url" + shaMediatorTokenUrl);
 			// System.out.println("Insurance request body" + body);
 			if (!response.isSuccessful()) {
 				System.err.println("Insurance Claims Module: Get HIE IL Mediator Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
@@ -227,8 +227,11 @@ public class GeneralUtil {
 					com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(payload);
 					ret = rootNode.path("access_token").asText();
 				}
+			} else if (hieJwtAuthMode.trim().equalsIgnoreCase("mediator")) {
+				// Build the Mediator request
+				System.out.println("Auth mode is mediator here");
+				ret = getILMediatorAuthToken();
 			}
-
 		} catch (Exception ex) {
 			System.err.println("Insurance Claims Module: Get HIE Auth: ERROR: Request failed: " + ex.getMessage());
 			ex.printStackTrace();
