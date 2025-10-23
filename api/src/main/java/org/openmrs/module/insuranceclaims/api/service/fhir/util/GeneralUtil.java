@@ -123,24 +123,50 @@ public class GeneralUtil {
 	 */
 	public static String getILMediatorAuthToken() throws IOException {
 		String ret = null;
+		// Utility function to get auth token
+		
+		GlobalProperty globalGetMediatorTokenUrl = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.post.api");
+		String shaMediatorTokenUrl = globalGetMediatorTokenUrl.getPropertyValue();
+		if (shaMediatorTokenUrl == null || shaMediatorTokenUrl.trim().isEmpty()) {
+			System.out.println("Mediator token url configs not updated: ");
+		}
+		GlobalProperty globalGetMediatorClientID = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.client.id");
+		String shaJwtMediatorClientId = globalGetMediatorClientID.getPropertyValue();
+		if (shaJwtMediatorClientId == null || shaJwtMediatorClientId.trim().isEmpty()) {
+			System.out.println("Mediator client Id not updated: ");
+		}
+		GlobalProperty globalGetMediatorClientSecret = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.client.secret");
+		String shaMediatorClientSecret = globalGetMediatorClientSecret.getPropertyValue();
+		if (shaMediatorClientSecret == null || shaMediatorClientSecret.trim().isEmpty()) {
+			System.out.println("Mediator client secret not updated: ");
+		}
+		
 		try {
 			OkHttpClient client = new OkHttpClient().newBuilder().build();
 			okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/x-www-form-urlencoded");
-			okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "client_id=apisix-test-client&client_secret=rYvzoHsiWUBLbeabXYelRfvWawghOXn3&grant_type=client_credentials");
+			okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "client_id=" + shaJwtMediatorClientId + "&client_secret=" + shaMediatorClientSecret + "&grant_type=client_credentials");			
 			Request request = new Request.Builder()
-			.url("https://accounts-uat.dha.go.ke/realms/hie/protocol/openid-connect/token")
+			.url(shaMediatorTokenUrl)
 			.method("POST", body)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.build();
 			Response response = client.newCall(request).execute();
 
 			// Print the response
-			// System.out.println("Status Code: " + response.statusCode());
-			// System.out.println("Response Body: " + response.body());
+			 System.out.println("Insurance url" + shaMediatorTokenUrl);
+			// System.out.println("Insurance request body" + body);
 			if (!response.isSuccessful()) {
-				System.err.println("Insurance Claims Module: Get HIE IL Mediator Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
+				System.err.println("Get HIE IL Mediator Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
 			} else {
-				return response.body().string();
+				System.err.println("Get HIE IL Mediator Auth: Request successful: " + response.code() + " - " + response.message());
+				//Extract token
+				org.codehaus.jackson.map.ObjectMapper mapper = new org.codehaus.jackson.map.ObjectMapper();
+				org.codehaus.jackson.JsonNode node = mapper.readTree(response.body().string());
+				ret = node.get("access_token").asText();
+				System.out.println("Token "+ret);
 			}
 		} catch (Exception ex) {
 			System.err.println("Insurance Claims Module: Get IL Mediator HIE Auth: ERROR: Request failed: " + ex.getMessage());
@@ -172,7 +198,6 @@ public class GeneralUtil {
 			if (hieJwtUrl == null || hieJwtUrl.trim().isEmpty()) {
 				System.out.println("Insurance Claims Module: ERROR: Jwt token url configs not updated: ");
 			}
-
 			//Config to toggle GET and POST requests
 			if (hieJwtAuthMode.trim().equalsIgnoreCase("get")) {
 				Request request = new Request.Builder()
@@ -206,8 +231,11 @@ public class GeneralUtil {
 					com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(payload);
 					ret = rootNode.path("access_token").asText();
 				}
+			} else if (hieJwtAuthMode.trim().equalsIgnoreCase("mediator")) {
+				// Build the Mediator request
+				System.out.println("Auth mode is mediator");
+				ret = getILMediatorAuthToken();
 			}
-
 		} catch (Exception ex) {
 			System.err.println("Insurance Claims Module: Get HIE Auth: ERROR: Request failed: " + ex.getMessage());
 			ex.printStackTrace();

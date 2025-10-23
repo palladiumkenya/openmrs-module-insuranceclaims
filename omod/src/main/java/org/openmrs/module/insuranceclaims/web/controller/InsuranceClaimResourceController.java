@@ -697,8 +697,8 @@ public class InsuranceClaimResourceController {
     }
 
     public static String getCoverageStatus(String nationalId) throws IOException {
-        String token = GeneralUtil.getJWTAuthToken();
-        String coverageUrl = Context.getAdministrationService()
+		String token = GeneralUtil.getJWTAuthToken();
+		String coverageUrl = Context.getAdministrationService()
                 .getGlobalProperty("insuranceclaims.coverage.custom.url");
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
