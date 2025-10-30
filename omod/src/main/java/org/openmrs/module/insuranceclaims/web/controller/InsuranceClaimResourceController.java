@@ -737,7 +737,7 @@ public class InsuranceClaimResourceController {
             boolean isHieEnabled = "hie".equalsIgnoreCase(claimResponseSource);
             String accessToken = null;
             try {
-                accessToken = GeneralUtil.getJWTAuthToken();
+                accessToken = GeneralUtil.getILMediatorAuthToken();
             } catch (IOException e) {
                 System.out.println("Insurance Claims: Error getting JWT Auth Token: " + e.getMessage());
                 return null;
