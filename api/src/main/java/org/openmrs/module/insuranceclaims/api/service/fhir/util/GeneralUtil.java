@@ -129,19 +129,19 @@ public class GeneralUtil {
 			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.post.api");
 		String shaMediatorTokenUrl = globalGetMediatorTokenUrl.getPropertyValue();
 		if (shaMediatorTokenUrl == null || shaMediatorTokenUrl.trim().isEmpty()) {
-			System.out.println("Mediator token url configs not updated: ");
+			System.out.println("Insurance Claims Module: Mediator token url configs not updated: ");
 		}
 		GlobalProperty globalGetMediatorClientID = Context.getAdministrationService()
 			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.client.id");
 		String shaJwtMediatorClientId = globalGetMediatorClientID.getPropertyValue();
 		if (shaJwtMediatorClientId == null || shaJwtMediatorClientId.trim().isEmpty()) {
-			System.out.println("Mediator client Id not updated: ");
+			System.out.println("Insurance Claims Module: Mediator client Id not updated: ");
 		}
 		GlobalProperty globalGetMediatorClientSecret = Context.getAdministrationService()
 			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.client.secret");
 		String shaMediatorClientSecret = globalGetMediatorClientSecret.getPropertyValue();
 		if (shaMediatorClientSecret == null || shaMediatorClientSecret.trim().isEmpty()) {
-			System.out.println("Mediator client secret not updated: ");
+			System.out.println("Insurance Claims Module: Mediator client secret not updated: ");
 		}
 		
 		try {
@@ -156,17 +156,16 @@ public class GeneralUtil {
 			Response response = client.newCall(request).execute();
 
 			// Print the response
-			 System.out.println("Insurance url" + shaMediatorTokenUrl);
-			// System.out.println("Insurance request body" + body);
+			 System.out.println("Insurance Claims Module: Insurance url: " + shaMediatorTokenUrl);
 			if (!response.isSuccessful()) {
-				System.err.println("Get HIE IL Mediator Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
+				System.err.println("Insurance Claims Module: Get HIE IL Mediator Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
 			} else {
-				System.err.println("Get HIE IL Mediator Auth: Request successful: " + response.code() + " - " + response.message());
+				System.err.println("Insurance Claims Module: Get HIE IL Mediator Auth: Request successful: " + response.code());
 				//Extract token
 				org.codehaus.jackson.map.ObjectMapper mapper = new org.codehaus.jackson.map.ObjectMapper();
 				org.codehaus.jackson.JsonNode node = mapper.readTree(response.body().string());
 				ret = node.get("access_token").asText();
-				System.out.println("Token "+ret);
+				System.out.println("Insurance Claims Module: Got mediator auth Token: " + ret);
 			}
 		} catch (Exception ex) {
 			System.err.println("Insurance Claims Module: Get IL Mediator HIE Auth: ERROR: Request failed: " + ex.getMessage());
@@ -233,7 +232,7 @@ public class GeneralUtil {
 				}
 			} else if (hieJwtAuthMode.trim().equalsIgnoreCase("mediator")) {
 				// Build the Mediator request
-				System.out.println("Auth mode is mediator");
+				System.out.println("Insurance Claims Module: Auth mode is mediator");
 				ret = getILMediatorAuthToken();
 			}
 		} catch (Exception ex) {
