@@ -17,6 +17,8 @@
 
     <context:component-scan base-package="org.openmrs.module.insuranceclaims"/>
 
+    <context:component-scan base-package="org.openmrs.module.insuranceclaims.advice"/>
+
     <bean id="insuranceclaims.DateUtil" class="org.openmrs.module.insuranceclaims.util.DateUtil" />
 
     <bean id="conceptTranslatorImpl" class="org.openmrs.module.fhir2.api.translators.impl.ConceptTranslatorImpl"/>
@@ -42,6 +44,16 @@
     <!-- Adds module services to OpenMRS context so it can be accessed
     calling e.g. Context.getService(InsuranceClaimService.class) -->
 
+    <!-- NB: making this a service caused the Java 11 startup slowdown in the backend. So it was removed. -->
+    <!-- NB: Instead use: Context.getRegisteredComponent("insuranceclaims.ExternalApiRequest", ExternalApiRequest.class) -->
+    <!-- <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
+                <value>org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest</value>
+                <ref bean="insuranceclaims.ExternalApiRequest"/>
+            </list>
+        </property>
+    </bean> -->
 
     <bean parent="serviceContext">
         <property name="moduleService">
@@ -100,29 +112,34 @@
     <bean parent="serviceContext">
         <property name="moduleService">
             <list>
+                <value>org.openmrs.module.insuranceclaims.activator.concept.ModuleConceptSetup</value>
+                <ref bean="insuranceclaims.ModuleConceptSetup"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
                 <value>org.openmrs.module.insuranceclaims.forms.ClaimFormService</value>
                 <ref bean="insuranceclaims.InsuranceClaimFormService"/>
             </list>
         </property>
     </bean>
 
-    <bean parent="serviceContext">
-        <property name="moduleService">
-            <list>
-                <value>org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest</value>
-                <ref bean="insuranceclaims.ExternalApiRequest"/>
-            </list>
-        </property>
+    <bean id="insuranceclaims.InsuranceClaimFormService"
+          class="org.openmrs.module.insuranceclaims.forms.impl.ClaimFormServiceImpl">
+        <property name="billService" ref="insuranceclaims.BillService"/>
+        <property name="providedItemService" ref="insuranceclaims.ProvidedItemService"/>
+        <property name="insuranceClaimService" ref="insuranceclaims.InsuranceClaimService"/>
+        <property name="insuranceClaimItemService" ref="insuranceclaims.InsuranceClaimItemService"/>
+        <property name="insuranceClaimDiagnosisService" ref="insuranceclaims.InsuranceClaimDiagnosisService"/>
+        <property name="insuranceClaimInterventionService" ref="insuranceclaims.InsuranceClaimInterventionService"/>
     </bean>
 
-    <bean parent="serviceContext">
-        <property name="moduleService">
-            <list>
-                <value>org.openmrs.module.insuranceclaims.activator.concept.ModuleConceptSetup</value>
-                <ref bean="insuranceclaims.ModuleConceptSetup"/>
-            </list>
-        </property>
-    </bean>
+    <!-- <bean id="createClaimOnCheckout" class="org.openmrs.module.insuranceclaims.advice.CreateClaimOnCheckout">
+        <property name="externalApiRequest"  ref="insuranceclaims.ExternalApiRequest"/>
+    </bean> -->
 
     <!-- Adds InsuranceClaimsPackagesService to OpenMRS context so it can be accessed - moduleService
     calling Context.getService(InsuranceClaimsPackagesService.class) -->

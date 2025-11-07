@@ -697,8 +697,8 @@ public class InsuranceClaimResourceController {
     }
 
     public static String getCoverageStatus(String nationalId) throws IOException {
-        String token = GeneralUtil.getJWTAuthToken();
-        String coverageUrl = Context.getAdministrationService()
+		String token = GeneralUtil.getJWTAuthToken();
+		String coverageUrl = Context.getAdministrationService()
                 .getGlobalProperty("insuranceclaims.coverage.custom.url");
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
@@ -737,7 +737,7 @@ public class InsuranceClaimResourceController {
             boolean isHieEnabled = "hie".equalsIgnoreCase(claimResponseSource);
             String accessToken = null;
             try {
-                accessToken = GeneralUtil.getJWTAuthToken();
+                accessToken = GeneralUtil.getILMediatorAuthToken();
             } catch (IOException e) {
                 System.out.println("Insurance Claims: Error getting JWT Auth Token: " + e.getMessage());
                 return null;

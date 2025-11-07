@@ -20,11 +20,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Address;
+import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CanonicalType;
@@ -58,6 +60,7 @@ import org.hl7.fhir.r4.model.PrimitiveType;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.StringType;
+import org.hl7.fhir.r4.model.Type;
 import org.openmrs.BaseOpenmrsData;
 import org.openmrs.BaseOpenmrsMetadata;
 import org.openmrs.Location;
@@ -76,6 +79,7 @@ import org.openmrs.module.fhir2.api.translators.PatientIdentifierTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientTranslator;
 import org.openmrs.module.fhir2.api.translators.PractitionerTranslator;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
+import org.openmrs.module.insuranceclaims.api.model.InsuranceClaimAttachment;
 import org.openmrs.module.insuranceclaims.api.service.db.AttributeService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimDiagnosisService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.FHIRClaimItemService;
@@ -266,10 +270,65 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         //Set information
         List<Claim.SupportingInformationComponent> claimInformation = new ArrayList<>();
 
-        claimInformation.add(createClaimGuaranteeIdInformation(omrsClaim));
-        claimInformation.add(createClaimExplanationInformation(omrsClaim));
+        // Supporting Info Before
+            // claimInformation.add(createClaimGuaranteeIdInformation(omrsClaim));
+            // claimInformation.add(createClaimExplanationInformation(omrsClaim));
 
-        claim.setSupportingInfo(claimInformation);
+            // claim.setSupportingInfo(claimInformation);
+        
+        // Supporting info - Now sending document attachments
+        Set<InsuranceClaimAttachment> attachments = omrsClaim.getAttachments();
+        Integer attachmentsCounter = 1;
+        for(InsuranceClaimAttachment insuranceClaimAttachment : attachments) {
+            String url = insuranceClaimAttachment.getUrl();
+            if(url != null && !url.isEmpty()) {
+                // Create SupportingInfoComponent
+                Claim.SupportingInformationComponent supportingInfo = new Claim.SupportingInformationComponent();
+
+                // Set sequence
+                supportingInfo.setSequence(attachmentsCounter);
+
+                // Set category
+                CodeableConcept category = new CodeableConcept().addCoding(
+                    new Coding()
+                        .setSystem("http://terminology.hl7.org/CodeSystem/claiminformationcategory")
+                        .setCode("attachment")
+                        .setDisplay("Attachment")
+                );
+                supportingInfo.setCategory(category);
+
+                // Create Attachment
+                Attachment attachment = new Attachment();
+                attachment.setLanguage("en");
+                attachment.setUrl(insuranceClaimAttachment.getUrl());
+                attachment.setSize(insuranceClaimAttachment.getFileSize().intValue()); // must be an integer, not string
+                attachment.setTitle(insuranceClaimAttachment.getFilename());
+                attachment.setContentType(insuranceClaimAttachment.getMimeType());
+
+                // Add extension to the attachment
+                Extension extension = new Extension();
+                extension.setUrl("https://qa-mis.apeiro-digital.com/fhir/CodeSystem/attachment-type");
+
+                // Value as CodeableConcept
+                CodeableConcept valueConcept = new CodeableConcept().addCoding(
+                    new Coding()
+                        .setSystem("https://qa-mis.apeiro-digital.com/fhir/CodeSystem/attachment-type")
+                        .setCode("discharge-summary")
+                        .setDisplay("Discharge Summary")
+                );
+                extension.setValue(valueConcept);
+
+                // Attach extension to the attachment
+                attachment.addExtension(extension);
+
+                // Assign the attachment to supporting info
+                supportingInfo.setValue(new Type[]{attachment}[0]); // equivalent to setValue(attachment)
+
+                // Add supportingInfo to claim
+                claim.addSupportingInfo(supportingInfo);
+                attachmentsCounter++;
+            }
+        }
 
         //Set type
         // claim.setType(createClaimVisitType(omrsClaim));

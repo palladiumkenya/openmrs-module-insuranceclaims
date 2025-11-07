@@ -56,6 +56,30 @@ public class InsuranceClaimAttachment extends AbstractBaseOpenmrsData {
     @Column(name = "status", length = 64)
     private String status;
 
+    @Basic
+    @Column(name = "file_size")
+    private Long fileSize;
+
+    @Basic
+    @Column(name = "mime_type", length = 255)
+    private String mimeType;
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+    }
+
     @Override
     public Integer getId() {
         return this.id;
@@ -94,8 +118,17 @@ public class InsuranceClaimAttachment extends AbstractBaseOpenmrsData {
         return documentType;
     }
 
+    public String getDocumentTypeAsString() {
+        return documentType == null ? null : documentType.name().toUpperCase();
+    }
+
     public void setDocumentType(DocumentType documentType) {
         this.documentType = documentType;
+    }
+
+    public void setDocumentType(String documentType) {
+        DocumentType type = DocumentType.fromString(documentType);
+        this.documentType = type;
     }
 
     public String getInterventionCode() {
@@ -138,17 +171,6 @@ public class InsuranceClaimAttachment extends AbstractBaseOpenmrsData {
         this.status = status;
     }
 
-    // @Override
-    // public String toString() {
-    //     return "InsuranceClaimAttachment [id=" + id +
-    //             ", claim=" + (claim != null ? claim.getId() : null) +
-    //             ", consentToken=" + consentToken +
-    //             ", documentType=" + documentType +
-    //             ", interventionCode=" + interventionCode + "]";
-    // }
-
-    
-
     public enum DocumentType {
         CLAIM_FORM,
         PREAUTH_FORM,
@@ -157,7 +179,20 @@ public class InsuranceClaimAttachment extends AbstractBaseOpenmrsData {
         LAB_ORDER,
         INVOICE,
         BIO_DETAILS,
-        IMAGING_ORDER
+        IMAGING_ORDER,
+        BIRTH_NOTIFICATION;
+
+        public static DocumentType fromString(String value) {
+            if (value == null) {
+                return null;
+            }
+            try {
+                return DocumentType.valueOf(value.trim().toUpperCase());
+            } catch (Exception ex) {
+                System.err.println("Insurance Claims Module: ERROR: Adding claims attachment. No such document type");
+                return null;
+            }
+        }
     }
 
     @Override
@@ -170,7 +205,8 @@ public class InsuranceClaimAttachment extends AbstractBaseOpenmrsData {
             ", url=" + url + 
             ", filename=" + filename + 
             ", retrievalId=" + retrievalId + 
-            ", status=" + status + "]";
+            ", status=" + status + 
+            ", fileSize=" + fileSize + "]";
     }
 }
 

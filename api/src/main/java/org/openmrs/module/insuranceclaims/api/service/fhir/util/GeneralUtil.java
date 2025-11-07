@@ -1,15 +1,25 @@
 package org.openmrs.module.insuranceclaims.api.service.fhir.util;
 
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.FACILITY_LICENSE_NUMBER;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.LOCATION_HIE_FHIR_REFERENCE;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PATIENT_HIE_NATIONAL_ID;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PATIENT_HIE_TELEPHONE_CONTACT;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PROVIDER_HIE_FHIR_REFERENCE;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PROVIDER_LICENSE_NUMBER;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.PROVIDER_UNIQUE_IDENTIFIER;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER;
+import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.SOCIAL_HEALTH_INSURANCE_NUMBER;
+
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
 import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.Practitioner;
 import org.openmrs.Encounter;
@@ -18,7 +28,6 @@ import org.openmrs.GlobalProperty;
 import org.openmrs.Location;
 import org.openmrs.LocationAttribute;
 import org.openmrs.LocationAttributeType;
-import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientIdentifierType;
@@ -28,31 +37,83 @@ import org.openmrs.Provider;
 import org.openmrs.ProviderAttribute;
 import org.openmrs.ProviderAttributeType;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.metadatadeploy.MetadataUtils;
+import org.openmrs.module.insuranceclaims.ClaimUtils;
+import org.openmrs.module.insuranceclaims.api.model.FileUploadResponse;
+import org.openmrs.module.insuranceclaims.util.ClaimsUtils;
 import org.openmrs.util.PrivilegeConstants;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.Set;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import static org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants.*;
-
-
-// import java.net.URI;
-// // import java.net.http.HttpClient;
-// // import java.net.http.HttpRequest;
-// // import java.net.http.HttpResponse;
-// import java.net.URLEncoder;
-// import java.nio.charset.StandardCharsets;
-
 public class GeneralUtil {
+
+	/**
+	 * Sends file attachments to support a claim
+	 */
+	public static FileUploadResponse sendClaimAttachmentToRemote(byte[] payload, String fileName, String mimeType) {
+		FileUploadResponse ret = new FileUploadResponse();
+
+		try {
+			OkHttpClient client = new OkHttpClient().newBuilder().build();
+			// String mimeType = "application/octet-stream";
+			// String mimeType = "image/jpeg";
+
+			okhttp3.RequestBody body = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart(
+							"files",
+							fileName,
+							okhttp3.RequestBody.create(okhttp3.MediaType.parse(mimeType), payload)
+					)
+					.build();
+
+			Request request = new Request.Builder()
+					.url(ClaimsUtils.getClaimsAttachmentsURL())
+					.method("POST", body)
+					.addHeader("X-Source-System", "hie-cr")
+					.addHeader("Cookie", "1ae5f2424651e0d04841ebe37574e87f=cda81a133d2cf0fc92dc21ae218b1d0c")
+					.addHeader("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI...")
+					.build();
+
+			Response response = client.newCall(request).execute();
+
+			if (!response.isSuccessful()) {
+				// Failed to send attachment
+				System.err.println("Insurance Claims Module: send claim supporting docs: ERROR: Sending failed external: " + response.code() + " - " + response.message());
+				System.err.println("Insurance Claims Module: send claim supporting docs: ERROR: " + response.body().string());
+				ret.setSuccess(false);
+				return(ret);
+			} else {
+				// Success sending attachment
+				String reply = response.body().string();
+				ObjectMapper objectMapper = new ObjectMapper();
+				List<FileUploadResponse> fileReplies = objectMapper.readValue(
+                    reply,
+                    new TypeReference<List<FileUploadResponse>>() {}
+            	);
+				if(fileReplies != null && fileReplies.size() > 0) {
+					System.err.println("Insurance Claims Module: Success sending claim supporting docs");
+					FileUploadResponse singleReply = fileReplies.get(0);
+					singleReply.setSuccess(true);
+					return(singleReply);
+				} else {
+					ret.setSuccess(false);
+					return(ret);
+				}
+			}
+		} catch(Exception ex) {
+			System.err.println("Insurance Claims Module: send claim supporting docs: ERROR: Sending failed internal: " + ex.getMessage());
+			ex.printStackTrace();
+		}
+
+		return(ret);
+	}
 
 	/**
 	 * Gets the HIE IL Mediator auth token
@@ -62,24 +123,49 @@ public class GeneralUtil {
 	 */
 	public static String getILMediatorAuthToken() throws IOException {
 		String ret = null;
+		// Utility function to get auth token
+		
+		GlobalProperty globalGetMediatorTokenUrl = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.post.api");
+		String shaMediatorTokenUrl = globalGetMediatorTokenUrl.getPropertyValue();
+		if (shaMediatorTokenUrl == null || shaMediatorTokenUrl.trim().isEmpty()) {
+			System.out.println("Insurance Claims Module: Mediator token url configs not updated: ");
+		}
+		GlobalProperty globalGetMediatorClientID = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.client.id");
+		String shaJwtMediatorClientId = globalGetMediatorClientID.getPropertyValue();
+		if (shaJwtMediatorClientId == null || shaJwtMediatorClientId.trim().isEmpty()) {
+			System.out.println("Insurance Claims Module: Mediator client Id not updated: ");
+		}
+		GlobalProperty globalGetMediatorClientSecret = Context.getAdministrationService()
+			.getGlobalPropertyObject("kenyaemr.hie.il.mediator.client.secret");
+		String shaMediatorClientSecret = globalGetMediatorClientSecret.getPropertyValue();
+		if (shaMediatorClientSecret == null || shaMediatorClientSecret.trim().isEmpty()) {
+			System.out.println("Insurance Claims Module: Mediator client secret not updated: ");
+		}
+		
 		try {
 			OkHttpClient client = new OkHttpClient().newBuilder().build();
 			okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/x-www-form-urlencoded");
-			okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "client_id=apisix-test-client&client_secret=rYvzoHsiWUBLbeabXYelRfvWawghOXn3&grant_type=client_credentials");
+			okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "client_id=" + shaJwtMediatorClientId + "&client_secret=" + shaMediatorClientSecret + "&grant_type=client_credentials");			
 			Request request = new Request.Builder()
-			.url("https://accounts-uat.dha.go.ke/realms/hie/protocol/openid-connect/token")
+			.url(shaMediatorTokenUrl)
 			.method("POST", body)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.build();
 			Response response = client.newCall(request).execute();
 
 			// Print the response
-			// System.out.println("Status Code: " + response.statusCode());
-			// System.out.println("Response Body: " + response.body());
+			 System.out.println("Insurance Claims Module: Insurance url: " + shaMediatorTokenUrl);
 			if (!response.isSuccessful()) {
 				System.err.println("Insurance Claims Module: Get HIE IL Mediator Auth: ERROR: Request failed: " + response.code() + " - " + response.message());
 			} else {
-				return response.body().string();
+				System.err.println("Insurance Claims Module: Get HIE IL Mediator Auth: Request successful: " + response.code());
+				//Extract token
+				org.codehaus.jackson.map.ObjectMapper mapper = new org.codehaus.jackson.map.ObjectMapper();
+				org.codehaus.jackson.JsonNode node = mapper.readTree(response.body().string());
+				ret = node.get("access_token").asText();
+				System.out.println("Insurance Claims Module: Got mediator auth Token: " + ret);
 			}
 		} catch (Exception ex) {
 			System.err.println("Insurance Claims Module: Get IL Mediator HIE Auth: ERROR: Request failed: " + ex.getMessage());
@@ -111,7 +197,6 @@ public class GeneralUtil {
 			if (hieJwtUrl == null || hieJwtUrl.trim().isEmpty()) {
 				System.out.println("Insurance Claims Module: ERROR: Jwt token url configs not updated: ");
 			}
-
 			//Config to toggle GET and POST requests
 			if (hieJwtAuthMode.trim().equalsIgnoreCase("get")) {
 				Request request = new Request.Builder()
@@ -145,8 +230,11 @@ public class GeneralUtil {
 					com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(payload);
 					ret = rootNode.path("access_token").asText();
 				}
+			} else if (hieJwtAuthMode.trim().equalsIgnoreCase("mediator")) {
+				// Build the Mediator request
+				System.out.println("Insurance Claims Module: Auth mode is mediator");
+				ret = getILMediatorAuthToken();
 			}
-
 		} catch (Exception ex) {
 			System.err.println("Insurance Claims Module: Get HIE Auth: ERROR: Request failed: " + ex.getMessage());
 			ex.printStackTrace();

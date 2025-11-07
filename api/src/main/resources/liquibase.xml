@@ -944,7 +944,7 @@
         </addColumn>
     </changeSet>
 
-    <!-- add url column to claims attachments table -->
+    <!-- add filename column to claims attachments table -->
     <changeSet id="insuranceclaims-filename-column-20250919-103620" author="pwaweru">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="iclm_claim_attachment"/>
@@ -957,7 +957,7 @@
         </addColumn>
     </changeSet>
 
-    <!-- add url column to claims attachments table -->
+    <!-- add retrieval_id column to claims attachments table -->
     <changeSet id="insuranceclaims-filename-column-20250919-103720" author="pwaweru">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="iclm_claim_attachment"/>
@@ -970,7 +970,7 @@
         </addColumn>
     </changeSet>
 
-    <!-- add url column to claims attachments table -->
+    <!-- add status column to claims attachments table -->
     <changeSet id="insuranceclaims-status-column-20250919-103820" author="pwaweru">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="iclm_claim_attachment"/>
@@ -980,6 +980,32 @@
         </preConditions>
         <addColumn tableName="iclm_claim_attachment">
             <column name="status" type="varchar(64)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- add file_size column to claims attachments table -->
+    <changeSet id="insuranceclaims-filesize-column-20250920-163820" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim_attachment"/>
+            <not>
+                <columnExists tableName="iclm_claim_attachment" columnName="file_size"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="iclm_claim_attachment">
+            <column name="file_size" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- add mime_type column to claims attachments table -->
+    <changeSet id="20250918-iclm-claim-attachment-mimetype" author="pwaweru">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="iclm_claim_attachment"/>
+            <not>
+                <columnExists tableName="iclm_claim_attachment" columnName="mime_type"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="iclm_claim_attachment">
+            <column name="mime_type" type="varchar(255)"/>
         </addColumn>
     </changeSet>
 
