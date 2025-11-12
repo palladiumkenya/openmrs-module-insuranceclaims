@@ -11,10 +11,9 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-// import okhttp3.MediaType;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.openmrs.annotation.Authorized;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.client.impl.ClaimRequestWrapper;
@@ -26,7 +25,7 @@ import org.openmrs.module.insuranceclaims.api.service.ClaimTransactionStatusServ
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
 import org.openmrs.module.insuranceclaims.api.service.exceptions.ClaimRequestException;
 import org.openmrs.module.insuranceclaims.api.service.exceptions.EligibilityRequestException;
-import org.openmrs.module.insuranceclaims.api.service.fhir.FHIREligibilityService;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
 import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest;
 import org.openmrs.module.insuranceclaims.forms.ClaimFormService;
 import org.openmrs.module.insuranceclaims.forms.NewClaimForm;
@@ -46,48 +45,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.openmrs.module.metadatadeploy.MetadataUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import liquibase.pro.packaged.J;
-
-// import javax.json.Json;
-// import javax.json.JsonArray;
-// import javax.json.JsonArrayBuilder;
-// import javax.json.JsonObject;
-// import javax.json.JsonObjectBuilder;
-
-// import jakarta.json.Json;
-// import jakarta.json.JsonArray;
-// import jakarta.json.JsonArrayBuilder;
-// import jakarta.json.JsonObject;
-// import jakarta.json.JsonObjectBuilder;
-// import jakarta.json.spi.JsonProvider;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONAware;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContexts;
-import org.apache.http.util.EntityUtils;
-import org.glassfish.json.JsonProviderImpl;
-import org.hl7.fhir.r4.model.CodeableConcept;
-import org.hl7.fhir.r4.model.Coding;
-import org.hl7.fhir.r4.model.CoverageEligibilityRequest;
-import org.hl7.fhir.r4.model.CoverageEligibilityResponse;
-import org.hl7.fhir.r4.model.CoverageEligibilityResponse.BenefitComponent;
-import org.hl7.fhir.r4.model.CoverageEligibilityResponse.InsuranceComponent;
-import org.hl7.fhir.r4.model.CoverageEligibilityResponse.ItemsComponent;
-import org.hl7.fhir.r4.model.Money;
-import org.apache.commons.lang3.StringUtils;
-import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 @RestController
 @Authorized

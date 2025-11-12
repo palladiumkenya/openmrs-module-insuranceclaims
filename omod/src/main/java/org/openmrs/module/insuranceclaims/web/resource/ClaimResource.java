@@ -102,6 +102,8 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("patient", Representation.REF);
             description.addProperty("location", Representation.REF);
             description.addProperty("visitType", Representation.REF);
+            description.addProperty("visit", Representation.REF);
+            description.addProperty("bill", Representation.REF);
             description.addSelfLink();
 
             return description;
@@ -127,6 +129,8 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("patient", Representation.FULL);
             description.addProperty("location", Representation.FULL);
             description.addProperty("visitType", Representation.FULL);
+            description.addProperty("visit", Representation.FULL);
+            description.addProperty("bill", Representation.FULL);
             description.addSelfLink();
             description.addLink("full", ".?v=" + RestConstants.REPRESENTATION_FULL);
 
