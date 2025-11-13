@@ -90,6 +90,7 @@ public class BillResource extends DataDelegatingCrudResource<Bill> {
             description.addProperty("paymentType");
             description.addProperty("diagnosis", Representation.REF);
             description.addProperty("patient", Representation.REF);
+            description.addProperty("providedItems", Representation.DEFAULT);
             description.addSelfLink();
             description.addLink("full", ".?v=" + RestConstants.REPRESENTATION_FULL);
 
@@ -105,6 +106,7 @@ public class BillResource extends DataDelegatingCrudResource<Bill> {
             description.addProperty("paymentType");
             description.addProperty("diagnosis", Representation.DEFAULT);
             description.addProperty("patient", Representation.DEFAULT);
+            description.addProperty("providedItems", Representation.DEFAULT);
             description.addProperty("auditInfo");
             description.addSelfLink();
 

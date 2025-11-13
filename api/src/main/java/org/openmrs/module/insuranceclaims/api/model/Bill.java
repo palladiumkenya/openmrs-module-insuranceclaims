@@ -13,6 +13,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,9 +21,12 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Model class that represent a bill.
@@ -71,6 +75,17 @@ public class Bill extends AbstractBaseOpenmrsData {
     @Cascade(CascadeType.SAVE_UPDATE)
     @JoinColumn(name = "patient", nullable = false)
     private Patient patient;
+
+    @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY, cascade = javax.persistence.CascadeType.ALL, orphanRemoval = true)
+    private Set<ProvidedItem> providedItems = new HashSet<>();
+
+    public Set<ProvidedItem> getProvidedItems() {
+        return providedItems;
+    }
+
+    public void setProvidedItems(Set<ProvidedItem> providedItems) {
+        this.providedItems = providedItems;
+    }
 
     @Override
     public Integer getId() {

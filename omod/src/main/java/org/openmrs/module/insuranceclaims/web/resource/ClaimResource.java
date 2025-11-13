@@ -103,7 +103,7 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("location", Representation.REF);
             description.addProperty("visitType", Representation.REF);
             description.addProperty("visit", Representation.REF);
-            description.addProperty("bill", Representation.REF);
+            description.addProperty("bill", Representation.DEFAULT);
             description.addSelfLink();
 
             return description;
