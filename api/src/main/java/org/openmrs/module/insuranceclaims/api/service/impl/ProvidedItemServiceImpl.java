@@ -1,9 +1,13 @@
 package org.openmrs.module.insuranceclaims.api.service.impl;
 
+import org.openmrs.api.APIException;
 import org.openmrs.module.insuranceclaims.api.dao.ProvidedItemDao;
+import org.openmrs.module.insuranceclaims.api.model.Bill;
 import org.openmrs.module.insuranceclaims.api.model.ProcessStatus;
 import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
 import org.openmrs.module.insuranceclaims.api.service.ProvidedItemService;
+
+import liquibase.pro.packaged.T;
 
 import java.util.List;
 
@@ -30,10 +34,18 @@ public class ProvidedItemServiceImpl extends BaseOpenmrsDataService<ProvidedItem
     }
 
     @Override
-    public void updateStatusProvidedItems(List<ProvidedItem> providedItems) {
+    public void updateStatusProvidedItems(List<ProvidedItem> providedItems, Bill bill) {
         for (ProvidedItem item : providedItems) {
+            item.setBill(bill);
             item.setStatus(ProcessStatus.PROCESSED);
+            System.err.println("Insurance Claims Module: Saving ProvidedItem: " + item);
             providedItemDao.saveOrUpdate(item);
         }
     }
+
+    @Override
+	public ProvidedItem saveOrUpdate(ProvidedItem providedItem) throws APIException {
+        System.err.println("Insurance Claims Module: Saving ProvidedItem: " + providedItem);
+		return providedItemDao.saveOrUpdate(providedItem);
+	}
 }

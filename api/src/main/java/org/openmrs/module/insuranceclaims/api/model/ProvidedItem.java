@@ -198,4 +198,14 @@ public class ProvidedItem extends AbstractBaseOpenmrsData {
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this, "id", "uuid");
     }
+
+    @Override
+    public String toString() {
+        return "ProvidedItem [id=" + id + ", price=" + price + ", dateOfServed=" + dateOfServed
+                + ", intervention_package=" + intervention_package + ", intervention_code=" + intervention_code
+                + ", originUuid=" + originUuid + ", status=" + status + ", patient=" + patient + ", item=" + item
+                + ", bill=" + bill + ", numberOfConsumptions=" + numberOfConsumptions + "]";
+    }
+
+    
 }
