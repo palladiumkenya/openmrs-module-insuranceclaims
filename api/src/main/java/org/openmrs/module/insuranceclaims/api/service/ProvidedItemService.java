@@ -1,6 +1,7 @@
 package org.openmrs.module.insuranceclaims.api.service;
 
 import org.openmrs.module.insuranceclaims.api.dao.ProvidedItemDao;
+import org.openmrs.module.insuranceclaims.api.model.Bill;
 import org.openmrs.module.insuranceclaims.api.model.ProcessStatus;
 import org.openmrs.module.insuranceclaims.api.model.ProvidedItem;
 
@@ -10,6 +11,6 @@ public interface ProvidedItemService extends OpenmrsDataService<ProvidedItem> {
 
     List<ProvidedItem> getProvidedItems(Integer patientId, ProcessStatus processStatus);
     List<ProvidedItem> getProvidedEnteredItems(Integer patientId);
-    void updateStatusProvidedItems(List<ProvidedItem> providedItems);
+    void updateStatusProvidedItems(List<ProvidedItem> providedItems, Bill bill);
     ProvidedItemDao getProvidedItemDao();
 }
