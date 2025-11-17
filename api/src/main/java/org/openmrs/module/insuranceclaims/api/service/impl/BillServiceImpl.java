@@ -29,6 +29,7 @@ public class BillServiceImpl extends BaseOpenmrsDataService<Bill> implements Bil
         bill.setStartDate(date);
         bill.setEndDate(dateUtil.plusDays(date, ConstantValues.DEFAULT_DURATION_BILL_DAYS));
         bill.setDateCreated(date);
+
         if(providedItems != null && providedItems.size() > 0) {
             bill.setPatient(providedItems.get(0).getPatient());
 
@@ -37,14 +38,20 @@ public class BillServiceImpl extends BaseOpenmrsDataService<Bill> implements Bil
 
             bill.setTotalAmount(sumProvidedItems);
 
-            providedItemService.updateStatusProvidedItems(providedItems);
+            System.err.println("Insurance Claims Module: Saving bill: " + bill);
+            bill = billDao.saveOrUpdate(bill);
+
+            providedItemService.updateStatusProvidedItems(providedItems, bill);
         } else {
             System.out.println("Insurance module: providedItems parameter is empty");
             bill.setPatient(patient);
             bill.setTotalAmount(BigDecimal.ZERO);
+
+            System.err.println("Insurance Claims Module: Saving bill: " + bill);
+            bill = billDao.saveOrUpdate(bill);
         }
 
-        return billDao.saveOrUpdate(bill);
+        return bill;
     }
 
     @Override
@@ -63,4 +70,10 @@ public class BillServiceImpl extends BaseOpenmrsDataService<Bill> implements Bil
     public void setProvidedItemService(ProvidedItemService providedItemService) {
         this.providedItemService = providedItemService;
     }
+
+    @Override
+	public Bill saveOrUpdate(Bill bill) throws APIException {
+        System.err.println("Insurance Claims Module: Saving bill: " + bill);
+		return billDao.saveOrUpdate(bill);
+	}
 }
