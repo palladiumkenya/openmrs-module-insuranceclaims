@@ -3,7 +3,9 @@ package org.openmrs.module.insuranceclaims.advice;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -17,13 +19,16 @@ import org.openmrs.Visit;
 import org.openmrs.api.DiagnosisService;
 import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.fhir2.api.translators.PatientTranslator;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
 import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest;
-// import org.openmrs.module.insuranceclaims.api.service.request.impl.ExternalApiRequestImpl;
 import org.openmrs.module.insuranceclaims.forms.ClaimFormService;
+import org.openmrs.module.insuranceclaims.forms.ItemDetails;
 import org.openmrs.module.insuranceclaims.forms.NewClaimForm;
+import org.openmrs.module.insuranceclaims.forms.ProvidedItemInForm;
+import org.openmrs.module.kenyaemr.cashier.api.IBillService;
+import org.openmrs.module.kenyaemr.cashier.api.model.Bill;
+import org.openmrs.module.kenyaemr.cashier.api.model.BillLineItem;
 import org.springframework.aop.AfterReturningAdvice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,15 +44,6 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 	@Autowired
 	@Qualifier("insuranceclaims.ExternalApiRequest")
     private ExternalApiRequest externalApiRequest;
-	
-	// public ExternalApiRequest getExternalApiRequest() {
-	// 	return externalApiRequest;
-	// }
-
-	// public void setExternalApiRequest(ExternalApiRequest externalApiRequest) {
-	// 	System.err.println("Insurance Claims Module: setting externalApiRequest: " + (externalApiRequest == null));
-	// 	this.externalApiRequest = externalApiRequest;
-	// }
 
 	@Override
 	public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
@@ -104,11 +100,7 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 							if(diagnosisFound == true) {
 								// We found a diagnosis
 								System.out.println("Insurance Claims Module: This visit had a diagnosis. Prepare and send claim");
-								// InsuranceClaim claim = new InsuranceClaim();
-								// claim.setPatient(patient);
-								// claim.setVisit(visit);
-								// claim.setVisitType(visit.getVisitType());
-								// claim.setStatus(InsuranceClaimStatus.ENTERED);
+
 								NewClaimForm newClaimForm = new NewClaimForm();
 								newClaimForm.setPatient(patient.getUuid());
 								newClaimForm.setStartDate(GeneralUtil.formatDate(new Date(), "yyyy-MM-dd"));
@@ -132,6 +124,41 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 								interventions.add("SHA-12-001"); // Change this in future for more interventions
 								newClaimForm.setInterventions(interventions);
 
+								// Check if there are any pending cashier bills for this patient
+								IBillService billService = Context.getService(IBillService.class);
+								if(billService != null) {
+									List<Bill> patientBills = billService.searchBill(patient);
+									if(patientBills != null && patientBills.size() > 0) {
+										System.out.println("Insurance Claims Module: We found pending cashier bills for this patient");
+										Map<String, ProvidedItemInForm> providedItems = new HashMap<>();
+										for(Bill bill : patientBills) {
+											List<BillLineItem> lineItems = bill.getLineItems();
+											List<ItemDetails> items = new ArrayList<>();
+											if(lineItems != null && lineItems.size() > 0) {
+												for(BillLineItem billLineItem : lineItems) {
+													ItemDetails item = new ItemDetails();
+													item.setUuid(billLineItem.getItemOrServiceConceptUuid());
+													item.setPrice(billLineItem.getPrice());
+													item.setQuantity(billLineItem.getQuantity());
+													items.add(item);
+												}
+											}
+											ProvidedItemInForm providedItemInForm = new ProvidedItemInForm();
+											providedItemInForm.setItems(items);
+											providedItemInForm.setExplanation("PHC auto claim");
+											providedItemInForm.setJustification("PHC auto claim");
+											providedItems.put(bill.getUuid(), providedItemInForm);
+										}
+										
+										System.out.println("Insurance Claims Module: Setting provided items for bills: " + providedItems.size());
+										newClaimForm.setProvidedItems(providedItems);
+									} else {
+										System.err.println("Insurance Claims Module: NO pending cashier bills for this patient");
+									}
+								} else {
+									System.err.println("Insurance Claims Module: ERROR: Could not load bill service");
+								}
+
 								ClaimFormService claimFormService = Context.getService(ClaimFormService.class);
 								InsuranceClaim claim = claimFormService.createClaim(newClaimForm);
 
@@ -143,7 +170,6 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 
 								try {
 									System.out.println("Insurance Claims Module: Now Attempting to send the claim");
-									// ExternalApiRequest externalApiRequest = Context.getService(ExternalApiRequest.class);
 									if(externalApiRequest == null) {
 										System.out.println("Insurance Claims Module: Manually create ExternalApiRequest");
 										externalApiRequest = Context.getRegisteredComponent("insuranceclaims.ExternalApiRequest", ExternalApiRequest.class);

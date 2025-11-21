@@ -12,7 +12,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>insuranceclaims</artifactId>
-	<version>1.1.6</version>
+	<version>1.1.7-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Insurance Claims</name>
 	<description>Module for insurance claims.</description>
@@ -39,7 +39,7 @@
 		<metadatamappingVersion>1.6.0</metadatamappingVersion>
 		<metadatadeployVersion>1.12.1</metadatadeployVersion>
         <metadatasharingVersion>1.5.0</metadatasharingVersion>
-		<!-- <eventModuleVersion>2.10.0</eventModuleVersion> -->
+		<cashierModuleVersion>4.2.5-SNAPSHOT</cashierModuleVersion>
 		<idgenModuleVersion>4.10.0</idgenModuleVersion>
 		<webservices.restVersion>2.42.0</webservices.restVersion>
 	</properties>
@@ -57,6 +57,13 @@
                 <groupId>org.openmrs.module</groupId>
                 <artifactId>fhir2-api</artifactId>
                 <version>${fhir2Version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+			<dependency>
+                <groupId>org.openmrs.module</groupId>
+                <artifactId>kenyaemr.cashier-api</artifactId>
+                <version>${cashierModuleVersion}</version>
                 <scope>provided</scope>
             </dependency>
 
