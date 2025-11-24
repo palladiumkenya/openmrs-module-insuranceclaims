@@ -198,8 +198,20 @@ public class FHIRInsuranceClaimServiceImpl implements FHIRInsuranceClaimService 
         Coding subTypeCoding = new Coding();
         // Set the system, code, and display values
         subTypeCoding.setSystem("http://terminology.hl7.org/CodeSystem/ex-claimsubtype");
-        subTypeCoding.setCode("ip");
-        subTypeCoding.setDisplay("ip");
+
+        //Set the sub type based on the type of visit
+        VisitType outpatientVT = Context.getVisitService().getVisitTypeByUuid(InsuranceClaimConstants.OUTPATIENT_VISIT_TYPE);
+        VisitType inpatientVT = Context.getVisitService().getVisitTypeByUuid(InsuranceClaimConstants.INPATIENT_VISIT_TYPE);
+        VisitType curVisitType = omrsClaim.getVisitType();
+        
+        if(curVisitType == outpatientVT) {
+            subTypeCoding.setCode("op");
+            subTypeCoding.setDisplay("op");
+        } else if(curVisitType == inpatientVT) {
+            subTypeCoding.setCode("ip");
+            subTypeCoding.setDisplay("ip");
+        }
+        
         // Add the Coding to the CodeableConcept
         claimSubTypeConcept.addCoding(subTypeCoding);
         claim.setSubType(claimSubTypeConcept);

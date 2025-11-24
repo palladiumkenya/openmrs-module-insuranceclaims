@@ -6,6 +6,9 @@ import org.openmrs.module.insuranceclaims.util.ClaimsUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
+
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -16,7 +19,11 @@ import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.OperationOutcome;
+import org.hl7.fhir.r4.model.Task;
+import org.hl7.fhir.r4.model.Type;
 
 import java.sql.Timestamp;
 
@@ -95,22 +102,15 @@ public class FhirToClaimTransactionStatusConverter {
 
                 if ("Claim".equals(resourceType)) {
                     claimResource = resource;
-                System.err.println("Insurance Claims: Found Claim resource with ID: " + resource.get("id").asText());
+                    System.err.println("Insurance Claims: Found Claim resource with ID: " + resource.get("id").asText());
                 } else if ("ClaimResponse".equals(resourceType)) {
                     claimResponseResource = resource;
-                System.err.println("Insurance Claims: Found ClaimResponse resource with ID: " + resource.get("id").asText());
+                    System.err.println("Insurance Claims: Found ClaimResponse resource with ID: " + resource.get("id").asText());
                 } else if ("Task".equals(resourceType)) {
                     taskResource = resource;
-                System.err.println("Insurance Claims: Found Task resource with ID: " + resource.get("id").asText());
+                    System.err.println("Insurance Claims: Found Task resource with ID: " + resource.get("id").asText());
                 }
             }
-
-            // If ClaimResponse is not found, try to get status from Task resource -- ??? WHY WHY WHY
-            // if (claimResource == null) {
-            //     throw new IllegalArgumentException("Required Claim resource not found");
-            // }
-
-            
 
             // Map fields from FHIR to ClaimTransactionStatus
             status.setId(1); // Set a default ID or handle as needed
@@ -140,14 +140,14 @@ public class FhirToClaimTransactionStatusConverter {
             if (taskResource != null) {
                 statusValue = extractStatusFromTaskOutput(taskResource);
                 if (!statusValue.isEmpty()) {
-                System.err.println("Insurance Claims: Using Task resource output status: " + statusValue);
+                    System.err.println("Insurance Claims: Using Task resource output status: " + statusValue);
                 }
             }
 
             // If no status from Task, try ClaimResponse
             if (statusValue.isEmpty() && claimResponseResource != null && claimResponseResource.has("status")) {
                 statusValue = claimResponseResource.get("status").asText();
-            System.err.println("Insurance Claims: Using ClaimResponse status: " + statusValue);
+                System.err.println("Insurance Claims: Using ClaimResponse status: " + statusValue);
             } else if (statusValue.isEmpty() && claimResource != null && claimResource.has("status")) {
                 statusValue = claimResource.get("status").asText();
                 System.err.println("Insurance Claims: Using ClaimResource status: " + statusValue);
@@ -182,15 +182,42 @@ public class FhirToClaimTransactionStatusConverter {
         return status;
     }
 
+    /**
+     * Get the claim status from the Task resource - extension
+     * @param taskResource
+     * @return
+     */
     private String extractStatusFromTaskOutput(JsonNode taskResource) {
-        if (!taskResource.has("status")) {
-           System.err.println("Insurance Claims: Task resource has no status extension");
-            return "";
-        }
-		String lastClaimStateDisplay = "";
-		lastClaimStateDisplay =  taskResource.get("status").asText();
+        String lastClaimStateDisplay = "";
 
-		System.err.println("Insurance Claims: Last claim state display: " + lastClaimStateDisplay);
+        try {
+            String baseResourceURL = GeneralUtil.getBaseURLForResourceAndFullURL();
+            String taskStatusExtensionURL = baseResourceURL + "/CodeSystem/category-codes/StructureDefinition/claim-outcome";
+
+            FhirContext ctx = FhirContext.forR4();
+            IParser parser = ctx.newJsonParser();
+
+            Task task = (Task) parser.parseResource(taskResource.toString());
+
+            Extension statusExtension = task.getExtensionByUrl(taskStatusExtensionURL);
+            
+            if (statusExtension != null) {
+                Type value = statusExtension.getValue();
+
+                if (value instanceof CodeableConcept) {
+                    CodeableConcept cc = (CodeableConcept) value;
+                    if (cc != null && cc.hasCoding()) {
+                        String code = cc.getCodingFirstRep().getCode();
+                        System.out.println("Insurance Claims: Claims Outcome code: " + code);
+                        lastClaimStateDisplay = code;
+                    }
+                }
+            }
+
+            System.err.println("Insurance Claims: Last claim state display: " + lastClaimStateDisplay);
+        } catch (Exception ex) {
+
+        }
 
         return lastClaimStateDisplay;
     }
