@@ -145,12 +145,9 @@ public class FhirToClaimTransactionStatusConverter {
             }
 
             // If no status from Task, try ClaimResponse
-            if (statusValue.isEmpty() && claimResponseResource != null && claimResponseResource.has("status")) {
-                statusValue = claimResponseResource.get("status").asText();
-                System.err.println("Insurance Claims: Using ClaimResponse status: " + statusValue);
-            } else if (statusValue.isEmpty() && claimResource != null && claimResource.has("status")) {
-                statusValue = claimResource.get("status").asText();
-                System.err.println("Insurance Claims: Using ClaimResource status: " + statusValue);
+            if (statusValue.isEmpty() && claimResponseResource != null && claimResponseResource.has("extension")) {
+                statusValue = extractStatusFromClaimResponseOutput(claimResponseResource);
+                System.err.println("Insurance Claims: Using ClaimResponseResource status: " + statusValue);
             }
 
             if (statusValue.isEmpty()) {
@@ -208,7 +205,7 @@ public class FhirToClaimTransactionStatusConverter {
                     CodeableConcept cc = (CodeableConcept) value;
                     if (cc != null && cc.hasCoding()) {
                         String code = cc.getCodingFirstRep().getCode();
-                        System.out.println("Insurance Claims: Claims Outcome code: " + code);
+                        System.out.println("Insurance Claims: Task Claims Outcome code: " + code);
                         lastClaimStateDisplay = code;
                     }
                 }
@@ -216,7 +213,49 @@ public class FhirToClaimTransactionStatusConverter {
 
             System.err.println("Insurance Claims: Last claim state display: " + lastClaimStateDisplay);
         } catch (Exception ex) {
+            System.err.println("Insurance Claims: ERROR: failed to get claim status from TASK FHIR resource: " + ex.getMessage());
+            ex.printStackTrace();
+        }
 
+        return lastClaimStateDisplay;
+    }
+
+    /**
+     * Get the claim status from the ClaimResponse resource - extension
+     * @param taskResource
+     * @return
+     */
+    private String extractStatusFromClaimResponseOutput(JsonNode claimResponseResource) {
+        String lastClaimStateDisplay = "";
+
+        try {
+            String baseResourceURL = GeneralUtil.getBaseURLForResourceAndFullURL();
+            String taskStatusExtensionURL = baseResourceURL + "/StructureDefinition/claim-state-extension";
+
+            FhirContext ctx = FhirContext.forR4();
+            IParser parser = ctx.newJsonParser();
+
+            Task task = (Task) parser.parseResource(claimResponseResource.toString());
+
+            Extension statusExtension = task.getExtensionByUrl(taskStatusExtensionURL);
+            
+            if (statusExtension != null) {
+                Type value = statusExtension.getValue();
+
+                if (value instanceof CodeableConcept) {
+                    CodeableConcept cc = (CodeableConcept) value;
+                    if (cc != null && cc.hasCoding()) {
+                        String code = cc.getCodingFirstRep().getCode();
+                        System.out.println("Insurance Claims: claimResponse Claims Outcome code: " + code);
+                        lastClaimStateDisplay = code;
+                    }
+                }
+            }
+
+            System.err.println("Insurance Claims: Last claim state display: " + lastClaimStateDisplay);
+        } catch (Exception ex) {
+            System.err.println("Insurance Claims: ERROR: failed to get claim status from ClaimResponse FHIR resource: " + ex.getMessage());
+            ex.printStackTrace();
         }
 
         return lastClaimStateDisplay;
