@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,14 +15,21 @@ import javax.validation.constraints.NotNull;
 import org.openmrs.Concept;
 import org.openmrs.Diagnosis;
 import org.openmrs.Encounter;
+import org.openmrs.EncounterType;
+import org.openmrs.Order;
+import org.openmrs.OrderType;
 import org.openmrs.Patient;
 import org.openmrs.Provider;
 import org.openmrs.Visit;
+import org.openmrs.VisitType;
 import org.openmrs.api.DiagnosisService;
+import org.openmrs.api.EncounterService;
+import org.openmrs.api.OrderService;
 import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
+import org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants;
 import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest;
 import org.openmrs.module.insuranceclaims.forms.ClaimFormService;
 import org.openmrs.module.insuranceclaims.forms.ItemDetails;
@@ -53,9 +62,11 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 				if (method.getName().equals("saveVisit") && args.length > 0 && args[0] instanceof Visit) {
 					
 					Visit visit = (Visit) args[0];
+					VisitService visitService = Context.getVisitService();
+					VisitType outpatientVisitType = visitService.getVisitTypeByUuid(InsuranceClaimConstants.OUTPATIENT_VISIT_TYPE);
 					
 					// check visit info and only process checkouts
-					if (visit != null && visit.getStopDatetime() != null) {
+					if (visit != null && visit.getStopDatetime() != null && outpatientVisitType != null && visit.getVisitType() == outpatientVisitType) {
 						System.out.println("Insurance Claims Module: Visit not processed yet. Now processing");
 
 						System.out.println("Insurance Claims Module: Visit End Date: " + visit.getStopDatetime());
@@ -69,9 +80,11 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 							String encounterUuid = "";
 							String providerUuid = "";
 							List<String> diagnosesInEncounter = new ArrayList<>();
-							VisitService visitService = Context.getVisitService();
+							
 							Set<Encounter> encounters = visit.getEncounters();
 							DiagnosisService diagnosisService = Context.getDiagnosisService();
+							OrderService orderService = Context.getOrderService();
+							EncounterService encounterService = Context.getEncounterService();
 							for(Encounter enc : encounters) {
 								List<Diagnosis> diagnoses = diagnosisService.getDiagnosesByEncounter(enc, false, false);
 								if(diagnoses != null && diagnoses.size() > 0) {
@@ -115,13 +128,179 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 									newClaimForm.setLocation(currentLocationId.toString());
 								}
 								newClaimForm.setProvider(providerUuid);
-								newClaimForm.setClaimJustification("consultation");
-								newClaimForm.setClaimExplanation("consultation");
+								newClaimForm.setClaimJustification("PHC Claim");
+								newClaimForm.setClaimExplanation("PHC Claim");
 								newClaimForm.setGuaranteeId("auto");
 								newClaimForm.setClaimCode("auto");
 								newClaimForm.setDiagnoses(diagnosesInEncounter);
+								
+								// Check for interventions using encounters and orders
+								Set<String> interventionsSet = new LinkedHashSet<>();
 								List<String> interventions = new ArrayList<>();
-								interventions.add("SHA-12-001"); // Change this in future for more interventions
+
+								for(Encounter enc : encounters) {
+									EncounterType encType = enc.getEncounterType();
+
+									// Consultation encounters
+									EncounterType consultationEncounterType = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_CONSULTATION);
+									EncounterType hivConsultationET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_HIV_CONSULTATION);
+									EncounterType cwcConsultationET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_CWC_CONSULTATION);
+									EncounterType mchMotherConsultationET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_MCH_MOTHER_CONSULTATION);
+									EncounterType prepConsultationET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_PREP_CONSULTATION);
+									EncounterType kpClinicVisitET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_KP_CLINIC_VISIT_FORM);
+
+									// Lab encounters
+									EncounterType labResultsET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_LAB_RESULTS);
+									EncounterType labOrderET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_LAB_ORDER);
+									EncounterType procedureResultsET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_PROCEDURE_RESULTS);
+									EncounterType ipdProcedureET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_IPD_PROCEDURE);
+
+									// Drug-related encounters
+									EncounterType drugOrderET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_DRUG_ORDER);
+									EncounterType drugRegimenET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_DRUG_REGIMEN_EDITOR);
+									EncounterType artRefillET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_ART_REFILL);
+									EncounterType prepRefillET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_PREP_MONTHLY_REFILL);
+
+									// Screening encounters
+									EncounterType tbScreeningET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_TB_SCREENING);
+									EncounterType cervicalScreeningET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_CERVICAL_CANCER_SCREENING);
+									EncounterType alcoholScreeningET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_KP_ALCOHOL_SCREENING);
+									EncounterType violenceScreeningET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_KP_VIOLENCE_SCREENING);
+									EncounterType depressionScreeningET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_KP_DEPRESSION_SCREENING);
+									EncounterType hearingScreeningET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_HEARING_SCREENING_CLINIC);
+									EncounterType gadET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_GENERALIZED_ANXIETY_DISORDER_ASSESSMENT);
+
+									// ANC encounters
+									EncounterType ancEnrollmentET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_ANC_MOTHER_ENROLLMENT);
+									EncounterType ancDiscontinuationET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_ANC_DISCONTINUATION);
+									EncounterType mchMotherEnrollmentET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_MCH_MOTHER_ENROLLMENT);
+
+									// PNC encounters
+									EncounterType pncEnrollmentET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_PNC_MOTHER_ENROLLMENT);
+									EncounterType pncDiscontinuationET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_PNC_DISCONTINUATION);
+									EncounterType mchPostDeliveryET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_MCH_POST_DELIVERY);
+
+									// Immunization encounters
+									EncounterType immunizationsET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_IMMUNIZATIONS);
+									EncounterType mchChildImmunizationET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_MCH_CHILD_IMMUNIZATION);
+									EncounterType aefiET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_AEFI_INVESTIGATION);
+
+									if(encType != null) {
+										// Consultation encounter - check
+										// SHA-12-001: Consultation
+										if(encType == consultationEncounterType  ||
+											encType == hivConsultationET ||
+											encType == cwcConsultationET ||
+											encType == mchMotherConsultationET ||
+											encType == prepConsultationET ||
+											encType == kpClinicVisitET) {
+
+											interventionsSet.add("SHA-12-001");
+										}
+
+										// SHA-12-002: Lab investigations
+										if (encType == labResultsET ||
+											encType == labOrderET ||
+											encType == procedureResultsET ||
+											encType == ipdProcedureET) {
+
+											interventionsSet.add("SHA-12-002");
+										}
+
+										// SHA-12-003: Radiology
+										if (encType == procedureResultsET ||
+											encType == ipdProcedureET) {
+
+											interventionsSet.add("SHA-12-003");
+										}
+
+										// SHA-12-004: Prescription / Dispensing
+										if (encType == drugOrderET ||
+											encType == drugRegimenET ||
+											encType == artRefillET ||
+											encType == prepRefillET) {
+
+											interventionsSet.add("SHA-12-004");
+										}
+
+										// SHA-12-006: Screening
+										if (encType == tbScreeningET ||
+											encType == cervicalScreeningET ||
+											encType == alcoholScreeningET ||
+											encType == violenceScreeningET ||
+											encType == depressionScreeningET ||
+											encType == hearingScreeningET ||
+											encType == gadET) {
+
+											interventionsSet.add("SHA-12-006");
+										}
+
+										// SHA-12-007: Daycare procedures
+										if (encType == ipdProcedureET ||
+											encType == procedureResultsET) {
+
+											interventionsSet.add("SHA-12-007");
+										}
+
+										// SHA-12-008: Antenatal care
+										if (encType == ancEnrollmentET ||
+											encType == ancDiscontinuationET ||
+											encType == mchMotherEnrollmentET) {
+
+											interventionsSet.add("SHA-12-008");
+										}
+
+										// SHA-12-009: Postnatal care
+										if (encType == pncEnrollmentET ||
+											encType == pncDiscontinuationET ||
+											encType == mchPostDeliveryET) {
+
+											interventionsSet.add("SHA-12-009");
+										}
+
+										// SHA-12-010: Immunization
+										if (encType == immunizationsET ||
+											encType == mchChildImmunizationET ||
+											encType == aefiET) {
+
+											interventionsSet.add("SHA-12-010");
+										}
+									}
+									
+									// EncounterType
+									Set<Order> orders = enc.getOrders();
+									for(Order order : orders) {
+										OrderType orderType = order.getOrderType();
+										OrderType drugOrderType = orderService.getOrderTypeByUuid(InsuranceClaimConstants.ORDER_TYPE_DRUG);
+										OrderType testOrderType = orderService.getOrderTypeByUuid(InsuranceClaimConstants.ORDER_TYPE_TEST);
+										OrderType procedureOrderType = orderService.getOrderTypeByUuid(InsuranceClaimConstants.ORDER_TYPE_PROCEDURE);
+
+										// Lab Test Order
+										if(testOrderType != null && orderType == testOrderType) {
+											interventionsSet.add("SHA-12-002");
+										}
+
+										// Procedure Order e.g xray
+										if(procedureOrderType != null && orderType == procedureOrderType) {
+											interventionsSet.add("SHA-12-003");
+										}
+
+										// Drug order - Pharmacy
+										if(drugOrderType != null && orderType == drugOrderType) {
+											interventionsSet.add("SHA-12-004");
+										}
+									}
+								}
+
+								// Everything else goes into SHA-12-005 (Others)
+								if (interventionsSet.isEmpty()) {
+									interventionsSet.add("SHA-12-005");
+								}
+
+								for(String inter: interventionsSet) {
+									interventions.add(inter);
+								}
+
 								newClaimForm.setInterventions(interventions);
 
 								// Check if there are any pending cashier bills for this patient
