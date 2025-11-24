@@ -16,9 +16,12 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hl7.fhir.r4.model.ClaimResponse;
+import org.hl7.fhir.r4.model.ClaimResponse.NoteComponent;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.OperationOutcome;
@@ -61,6 +64,12 @@ public class FhirToClaimTransactionStatusConverter {
         return(status);
     }
 
+    /**
+     * Extract the claim status from the response FHIR bundle
+     * @param fhirJson
+     * @return
+     * @throws Exception
+     */
     public ClaimTransactionStatus convertFhirBundleToClaimStatus(String fhirJson) throws Exception {
         // NB: Response can be a Bundle, OperationOutcome or Generic error
         System.err.println("Insurance Claims: Starting claim processing");
@@ -157,9 +166,15 @@ public class FhirToClaimTransactionStatusConverter {
 
             status.setStatus(statusValue);
 
-            // Set null values for fields not present in FHIR
-            status.setCommentFromApprover(null);
-            status.setNotes(null);
+            // Get and set the claim notes
+            if (claimResponseResource != null) {
+                String notes = extractNotesFromClaimResponseOutput(claimResponseResource);
+                status.setCommentFromApprover(notes);
+                status.setNotes(notes);
+            } else {
+                status.setCommentFromApprover(null);
+                status.setNotes(null);
+            }
 
             // Convert created date from Claim
             if (claimResource != null) {
@@ -222,7 +237,7 @@ public class FhirToClaimTransactionStatusConverter {
 
     /**
      * Get the claim status from the ClaimResponse resource - extension
-     * @param taskResource
+     * @param claimResponseResource
      * @return
      */
     private String extractStatusFromClaimResponseOutput(JsonNode claimResponseResource) {
@@ -230,14 +245,14 @@ public class FhirToClaimTransactionStatusConverter {
 
         try {
             String baseResourceURL = GeneralUtil.getBaseURLForResourceAndFullURL();
-            String taskStatusExtensionURL = baseResourceURL + "/StructureDefinition/claim-state-extension";
+            String claimResponseStatusExtensionURL = baseResourceURL + "/StructureDefinition/claim-state-extension";
 
             FhirContext ctx = FhirContext.forR4();
             IParser parser = ctx.newJsonParser();
 
-            Task task = (Task) parser.parseResource(claimResponseResource.toString());
+            ClaimResponse claimResponse = (ClaimResponse) parser.parseResource(claimResponseResource.toString());
 
-            Extension statusExtension = task.getExtensionByUrl(taskStatusExtensionURL);
+            Extension statusExtension = claimResponse.getExtensionByUrl(claimResponseStatusExtensionURL);
             
             if (statusExtension != null) {
                 Type value = statusExtension.getValue();
@@ -259,6 +274,37 @@ public class FhirToClaimTransactionStatusConverter {
         }
 
         return lastClaimStateDisplay;
+    }
+
+    /**
+     * Get the claim Notes from the ClaimResponse resource - extension
+     * @param claimResponseResource
+     * @return
+     */
+    private String extractNotesFromClaimResponseOutput(JsonNode claimResponseResource) {
+        String claimNotes = "";
+
+        try {
+            FhirContext ctx = FhirContext.forR4();
+            IParser parser = ctx.newJsonParser();
+
+            ClaimResponse claimResponse = (ClaimResponse) parser.parseResource(claimResponseResource.toString());
+
+            List<NoteComponent> notes = claimResponse.getProcessNote();
+            
+            for( NoteComponent note : notes) {
+                claimNotes = claimNotes + " || " + note.getText();
+            }
+
+            claimNotes = claimNotes.trim();
+
+            System.err.println("Insurance Claims: Claim Response Notes: " + claimNotes);
+        } catch (Exception ex) {
+            System.err.println("Insurance Claims: ERROR: failed to get claim notes from ClaimResponse FHIR resource: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        return claimNotes;
     }
 
     private Timestamp parseDateTime(String dateTimeStr) {
