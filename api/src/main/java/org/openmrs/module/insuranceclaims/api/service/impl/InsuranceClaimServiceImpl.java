@@ -121,6 +121,8 @@ public class InsuranceClaimServiceImpl extends BaseOpenmrsDataService<InsuranceC
 				return InsuranceClaimStatus.IN_PROGRESS;
 			case "active":
 				return InsuranceClaimStatus.ACTIVE;
+            case "submission_error":
+				return InsuranceClaimStatus.SUBMISSION_ERROR;
             default:
                 return InsuranceClaimStatus.ENTERED;
         }
