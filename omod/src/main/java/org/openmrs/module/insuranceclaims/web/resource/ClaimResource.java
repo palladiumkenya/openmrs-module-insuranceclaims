@@ -84,7 +84,41 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
         insuranceClaimService.delete(claim);
     }
 
-  
+    /**
+     * This is now the default representation for patient so that we can return the patient name without the identifier
+     * @param claim
+     * @return
+     */
+    @PropertyGetter("patient")
+    public SimpleObject getPatient(InsuranceClaim claim) {
+        Patient p = claim.getPatient();
+
+        SimpleObject obj = new SimpleObject();
+        obj.add("uuid", p.getUuid());
+        obj.add("display", p.getPersonName().getFullName());
+
+        List<SimpleObject> links = new ArrayList<>();
+        SimpleObject link = new SimpleObject();
+        link.add("rel", "self");
+        String uri = RestConstants.URI_PREFIX + "patient/" + p.getUuid();
+        link.add("uri", uri);
+        link.add("resourceAlias", "patient");
+        links.add(link);
+
+        obj.add("links", links);
+
+        return obj;
+    }
+
+    /**
+     * Returns patient data for the given claim and representation
+     * @param claim
+     * @param rep
+     * @return
+     */
+    public SimpleObject getPatient(InsuranceClaim claim, Representation rep) {
+        return getPatient(claim);
+    }
 
     @Override
     public DelegatingResourceDescription getRepresentationDescription(Representation representation) {
@@ -107,7 +141,7 @@ public class ClaimResource extends DataDelegatingCrudResource<InsuranceClaim> {
             description.addProperty("status");
             description.addProperty("use");
             description.addProperty("provider", Representation.REF);
-            description.addProperty("patient", Representation.REF);
+            description.addProperty("patient");
             description.addProperty("location", Representation.REF);
             description.addProperty("visitType", Representation.REF);
             description.addProperty("visit", Representation.REF);
