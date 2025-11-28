@@ -361,7 +361,7 @@ public class GeneralUtil {
 		String ret = "";
 		if (patient != null) {
 
-			PatientIdentifierType CRIdentifierType = Context.getPatientService().getPatientIdentifierTypeByUuid(SOCIAL_HEALTH_INSURANCE_NUMBER);
+			PatientIdentifierType CRIdentifierType = Context.getPatientService().getPatientIdentifierTypeByUuid(SOCIAL_HEALTH_AUTHORITY_IDENTIFICATION_NUMBER);
 			if (CRIdentifierType != null) {
 				PatientIdentifier CRObject = patient.getPatientIdentifier(CRIdentifierType);
 
