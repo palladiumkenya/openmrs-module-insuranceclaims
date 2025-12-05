@@ -91,6 +91,12 @@ public final class InsuranceClaimConstants {
     public static final String CASUALTY_VISIT_TYPE = "0419d15f-67ad-4fd0-97a1-9b5246b2d0d7";
     public static final String MORGUE_VISIT_TYPE = "6307dbe2-f336-4c11-a393-50c2769f455a";
 
+    // Visit Attributes
+    public static final String PAYMENT_METHOD_VISIT_ATTRIBUTE = "e6cb0c3b-04b0-4117-9bc6-ce24adbda802";
+
+    // Payment Modes
+    public static final String INSURANCE_PAYMENT_MODE = "beac329b-f1dc-4a33-9e7c-d95821a137a6";
+
     // Logging GP
     public static final String CLAIMS_LOGGING_ENABLED = "insuranceclaims.debugmode.enabled";
 
