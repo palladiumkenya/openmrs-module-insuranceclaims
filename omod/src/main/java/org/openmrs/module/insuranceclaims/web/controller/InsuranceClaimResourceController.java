@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.openmrs.annotation.Authorized;
@@ -663,10 +664,11 @@ public class InsuranceClaimResourceController {
 		String token = GeneralUtil.getJWTAuthToken();
 		String coverageUrl = Context.getAdministrationService()
                 .getGlobalProperty("insuranceclaims.coverage.custom.url");
+		String decodedCoverageUrl= StringEscapeUtils.unescapeHtml4(coverageUrl);		
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
         Request request = new Request.Builder()
-                .url(coverageUrl + nationalId)
+                .url(decodedCoverageUrl + nationalId)
                 .addHeader("Referer", "")
                 .addHeader("Authorization", "Bearer " + token)
                 .build();
