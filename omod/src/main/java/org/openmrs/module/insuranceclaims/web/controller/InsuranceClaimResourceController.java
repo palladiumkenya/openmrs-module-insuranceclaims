@@ -70,7 +70,7 @@ public class InsuranceClaimResourceController {
     @Autowired
     private ClaimTransactionStatusService claimTransactionStatusService;
 
-	@CrossOrigin(origins = "*", methods = { RequestMethod.POST, RequestMethod.OPTIONS })
+    @CrossOrigin(origins = "*", methods = { RequestMethod.POST, RequestMethod.OPTIONS })
     @RequestMapping(value = "/claims", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<String> createClaim(@RequestBody NewClaimForm form, HttpServletRequest request,
@@ -431,9 +431,7 @@ public class InsuranceClaimResourceController {
             HttpServletResponse response) throws ResponseException, IOException {
 
         JSONArray coreArray = new JSONArray();
-		System.out.println("Insurance Claims: National ID Parameter: " + nationalId);
         String eligibilityResponse = getCoverageStatus(nationalId);
-		System.out.println("Insurance Claims: the CoverageEligibilityRequest response: " + eligibilityResponse);
         JSONObject insuranceObject = new JSONObject();
         insuranceObject.put("insurer", "SHAX001");
         insuranceObject.put("inforce", true);
