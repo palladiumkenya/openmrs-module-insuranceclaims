@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.openmrs.annotation.Authorized;
@@ -69,7 +70,7 @@ public class InsuranceClaimResourceController {
     @Autowired
     private ClaimTransactionStatusService claimTransactionStatusService;
 
-    @CrossOrigin(origins = "*", methods = { RequestMethod.POST, RequestMethod.OPTIONS })
+	@CrossOrigin(origins = "*", methods = { RequestMethod.POST, RequestMethod.OPTIONS })
     @RequestMapping(value = "/claims", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<String> createClaim(@RequestBody NewClaimForm form, HttpServletRequest request,
@@ -430,7 +431,9 @@ public class InsuranceClaimResourceController {
             HttpServletResponse response) throws ResponseException, IOException {
 
         JSONArray coreArray = new JSONArray();
+		System.out.println("Insurance Claims: National ID Parameter: " + nationalId);
         String eligibilityResponse = getCoverageStatus(nationalId);
+		System.out.println("Insurance Claims: the CoverageEligibilityRequest response: " + eligibilityResponse);
         JSONObject insuranceObject = new JSONObject();
         insuranceObject.put("insurer", "SHAX001");
         insuranceObject.put("inforce", true);
@@ -663,10 +666,11 @@ public class InsuranceClaimResourceController {
 		String token = GeneralUtil.getJWTAuthToken();
 		String coverageUrl = Context.getAdministrationService()
                 .getGlobalProperty("insuranceclaims.coverage.custom.url");
+		String decodedCoverageUrl= StringEscapeUtils.unescapeHtml4(coverageUrl);		
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
         Request request = new Request.Builder()
-                .url(coverageUrl + nationalId)
+                .url(decodedCoverageUrl + nationalId)
                 .addHeader("Referer", "")
                 .addHeader("Authorization", "Bearer " + token)
                 .build();
