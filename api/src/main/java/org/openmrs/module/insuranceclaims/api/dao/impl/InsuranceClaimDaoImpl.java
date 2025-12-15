@@ -144,4 +144,16 @@ public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> im
 		criteria.add(Restrictions.eq("externalId", externalId));
 		return findByCriteria(criteria, false);
 	}
+
+	@Override
+	public InsuranceClaim getLatestInsuranceClaimByPatient(Integer patientId) {
+		Criteria criteria = createCriteria();
+		criteria.createCriteria("patient")
+				.add(Restrictions.eq("patient", patientId));
+		// Add ordering by iclm_claim_id in descending order
+		criteria.addOrder(org.hibernate.criterion.Order.desc("id"));
+		criteria.setMaxResults(1);
+
+		return (InsuranceClaim) criteria.uniqueResult();
+	}
 }
