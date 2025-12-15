@@ -429,7 +429,7 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
                      .atZone(ZoneId.systemDefault())
                      .toLocalDate();
 
-				if (debugMode) System.out.println("Insurance Claims Module: This patient has another calim today: " + patient.getId());
+				if (debugMode) System.out.println("Insurance Claims Module: This patient has another claim today. Patient ID: " + patient.getId());
 				return ld1.equals(ld2);
 			} else {
 				if (debugMode)
