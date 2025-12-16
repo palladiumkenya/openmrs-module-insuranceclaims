@@ -12,6 +12,8 @@ public interface InsuranceClaimDao extends BaseOpenmrsCriteriaDao<InsuranceClaim
 
     List<InsuranceClaim> getAllInsuranceClaimsByPatient(String patientId);
 
+    InsuranceClaim getLatestInsuranceClaimByPatient(Integer patientId);
+
     List<InsuranceClaim> getAllInsuranceClaimsByCashierBill(String billUuid);
 
     List<InsuranceClaim> getUnProcessedInsuranceClaims();

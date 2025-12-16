@@ -13,6 +13,8 @@ public interface InsuranceClaimService extends OpenmrsDataService<InsuranceClaim
 
     List<InsuranceClaim> getAllInsuranceClaimsByPatient(String patientId) throws APIException;
 
+    InsuranceClaim getLatestInsuranceClaimByPatient(Integer patientId);
+
     List<InsuranceClaim> getUnProcessedInsuranceClaims();
 
     List<InsuranceClaim> getAllInsuranceClaimsByCashierBill(String billUuid);

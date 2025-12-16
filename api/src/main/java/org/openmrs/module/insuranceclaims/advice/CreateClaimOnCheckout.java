@@ -1,6 +1,8 @@
 package org.openmrs.module.insuranceclaims.advice;
 
 import java.lang.reflect.Method;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +32,7 @@ import org.openmrs.api.OrderService;
 import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
+import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.InsuranceClaimConstants;
 import org.openmrs.module.insuranceclaims.api.service.request.ExternalApiRequest;
@@ -85,8 +88,8 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 						if(debugMode) System.out.println("Insurance Claims Module: This visit has NO payment mode of insurance");
 					}
 					
-					// check visit info and only process outpatient checkouts and only visits whose payment is marked as insurance
-					if (visit != null && visit.getStopDatetime() != null && outpatientVisitType != null && visit.getVisitType() == outpatientVisitType && isInsurancePaymentMode) {
+					// check visit info and only process outpatient checkouts and only visits whose payment is marked as insurance and the patient doesnt have another claim today
+					if (visit != null && visit.getStopDatetime() != null && outpatientVisitType != null && visit.getVisitType() == outpatientVisitType && isInsurancePaymentMode && !checkIfPatientHasAnotherClaimToday(visit.getPatient())) {
 						if(debugMode) System.out.println("Insurance Claims Module: Visit not processed yet. Now processing");
 
 						if(debugMode) System.out.println("Insurance Claims Module: Visit End Date: " + visit.getStopDatetime());
@@ -402,6 +405,43 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 				System.err.println("Insurance Claims Module: Error creating automated claim: " + ex.getMessage());
 			ex.printStackTrace();
 		}
+	}
+
+	/**
+	 * Checks if a given patient has another claim today
+	 * @param patient
+	 * @return
+	 */
+	private Boolean checkIfPatientHasAnotherClaimToday(Patient patient) {
+		Boolean ret = false;
+		try {
+			InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
+			InsuranceClaim latestInsuranceClaim = insuranceClaimService.getLatestInsuranceClaimByPatient(patient.getId());
+			if(latestInsuranceClaim != null) {
+				Date lastInsuranceDate = latestInsuranceClaim.getDateCreated();
+				Date dateToday = new Date();
+
+				LocalDate ld1 = lastInsuranceDate.toInstant()
+                     .atZone(ZoneId.systemDefault())
+                     .toLocalDate();
+
+				LocalDate ld2 = dateToday.toInstant()
+                     .atZone(ZoneId.systemDefault())
+                     .toLocalDate();
+
+				if (debugMode) System.out.println("Insurance Claims Module: This patient has another claim today. Patient ID: " + patient.getId());
+				return ld1.equals(ld2);
+			} else {
+				if (debugMode)
+					System.err.println("Insurance Claims Module: Found no past insurance claims for patient: " + patient.getId());
+				return(false);
+			}
+		} catch(Exception ex) {
+			if (debugMode)
+				System.err.println("Insurance Claims Module: Error checking for patient claims: " + ex.getMessage());
+			ex.printStackTrace();
+		}
+		return(ret);
 	}
 	
 	/**

@@ -35,16 +35,17 @@ public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> im
 	public List<InsuranceClaim> getAllInsuranceClaimsByPatient(Integer patientId) {
 		Criteria crit = createCriteria();
 		crit.createCriteria("patient")
-				.add(Restrictions.eq("patient", patientId));
+				.add(Restrictions.eq("patientId", patientId));
 		return findAllByCriteria(crit, false);
 	}
 
 	@Override
-	public List<InsuranceClaim> getAllInsuranceClaimsByPatient(String patientId) {
-		Criteria crit = createCriteria();
-		crit.createCriteria("patient")
-				.add(Restrictions.eq("patient", patientId));
-		return findAllByCriteria(crit, false);
+	public List<InsuranceClaim> getAllInsuranceClaimsByPatient(String patientUuid) {
+		Criteria criteria = createCriteria();
+		// criteria.add(Restrictions.eq("patient.uuid", patientUuid));
+		criteria.createCriteria("patient")
+				.add(Restrictions.eq("uuid", patientUuid));
+		return findAllByCriteria(criteria, false);
 	}
 
 	@Override
@@ -142,6 +143,18 @@ public class InsuranceClaimDaoImpl extends BaseOpenmrsDataDao<InsuranceClaim> im
 	public InsuranceClaim getInsuranceClaimByExternalId(String externalId) {
 		Criteria criteria = createCriteria();
 		criteria.add(Restrictions.eq("externalId", externalId));
+		return findByCriteria(criteria, false);
+	}
+
+	@Override
+	public InsuranceClaim getLatestInsuranceClaimByPatient(Integer patientId) {
+		Criteria criteria = createCriteria();
+		criteria.createCriteria("patient")
+				.add(Restrictions.eq("patientId", patientId));
+		// Add ordering by iclm_claim_id in descending order
+		criteria.addOrder(org.hibernate.criterion.Order.desc("id"));
+		criteria.setMaxResults(1);
+
 		return findByCriteria(criteria, false);
 	}
 }

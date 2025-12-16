@@ -140,4 +140,13 @@ public class InsuranceClaimServiceImpl extends BaseOpenmrsDataService<InsuranceC
         return claim;
     }
 
+    /**
+     * Gets the latest insurance claim of the given patient
+     */
+    @Transactional
+    @Override
+    public InsuranceClaim getLatestInsuranceClaimByPatient(Integer patientId) {
+        return this.insuranceClaimDao.getLatestInsuranceClaimByPatient(patientId);
+    }
+
 }
