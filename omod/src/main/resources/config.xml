@@ -267,4 +267,9 @@
         <defaultValue>test</defaultValue>
         <description>The PASSWORD for claims file attachments</description>
     </globalProperty>
+    <globalProperty>
+        <property>${project.parent.artifactId}.coverage.http.method</property>
+        <defaultValue>GET</defaultValue>
+        <description>HTTP method for external eligibility check API: GET or POST (default: GET)</description>
+    </globalProperty>
 </module>

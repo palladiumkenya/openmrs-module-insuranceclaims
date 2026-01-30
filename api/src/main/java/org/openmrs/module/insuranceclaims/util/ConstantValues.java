@@ -18,6 +18,8 @@ public final class ConstantValues {
     public static final String CLAIM_RESPONSE_URL = "kenyaemr.hie.claim.response.url";
     public static final String CLAIM_RESPONSE_SOURCE = "kenyaemr.hie.claim.response.source";
 
+    public static final String COVERAGE_HTTP_METHOD = "insuranceclaims.coverage.http.method";
+
     private ConstantValues() {
     }
 }
