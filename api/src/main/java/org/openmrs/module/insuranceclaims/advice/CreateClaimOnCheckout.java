@@ -12,18 +12,7 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
-import org.openmrs.Concept;
-import org.openmrs.Diagnosis;
-import org.openmrs.Encounter;
-import org.openmrs.EncounterType;
-import org.openmrs.Order;
-import org.openmrs.OrderType;
-import org.openmrs.Patient;
-import org.openmrs.Provider;
-import org.openmrs.Visit;
-import org.openmrs.VisitAttribute;
-import org.openmrs.VisitAttributeType;
-import org.openmrs.VisitType;
+import org.openmrs.*;
 import org.openmrs.api.DiagnosisService;
 import org.openmrs.api.EncounterService;
 import org.openmrs.api.OrderService;
@@ -107,20 +96,32 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 							EncounterService encounterService = Context.getEncounterService();
 							for(Encounter enc : encounters) {
 								List<Diagnosis> diagnoses = diagnosisService.getDiagnosesByEncounter(enc, false, false);
-								if(diagnoses != null && diagnoses.size() > 0) {
-									for(Diagnosis diagnosis : diagnoses) {
-										String diagName = "";
-										if (diagnosis.getDiagnosis().getCoded() != null) {
-											Concept concept = diagnosis.getDiagnosis().getCoded();
-											// Get the preferred name (locale-sensitive)
-											diagName = concept.getName().getName();
-											diagnosesInEncounter.add(concept.getUuid());
-										} else if (diagnosis.getDiagnosis().getNonCoded() != null) {
-											diagName = diagnosis.getDiagnosis().getNonCoded();
-										}
-										if(debugMode) System.out.println("Insurance Claims Module: Found diagnosis: " + diagName);
-									}
-									diagnosisFound = true;
+								Diagnosis finalDiagnosis =
+											diagnoses
+												.stream()
+												.filter(d -> d.getCertainty() == ConditionVerificationStatus.PROVISIONAL)
+												.findFirst()
+												.orElse(
+													diagnoses
+														.stream()
+														.filter(d -> d.getCertainty() == ConditionVerificationStatus.CONFIRMED)
+														.findFirst()
+														.orElse(null)
+												);								
+										
+										if(finalDiagnosis != null){											
+											String diagName = "";
+											if (finalDiagnosis.getDiagnosis().getCoded() != null) {
+												Concept concept = finalDiagnosis.getDiagnosis().getCoded();
+												// Get the preferred name (locale-sensitive)
+												diagName = concept.getName().getName();
+												diagnosesInEncounter.add(concept.getUuid());
+											} else if (finalDiagnosis.getDiagnosis().getNonCoded() != null) {
+												diagName = finalDiagnosis.getDiagnosis().getNonCoded();
+											}
+											if(debugMode) System.out.println("Insurance Claims Module: Found diagnosis: " + diagName);
+
+											diagnosisFound = true;																	
 									encounterUuid = enc.getUuid();
 									Provider provider = GeneralUtil.getProviderForEncounter(enc);
 									if(provider != null) {
@@ -130,7 +131,7 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 									break;
 								}
 							}
-							if(diagnosisFound == true) {
+							if(diagnosisFound) {
 								// We found a diagnosis
 								if(debugMode) System.out.println("Insurance Claims Module: This visit had a diagnosis. Prepare and send claim");
 
