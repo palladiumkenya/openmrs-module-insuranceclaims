@@ -11,10 +11,11 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.openmrs.annotation.Authorized;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.insuranceclaims.api.client.impl.ClaimRequestWrapper;
@@ -74,16 +75,13 @@ public class InsuranceClaimResourceController {
     @RequestMapping(value = "/claims", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<String> createClaim(@RequestBody NewClaimForm form, HttpServletRequest request,
-            HttpServletResponse response) throws ResponseException {
+                                              HttpServletResponse response) throws ResponseException {
         System.out.println("Insurance Claims: REST - New Claim");
 
         try {
             InsuranceClaim claim = claimFormService.createClaim(form);
 
             System.out.println("Insurance Module Debug: Provider 1: " + claim.getProvider());
-            // ResponseEntity<InsuranceClaim> requestResponse = new ResponseEntity<>(claim,
-            // HttpStatus.ACCEPTED);
-            // return requestResponse;
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.set("Content-Type", "application/json");
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -97,8 +95,6 @@ public class InsuranceClaimResourceController {
                 ex.printStackTrace();
             }
 
-            // return new ResponseEntity<String>(convertObjectToJson(claim),
-            // responseHeaders, HttpStatus.ACCEPTED);
             String responseBody = "{\n" + //
                     "    \"result\": \"SUCCESS\",\n" + //
                     "    \"message\": \"\"\n" + //
@@ -111,20 +107,16 @@ public class InsuranceClaimResourceController {
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.set("Content-Type", "application/json");
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            // return new ResponseEntity<String>(convertObjectToJson(claim),
-            // responseHeaders, HttpStatus.ACCEPTED);
             String responseBody = "{\"result\": \"FAILURE\",\\n" + //
                     " \"message\": \"" + ex.getMessage() + "\\n" + //
                     "}";
             return new ResponseEntity<String>(responseBody, responseHeaders, HttpStatus.BAD_REQUEST);
         }
-
-        // return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     /**
      * Convert an object to json
-     * 
+     *
      * @param obj
      * @return
      */
@@ -144,7 +136,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * Create a new Bill
-     * 
+     *
      * @param form
      * @param request
      * @param response
@@ -155,7 +147,7 @@ public class InsuranceClaimResourceController {
     @RequestMapping(value = "/bills", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Bill> createBill(@RequestBody NewClaimForm form, HttpServletRequest request,
-            HttpServletResponse response) throws ResponseException {
+                                           HttpServletResponse response) throws ResponseException {
         System.out.println("Insurance Claims: REST - New Bill");
         Bill bill = claimFormService.createBill(form);
 
@@ -165,7 +157,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * Get Claim by its UUID
-     * 
+     *
      * @param claimUuid
      * @param request
      * @param response
@@ -176,7 +168,7 @@ public class InsuranceClaimResourceController {
     @RequestMapping(value = "/claims", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity get(@RequestParam(value = "claimUuid") String claimUuid, HttpServletRequest request,
-            HttpServletResponse response) throws ResponseException {
+                              HttpServletResponse response) throws ResponseException {
         System.out.println("Insurance Claims: REST - Get Claim by UUID: " + claimUuid);
         InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
         ResponseEntity<InsuranceClaim> requestResponse = new ResponseEntity<>(claim, HttpStatus.ACCEPTED);
@@ -189,7 +181,7 @@ public class InsuranceClaimResourceController {
      * claim it will send it to external system, if claim was already submitted it
      * will get update object based on external
      * information.
-     * 
+     *
      * @param claimUuid uuid of claim that will be send to external server
      * @return InsuranceClaim with updated values or error message that occured
      *         during processing request
@@ -198,7 +190,7 @@ public class InsuranceClaimResourceController {
     @RequestMapping(value = "/claims/sendToExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity sendClaimToExternalId(@RequestParam(value = "claimUuid", required = true) String claimUuid,
-            HttpServletRequest request, HttpServletResponse response) {
+                                                HttpServletRequest request, HttpServletResponse response) {
         System.out.println("Insurance Claims: REST - Send Claim to external by UUID: " + claimUuid);
         InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
 
@@ -216,7 +208,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * Get a claim using its external code
-     * 
+     *
      * @param claimExternalCode
      * @param request
      * @param response
@@ -226,7 +218,7 @@ public class InsuranceClaimResourceController {
     @RequestMapping(value = "/claims/getFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity getClaimFromExternalId(@RequestParam(value = "claimExternalCode") String claimExternalCode,
-            HttpServletRequest request, HttpServletResponse response) {
+                                                 HttpServletRequest request, HttpServletResponse response) {
         System.out.println("Insurance Claims: REST - Get Claim from external by external code: " + claimExternalCode);
         ResponseEntity requestResponse;
         try {
@@ -240,7 +232,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * Get a policy given its policy number
-     * 
+     *
      * @param policyNumber
      * @param request
      * @param response
@@ -250,7 +242,7 @@ public class InsuranceClaimResourceController {
     @RequestMapping(value = "/getPolicyFromExternal", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity getPolicyFromExternal(@RequestParam(value = "policyNumber") String policyNumber,
-            HttpServletRequest request, HttpServletResponse response) {
+                                                HttpServletRequest request, HttpServletResponse response) {
         System.out.println("Insurance Claims: REST - Get Policy from external by policy number: " + policyNumber);
         ResponseEntity requestResponse;
         try {
@@ -268,7 +260,7 @@ public class InsuranceClaimResourceController {
      * to update this proper values related to this insurance claim (I.e. check if
      * was claim was valuated, check which claim
      * items were approved).
-     * 
+     *
      * @param claimUuid uuid claim which have to be updated witch external server
      *                  values
      * @return InsuranceClaim with updated values
@@ -277,7 +269,7 @@ public class InsuranceClaimResourceController {
     @RequestMapping(value = "/claims/updateClaim", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity updateClaim(@RequestParam(value = "claimUuid") String claimUuid, HttpServletRequest request,
-            HttpServletResponse response) {
+                                      HttpServletResponse response) {
         System.out.println(
                 "Insurance Claims: REST - Get claim update from external to check approval by UUID: " + claimUuid);
         InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
@@ -299,7 +291,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * Get All Claims
-     * 
+     *
      * @param claimUuid
      * @param request
      * @param response
@@ -319,7 +311,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * Get Claims by patient
-     * 
+     *
      * @param claimUuid
      * @param request
      * @param response
@@ -340,7 +332,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * Get Claims by Cashier Bill
-     * 
+     *
      * @param claimUuid
      * @param request
      * @param response
@@ -369,13 +361,11 @@ public class InsuranceClaimResourceController {
     @RequestMapping(value = "/CoverageEligibilityRequest", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<JSONArray> getCoverageEligibilityRequestPOST(@RequestBody String payload,
-            HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+                                                                       HttpServletRequest request, HttpServletResponse response) throws ResponseException {
 
         System.out.println("Insurance Claims: the CoverageEligibilityRequest is: " + payload);
         // Contact remote server -- TODO: we will return a payload later
         externalApiRequest.postCoverageEligibilityRequest(payload);
-
-        //
 
         JSONArray coreArray = new JSONArray();
         JSONObject insuranceObject = new JSONObject();
@@ -414,40 +404,61 @@ public class InsuranceClaimResourceController {
     }
 
     /**
-     * Get Eligibility
-     * 
-     * @param claimUuid
+     * Get Eligibility - Returns the direct HIE eligibility response
+     *
+     * @param patientUuid
+     * @param nationalId
      * @param request
      * @param response
-     * @return
+     * @return Direct HIE eligibility response as JSON object
      * @throws ResponseException
      */
     @CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
     @RequestMapping(value = "/CoverageEligibilityRequest", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    public ResponseEntity<JSONArray> getCoverageEligibilityRequestGET(
-            @RequestParam(value = "patientUuid",required = false) String patientUuid,
-            @RequestParam(value = "nationalId") String nationalId, HttpServletRequest request,
+    public ResponseEntity<Object> getCoverageEligibilityRequestGET(
+            @RequestParam(value = "patientUuid", required = false) String patientUuid,
+            @RequestParam(value = "nationalId") String nationalId,
+            HttpServletRequest request,
             HttpServletResponse response) throws ResponseException, IOException {
 
-        JSONArray coreArray = new JSONArray();
-        String eligibilityResponse = getCoverageStatus(nationalId);
-        JSONObject insuranceObject = new JSONObject();
-        insuranceObject.put("insurer", "SHAX001");
-        insuranceObject.put("inforce", true);
-        insuranceObject.put("start", "2024-01-01");
-        insuranceObject.put("end", "2024-12-31");
-        insuranceObject.put("eligibility_response", eligibilityResponse);
+        try {
+            System.out.println("Insurance Claims: Coverage Eligibility Request for nationalId: " + nationalId);
 
-        coreArray.add(insuranceObject);
+            String eligibilityResponse = getCoverageStatus(nationalId);
 
-        ResponseEntity<JSONArray> requestResponse = new ResponseEntity<>(coreArray, HttpStatus.ACCEPTED);
-        return requestResponse;
+            System.out.println("Insurance Claims: Eligibility response received successfully");
+
+            JSONParser parser = new JSONParser();
+            Object parsedResponse = parser.parse(eligibilityResponse);
+
+            return new ResponseEntity<>(parsedResponse, HttpStatus.OK);
+
+        } catch (org.json.simple.parser.ParseException ex) {
+            System.err.println("Insurance Claims: Error parsing eligibility response: " + ex.getMessage());
+            ex.printStackTrace();
+
+            JSONObject errorObject = new JSONObject();
+            errorObject.put("status", "error");
+            errorObject.put("message", "Failed to parse eligibility response: " + ex.getMessage());
+
+            return new ResponseEntity<>(errorObject, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        } catch (IOException ex) {
+            System.err.println("Insurance Claims: Error getting coverage eligibility: " + ex.getMessage());
+            ex.printStackTrace();
+
+            JSONObject errorObject = new JSONObject();
+            errorObject.put("active", false);
+            errorObject.put("message", ex.getMessage());
+
+            return new ResponseEntity<>(errorObject, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
      * End Point for getting benefit packages
-     * 
+     *
      * @return just proxy the response
      */
     @CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
@@ -497,7 +508,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * End Point for getting benefit sub packages
-     * 
+     *
      * @return just proxy the response
      */
     @CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
@@ -547,7 +558,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * End Point for getting interventions
-     * 
+     *
      * @return just proxy the response
      */
     @CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
@@ -597,7 +608,7 @@ public class InsuranceClaimResourceController {
 
     /**
      * Endpoint to Get Intervention codes by scheme (POST)
-     * 
+     *
      * @param request - The request JSON
      * @return
      */
@@ -660,98 +671,155 @@ public class InsuranceClaimResourceController {
                 .body(errorMsg);
     }
 
+    /**
+     * Get coverage status from external API
+     * HTTP method is configurable via global property: insuranceclaims.coverage.http.method
+     *
+     * @param nationalId - Patient's national ID
+     * @return Response from external coverage API
+     * @throws IOException if request fails
+     */
     public static String getCoverageStatus(String nationalId) throws IOException {
-		String token = GeneralUtil.getJWTAuthToken();
-		String coverageUrl = Context.getAdministrationService()
+        String token = GeneralUtil.getJWTAuthToken();
+        String coverageUrl = Context.getAdministrationService()
                 .getGlobalProperty("insuranceclaims.coverage.custom.url");
-		String decodedCoverageUrl= StringEscapeUtils.unescapeHtml4(coverageUrl);		
-        OkHttpClient client = new OkHttpClient().newBuilder()
-                .build();
-        Request request = new Request.Builder()
-                .url(decodedCoverageUrl + nationalId)
-                .addHeader("Referer", "")
-                .addHeader("Authorization", "Bearer " + token)
-                .build();
 
+        // Get HTTP method from global property (defaults to GET for backward compatibility)
+        String httpMethod = Context.getAdministrationService()
+                .getGlobalProperty(ConstantValues.COVERAGE_HTTP_METHOD, "GET");
+
+        if (coverageUrl == null || coverageUrl.trim().isEmpty()) {
+            throw new IOException("Coverage URL not configured. Please set 'insuranceclaims.coverage.custom.url' global property");
+        }
+
+        String decodedCoverageUrl = StringEscapeUtils.unescapeHtml4(coverageUrl);
+
+        if (token == null || token.trim().isEmpty()) {
+            throw new IOException("Failed to get JWT authentication token");
+        }
+
+        System.out.println("Insurance Claims: Using HTTP method: " + httpMethod + " for coverage check");
+
+        OkHttpClient client = new OkHttpClient().newBuilder().build();
+        Request.Builder requestBuilder = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + token)
+                .addHeader("Referer", "");
+
+        // Build request based on configured HTTP method
+        if ("POST".equalsIgnoreCase(httpMethod)) {
+            // POST request - use HIE's expected field names
+            JSONObject payload = new JSONObject();
+            payload.put("identificationType", "National ID");
+            payload.put("identificationNumber", nationalId);
+
+            okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/json");
+            okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, payload.toString());
+
+            System.out.println("Insurance Claims: POST request to: " + decodedCoverageUrl);
+            System.out.println("Insurance Claims: POST payload: " + payload.toString());
+
+            requestBuilder.url(decodedCoverageUrl)
+                    .method("POST", body)
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("x-source-msisdn", "");
+
+        } else {
+            // GET request - append nationalId to URL (original behavior for backward compatibility)
+            String urlWithParam = decodedCoverageUrl + nationalId;
+            System.out.println("Insurance Claims: GET request to: " + urlWithParam);
+
+            requestBuilder.url(urlWithParam).get();
+        }
+
+        Request request = requestBuilder.build();
         Response response = client.newCall(request).execute();
-        return response.body().string();
+
+        if (!response.isSuccessful()) {
+            String errorBody = response.body() != null ? response.body().string() : "No error details";
+            System.err.println("Insurance Claims: External API error: " + response.code() + " - " + errorBody);
+            throw new IOException("External API returned error: " + response.code() + " - " + errorBody);
+        }
+
+        String responseBody = response.body().string();
+        System.out.println("Insurance Claims: Successfully received coverage status response");
+        System.out.println("Insurance Claims: Response preview: " + (responseBody.length() > 200 ? responseBody.substring(0, 200) + "..." : responseBody));
+
+        return responseBody;
     }
 
-	@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
-	@RequestMapping(value = "/claim/update-status", method = RequestMethod.GET, produces = "application/json")
-	@ResponseBody
-	public ResponseEntity<String> updateClaimStatus(@RequestParam(value = "claimUuid") String claimUuid,
-													HttpServletRequest request, HttpServletResponse response) throws ResponseException {
-		System.out.println(
-			"Insurance Claims: REST - Get claim update from external to check approval by UUID: " + claimUuid);
-		InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
+    @CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
+    @RequestMapping(value = "/claim/update-status", method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<String> updateClaimStatus(@RequestParam(value = "claimUuid") String claimUuid,
+                                                    HttpServletRequest request, HttpServletResponse response) throws ResponseException {
+        System.out.println(
+                "Insurance Claims: REST - Get claim update from external to check approval by UUID: " + claimUuid);
+        InsuranceClaim claim = insuranceClaimService.getByUuid(claimUuid);
 
-		if (claim.getExternalId() == null) {
-			System.out.println(
-				"Insurance Claims: REST -Cannot get ExternalId by UUID: " + claimUuid);
-			return ResponseEntity.badRequest().body(CLAIM_NOT_SENT_MESSAGE);
-		} else {
-			String externalId = claim.getExternalId();
-			System.out.println("Insurance Claims: REST - Update Claim Status by external uuid: " + externalId);
-			try {
-				Context.openSession();
-				Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
-				System.out.println("Insurance Claims: Session opened and privilege added for externalId: " + externalId);
+        if (claim.getExternalId() == null) {
+            System.out.println(
+                    "Insurance Claims: REST -Cannot get ExternalId by UUID: " + claimUuid);
+            return ResponseEntity.badRequest().body(CLAIM_NOT_SENT_MESSAGE);
+        } else {
+            String externalId = claim.getExternalId();
+            System.out.println("Insurance Claims: REST - Update Claim Status by external uuid: " + externalId);
+            try {
+                Context.openSession();
+                Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
+                System.out.println("Insurance Claims: Session opened and privilege added for externalId: " + externalId);
 
-				String callbackUrl = Context.getAdministrationService()
-					.getGlobalProperty(ConstantValues.HIE_CALLBACK_URL);
+                String callbackUrl = Context.getAdministrationService()
+                        .getGlobalProperty(ConstantValues.HIE_CALLBACK_URL);
 
+                String claimResponseUrl = Context.getAdministrationService()
+                        .getGlobalProperty(ConstantValues.CLAIM_RESPONSE_URL);
 
-				String claimResponseUrl = Context.getAdministrationService()
-					.getGlobalProperty(ConstantValues.CLAIM_RESPONSE_URL);
+                String claimResponseSource = Context.getAdministrationService()
+                        .getGlobalProperty(ConstantValues.CLAIM_RESPONSE_SOURCE);
 
-				String claimResponseSource = Context.getAdministrationService()
-					.getGlobalProperty(ConstantValues.CLAIM_RESPONSE_SOURCE);
+                boolean isHieEnabled = "hie".equalsIgnoreCase(claimResponseSource);
+                String accessToken = null;
+                try {
+                    accessToken = GeneralUtil.getILMediatorAuthToken();
+                } catch (IOException e) {
+                    System.out.println("Insurance Claims: Error getting JWT Auth Token: " + e.getMessage());
+                    return null;
+                }
+                ClaimTransactionStatus status = claimTransactionStatusService.getLatestStatusById(externalId, isHieEnabled, accessToken, claimResponseUrl, callbackUrl);
+                if (status == null) {
+                    System.out.println("Insurance Claims: Failed to retrieve claim status for externalId: " + externalId);
+                    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                            .body("Failed to retrieve claim status. Please try again later.");
+                }
 
-				boolean isHieEnabled = "hie".equalsIgnoreCase(claimResponseSource);
-				String accessToken = null;
-				try {
-					accessToken = GeneralUtil.getILMediatorAuthToken();
-				} catch (IOException e) {
-					System.out.println("Insurance Claims: Error getting JWT Auth Token: " + e.getMessage());
-					return null;
-				}
-				ClaimTransactionStatus status = claimTransactionStatusService.getLatestStatusById(externalId, isHieEnabled, accessToken, claimResponseUrl, callbackUrl);
-				if (status == null) {
-					System.out.println("Insurance Claims: Failed to retrieve claim status for externalId: " + externalId);
-					return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-						.body("Failed to retrieve claim status. Please try again later.");
-				}
-
-				try {
-					// Update the claim status in the local database
-					InsuranceClaim updateClaim = insuranceClaimService.updateClaimStatus(externalId, status.getStatus());
-					if (updateClaim == null) {
-						System.out.println("Insurance Claims: Failed to update claim status in the database");
-						return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-							.body("Failed to update claim status in the database");
-					}
-					System.out.println(
-						"Insurance Claims: REST - Successfully updated claim status to: " + updateClaim.getStatus());
-					ObjectMapper mapper = new ObjectMapper();
-					return ResponseEntity.ok(mapper.writeValueAsString(status));
-				} catch (Exception e) {
-					System.out.println("Insurance Claims: Error updating claim status: " + e.getMessage());
-					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-						.body("Error updating claim status: " + e.getMessage());
-				}
-			} catch (Exception ex) {
-
-				System.err.println("Insurance Claims: Update claim status: ERROR: " + ex.getMessage());
-			} finally {
-				try {
-					Context.closeSession();
-					System.out.println("Insurance Claims: Closed OpenMRS session for externalId: " + externalId);
-				} catch (Exception e) {
-					System.out.println("Insurance Claims: Error closing session for externalId: " + externalId + "error : " + e.getMessage());
-				}
-			}
-		}
+                try {
+                    // Update the claim status in the local database
+                    InsuranceClaim updateClaim = insuranceClaimService.updateClaimStatus(externalId, status.getStatus());
+                    if (updateClaim == null) {
+                        System.out.println("Insurance Claims: Failed to update claim status in the database");
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body("Failed to update claim status in the database");
+                    }
+                    System.out.println(
+                            "Insurance Claims: REST - Successfully updated claim status to: " + updateClaim.getStatus());
+                    ObjectMapper mapper = new ObjectMapper();
+                    return ResponseEntity.ok(mapper.writeValueAsString(status));
+                } catch (Exception e) {
+                    System.out.println("Insurance Claims: Error updating claim status: " + e.getMessage());
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Error updating claim status: " + e.getMessage());
+                }
+            } catch (Exception ex) {
+                System.err.println("Insurance Claims: Update claim status: ERROR: " + ex.getMessage());
+            } finally {
+                try {
+                    Context.closeSession();
+                    System.out.println("Insurance Claims: Closed OpenMRS session for externalId: " + externalId);
+                } catch (Exception e) {
+                    System.out.println("Insurance Claims: Error closing session for externalId: " + externalId + " error: " + e.getMessage());
+                }
+            }
+        }
         return null;
     }
 
