@@ -47,16 +47,16 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 
 	@Autowired
 	@Qualifier("insuranceclaims.ExternalApiRequest")
-    private ExternalApiRequest externalApiRequest;
+	private ExternalApiRequest externalApiRequest;
 
 	@Override
 	public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
 
 		debugMode = ClaimsUtils.isClaimsLoggingEnabled();
 		try {
-			if(GeneralUtil.getClaimAutomationEnabled() == true) {
+			if (GeneralUtil.getClaimAutomationEnabled() == true) {
 				if (method.getName().equals("saveVisit") && args.length > 0 && args[0] instanceof Visit) {
-					
+
 					Visit visit = (Visit) args[0];
 					VisitService visitService = Context.getVisitService();
 					VisitType outpatientVisitType = visitService.getVisitTypeByUuid(InsuranceClaimConstants.OUTPATIENT_VISIT_TYPE);
@@ -64,79 +64,92 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 
 					// Check if the payment method for the visit is insurance
 					Boolean isInsurancePaymentMode = false;
-					for(VisitAttribute visitAttribute : visit.getActiveAttributes()) {
-						if(visitAttribute.getAttributeType() == paymentMethod) {
-							if(visitAttribute.getValueReference() != null && visitAttribute.getValueReference().trim().equalsIgnoreCase(InsuranceClaimConstants.INSURANCE_PAYMENT_MODE)) {
-								if(debugMode) System.out.println("Insurance Claims Module: This visit has a payment mode of insurance");
+					for (VisitAttribute visitAttribute : visit.getActiveAttributes()) {
+						if (debugMode) System.out.println("Insurance Claims Module: Visit attributes");
+						if (visitAttribute.getAttributeType() == paymentMethod) {
+							if (debugMode)
+								System.out.println("Insurance Claims Module: Payment visit attribute type " + visitAttribute.getAttributeType().getName());
+							if (visitAttribute.getValueReference() != null && visitAttribute.getValueReference().trim().equalsIgnoreCase(InsuranceClaimConstants.INSURANCE_PAYMENT_MODE)) {
+
+								if (debugMode)
+									System.out.println("Insurance Claims Module: This visit has a payment mode of insurance :" + visitAttribute.getValueReference());
 								isInsurancePaymentMode = true;
 							}
 						}
 					}
 
-					if(!isInsurancePaymentMode) {
-						if(debugMode) System.out.println("Insurance Claims Module: This visit has NO payment mode of insurance");
+					if (!isInsurancePaymentMode) {
+						if (debugMode)
+							System.out.println("Insurance Claims Module: This visit has NO payment mode of insurance");
 					}
-					
+					//TODO:Include Payment Mode 
 					// check visit info and only process outpatient checkouts and only visits whose payment is marked as insurance and the patient doesnt have another claim today
-					if (visit != null && visit.getStopDatetime() != null && outpatientVisitType != null && visit.getVisitType() == outpatientVisitType && isInsurancePaymentMode && !checkIfPatientHasAnotherClaimToday(visit.getPatient())) {
-						if(debugMode) System.out.println("Insurance Claims Module: Visit not processed yet. Now processing");
+					if (visit != null && visit.getStopDatetime() != null && outpatientVisitType != null && visit.getVisitType() == outpatientVisitType && !checkIfPatientHasAnotherClaimToday(visit.getPatient())) {
+						if (debugMode)
+							System.out.println("Insurance Claims Module: Visit not processed yet. Now processing");
 
-						if(debugMode) System.out.println("Insurance Claims Module: Visit End Date: " + visit.getStopDatetime());
-						if(debugMode) System.out.println("Insurance Claims Module: Visit UUID: " + visit.getUuid());
-						if(debugMode) System.out.println("Insurance Claims Module: Visit Date Changed: " + visit.getDateChanged());
+						if (debugMode)
+							System.out.println("Insurance Claims Module: Visit End Date: " + visit.getStopDatetime());
+						if (debugMode) System.out.println("Insurance Claims Module: Visit UUID: " + visit.getUuid());
+						if (debugMode)
+							System.out.println("Insurance Claims Module: Visit Date Changed: " + visit.getDateChanged());
 						Patient patient = visit.getPatient();
-						
+
 						if (patient != null) {
-							if(debugMode) System.out.println("Insurance Claims Module: A patient was checked out. Checking for diagnosis: " + (externalApiRequest == null));
+							if (debugMode)
+								System.out.println("Insurance Claims Module: A patient was checked out. Checking for diagnosis: " + (externalApiRequest == null));
 							Boolean diagnosisFound = false;
 							String encounterUuid = "";
 							String providerUuid = "";
 							List<String> diagnosesInEncounter = new ArrayList<>();
-							
+
 							Set<Encounter> encounters = visit.getEncounters();
 							DiagnosisService diagnosisService = Context.getDiagnosisService();
 							OrderService orderService = Context.getOrderService();
 							EncounterService encounterService = Context.getEncounterService();
-							for(Encounter enc : encounters) {
+							for (Encounter enc : encounters) {
 								List<Diagnosis> diagnoses = diagnosisService.getDiagnosesByEncounter(enc, false, false);
 								Diagnosis finalDiagnosis =
+									diagnoses
+										.stream()
+										.filter(d -> d.getCertainty() == ConditionVerificationStatus.PROVISIONAL)
+										.findFirst()
+										.orElse(
 											diagnoses
 												.stream()
-												.filter(d -> d.getCertainty() == ConditionVerificationStatus.PROVISIONAL)
+												.filter(d -> d.getCertainty() == ConditionVerificationStatus.CONFIRMED)
 												.findFirst()
-												.orElse(
-													diagnoses
-														.stream()
-														.filter(d -> d.getCertainty() == ConditionVerificationStatus.CONFIRMED)
-														.findFirst()
-														.orElse(null)
-												);								
-										
-										if(finalDiagnosis != null){											
-											String diagName = "";
-											if (finalDiagnosis.getDiagnosis().getCoded() != null) {
-												Concept concept = finalDiagnosis.getDiagnosis().getCoded();
-												// Get the preferred name (locale-sensitive)
-												diagName = concept.getName().getName();
-												diagnosesInEncounter.add(concept.getUuid());
-											} else if (finalDiagnosis.getDiagnosis().getNonCoded() != null) {
-												diagName = finalDiagnosis.getDiagnosis().getNonCoded();
-											}
-											if(debugMode) System.out.println("Insurance Claims Module: Found diagnosis: " + diagName);
+												.orElse(null)
+										);
 
-											diagnosisFound = true;																	
+								if (finalDiagnosis != null) {
+									String diagName = "";
+									if (finalDiagnosis.getDiagnosis().getCoded() != null) {
+										Concept concept = finalDiagnosis.getDiagnosis().getCoded();
+										// Get the preferred name (locale-sensitive)
+										diagName = concept.getName().getName();
+										diagnosesInEncounter.add(concept.getUuid());
+									} else if (finalDiagnosis.getDiagnosis().getNonCoded() != null) {
+										diagName = finalDiagnosis.getDiagnosis().getNonCoded();
+									}
+									if (debugMode)
+										System.out.println("Insurance Claims Module: Found diagnosis: " + diagName);
+
+									diagnosisFound = true;
 									encounterUuid = enc.getUuid();
 									Provider provider = GeneralUtil.getProviderForEncounter(enc);
-									if(provider != null) {
+									if (provider != null) {
 										providerUuid = provider.getUuid();
-										if(debugMode) System.out.println("Insurance Claims Module: Got the provider uuid as: " + providerUuid);
+										if (debugMode)
+											System.out.println("Insurance Claims Module: Got the provider uuid as: " + providerUuid);
 									}
 									break;
 								}
 							}
-							if(diagnosisFound) {
+							if (diagnosisFound) {
 								// We found a diagnosis
-								if(debugMode) System.out.println("Insurance Claims Module: This visit had a diagnosis. Prepare and send claim");
+								if (debugMode)
+									System.out.println("Insurance Claims Module: This visit had a diagnosis. Prepare and send claim");
 
 								NewClaimForm newClaimForm = new NewClaimForm();
 								newClaimForm.setPatient(patient.getUuid());
@@ -147,8 +160,9 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 								newClaimForm.setEncounterUuid(encounterUuid);
 								newClaimForm.setUse("claim");
 								Integer currentLocationId = GeneralUtil.getCurrentLocationId();
-								if(currentLocationId != null) {
-									if(debugMode) System.out.println("Insurance Claims Module: Got the location id as: " + currentLocationId);
+								if (currentLocationId != null) {
+									if (debugMode)
+										System.out.println("Insurance Claims Module: Got the location id as: " + currentLocationId);
 									newClaimForm.setLocation(currentLocationId.toString());
 								}
 								newClaimForm.setProvider(providerUuid);
@@ -157,12 +171,12 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 								newClaimForm.setGuaranteeId("auto");
 								newClaimForm.setClaimCode("auto");
 								newClaimForm.setDiagnoses(diagnosesInEncounter);
-								
+
 								// Check for interventions using encounters and orders
 								Set<String> interventionsSet = new LinkedHashSet<>();
 								List<String> interventions = new ArrayList<>();
 
-								for(Encounter enc : encounters) {
+								for (Encounter enc : encounters) {
 									EncounterType encType = enc.getEncounterType();
 
 									// Consultation encounters
@@ -209,10 +223,10 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 									EncounterType mchChildImmunizationET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_MCH_CHILD_IMMUNIZATION);
 									EncounterType aefiET = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_AEFI_INVESTIGATION);
 
-									if(encType != null) {
+									if (encType != null) {
 										// Consultation encounter - check
 										// SHA-12-001: Consultation
-										if(encType == consultationEncounterType  ||
+										if (encType == consultationEncounterType ||
 											encType == hivConsultationET ||
 											encType == cwcConsultationET ||
 											encType == mchMotherConsultationET ||
@@ -290,27 +304,27 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 											interventionsSet.add("SHA-12-010");
 										}
 									}
-									
+
 									// EncounterType
 									Set<Order> orders = enc.getOrders();
-									for(Order order : orders) {
+									for (Order order : orders) {
 										OrderType orderType = order.getOrderType();
 										OrderType drugOrderType = orderService.getOrderTypeByUuid(InsuranceClaimConstants.ORDER_TYPE_DRUG);
 										OrderType testOrderType = orderService.getOrderTypeByUuid(InsuranceClaimConstants.ORDER_TYPE_TEST);
 										OrderType procedureOrderType = orderService.getOrderTypeByUuid(InsuranceClaimConstants.ORDER_TYPE_PROCEDURE);
 
 										// Lab Test Order
-										if(testOrderType != null && orderType == testOrderType) {
+										if (testOrderType != null && orderType == testOrderType) {
 											interventionsSet.add("SHA-12-002");
 										}
 
 										// Procedure Order e.g xray
-										if(procedureOrderType != null && orderType == procedureOrderType) {
+										if (procedureOrderType != null && orderType == procedureOrderType) {
 											interventionsSet.add("SHA-12-003");
 										}
 
 										// Drug order - Pharmacy
-										if(drugOrderType != null && orderType == drugOrderType) {
+										if (drugOrderType != null && orderType == drugOrderType) {
 											interventionsSet.add("SHA-12-004");
 										}
 									}
@@ -321,7 +335,7 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 									interventionsSet.add("SHA-12-005");
 								}
 
-								for(String inter: interventionsSet) {
+								for (String inter : interventionsSet) {
 									interventions.add(inter);
 								}
 
@@ -329,16 +343,17 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 
 								// Check if there are any pending cashier bills for this patient
 								IBillService billService = Context.getService(IBillService.class);
-								if(billService != null) {
+								if (billService != null) {
 									List<Bill> patientBills = billService.searchBill(patient);
-									if(patientBills != null && patientBills.size() > 0) {
-										if(debugMode) System.out.println("Insurance Claims Module: We found pending cashier bills for this patient");
+									if (patientBills != null && patientBills.size() > 0) {
+										if (debugMode)
+											System.out.println("Insurance Claims Module: We found pending cashier bills for this patient");
 										Map<String, ProvidedItemInForm> providedItems = new HashMap<>();
-										for(Bill bill : patientBills) {
+										for (Bill bill : patientBills) {
 											List<BillLineItem> lineItems = bill.getLineItems();
 											List<ItemDetails> items = new ArrayList<>();
-											if(lineItems != null && lineItems.size() > 0) {
-												for(BillLineItem billLineItem : lineItems) {
+											if (lineItems != null && lineItems.size() > 0) {
+												for (BillLineItem billLineItem : lineItems) {
 													ItemDetails item = new ItemDetails();
 													item.setUuid(billLineItem.getItemOrServiceConceptUuid());
 													item.setPrice(billLineItem.getPrice());
@@ -352,14 +367,17 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 											providedItemInForm.setJustification("PHC auto claim");
 											providedItems.put(bill.getUuid(), providedItemInForm);
 										}
-										
-										if(debugMode) System.out.println("Insurance Claims Module: Setting provided items for bills: " + providedItems.size());
+
+										if (debugMode)
+											System.out.println("Insurance Claims Module: Setting provided items for bills: " + providedItems.size());
 										newClaimForm.setProvidedItems(providedItems);
 									} else {
-										if(debugMode) System.err.println("Insurance Claims Module: NO pending cashier bills for this patient");
+										if (debugMode)
+											System.err.println("Insurance Claims Module: NO pending cashier bills for this patient");
 									}
 								} else {
-									if(debugMode) System.err.println("Insurance Claims Module: ERROR: Could not load bill service");
+									if (debugMode)
+										System.err.println("Insurance Claims Module: ERROR: Could not load bill service");
 								}
 
 								ClaimFormService claimFormService = Context.getService(ClaimFormService.class);
@@ -372,36 +390,43 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 								// Daemon.runInDaemonThread(runner, InsuranceClaimsActivator.getDaemonToken());
 
 								try {
-									if(debugMode) System.out.println("Insurance Claims Module: Now Attempting to send the claim");
-									if(externalApiRequest == null) {
-										if(debugMode) System.out.println("Insurance Claims Module: Manually create ExternalApiRequest");
+									if (debugMode)
+										System.out.println("Insurance Claims Module: Now Attempting to send the claim");
+									if (externalApiRequest == null) {
+										if (debugMode)
+											System.out.println("Insurance Claims Module: Manually create ExternalApiRequest");
 										externalApiRequest = Context.getRegisteredComponent("insuranceclaims.ExternalApiRequest", ExternalApiRequest.class);
-										if(externalApiRequest == null) {
-											if(debugMode) System.err.println("Insurance Claims Module: All attempts failed to load ExternalApiRequest");
+										if (externalApiRequest == null) {
+											if (debugMode)
+												System.err.println("Insurance Claims Module: All attempts failed to load ExternalApiRequest");
 										}
 									}
 									externalApiRequest.sendClaimToExternalApi(claim);
 								} catch (Exception ex) {
-									if(debugMode) System.err.println("Insurance Claims Module: Now with Claim Sending Error: " + ex.getMessage());
+									if (debugMode)
+										System.err.println("Insurance Claims Module: Now with Claim Sending Error: " + ex.getMessage());
 									ex.printStackTrace();
 								}
 
 							} else {
 								// We found a diagnosis
-								if(debugMode) System.out.println("Insurance Claims Module: This visit did NOT have a diagnosis");
+								if (debugMode)
+									System.out.println("Insurance Claims Module: This visit did NOT have a diagnosis");
 							}
 						} else {
-							if(debugMode) System.out.println("Insurance Claims Module: Error: No patient attached to the visit");
+							if (debugMode)
+								System.out.println("Insurance Claims Module: Error: No patient attached to the visit");
 						}
 					} else {
-						if(debugMode) System.out.println("Insurance Claims Module: Automation Error: Not a checkout. We ignore.");
+						if (debugMode)
+							System.out.println("Insurance Claims Module: Automation Error: Not a checkout. We ignore.");
 					}
 				}
 			} else {
-				if(debugMode) System.out.println("Insurance Claims Module: Automated claims is disabled. Not processing visit");
+				if (debugMode)
+					System.out.println("Insurance Claims Module: Automated claims is disabled. Not processing visit");
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			if (debugMode)
 				System.err.println("Insurance Claims Module: Error creating automated claim: " + ex.getMessage());
 			ex.printStackTrace();
@@ -410,6 +435,7 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 
 	/**
 	 * Checks if a given patient has another claim today
+	 *
 	 * @param patient
 	 * @return
 	 */
@@ -418,58 +444,59 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 		try {
 			InsuranceClaimService insuranceClaimService = Context.getService(InsuranceClaimService.class);
 			InsuranceClaim latestInsuranceClaim = insuranceClaimService.getLatestInsuranceClaimByPatient(patient.getId());
-			if(latestInsuranceClaim != null) {
+			if (latestInsuranceClaim != null) {
 				Date lastInsuranceDate = latestInsuranceClaim.getDateCreated();
 				Date dateToday = new Date();
 
 				LocalDate ld1 = lastInsuranceDate.toInstant()
-                     .atZone(ZoneId.systemDefault())
-                     .toLocalDate();
+					.atZone(ZoneId.systemDefault())
+					.toLocalDate();
 
 				LocalDate ld2 = dateToday.toInstant()
-                     .atZone(ZoneId.systemDefault())
-                     .toLocalDate();
+					.atZone(ZoneId.systemDefault())
+					.toLocalDate();
 
-				if (debugMode) System.out.println("Insurance Claims Module: This patient has another claim today. Patient ID: " + patient.getId());
+				if (debugMode)
+					System.out.println("Insurance Claims Module: This patient has another claim today. Patient ID: " + patient.getId());
 				return ld1.equals(ld2);
 			} else {
 				if (debugMode)
 					System.err.println("Insurance Claims Module: Found no past insurance claims for patient: " + patient.getId());
-				return(false);
+				return (false);
 			}
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			if (debugMode)
 				System.err.println("Insurance Claims Module: Error checking for patient claims: " + ex.getMessage());
 			ex.printStackTrace();
 		}
-		return(ret);
+		return (ret);
 	}
-	
+
 	/**
 	 * A thread to free up the frontend
 	 */
 	private class SendClaimRunnable implements Runnable {
-		
+
 		InsuranceClaim insuranceClaim = null;
-		
+
 		public SendClaimRunnable(@NotNull InsuranceClaim claim) {
 			this.insuranceClaim = claim;
 		}
-		
+
 		@Override
 		public void run() {
-			
+
 			try {
-				if(insuranceClaim != null) {
+				if (insuranceClaim != null) {
 					// Sending claim to external server
 					// Even if immediate sending fails, we can send later
 					try {
 						System.out.println("Insurance Claims Module: Thread Attempting to send the claim");
 						// ExternalApiRequest externalApiRequest = Context.getService(ExternalApiRequest.class);
-						if(externalApiRequest == null) {
+						if (externalApiRequest == null) {
 							System.out.println("Insurance Claims Module: Manually create ExternalApiRequest");
 							externalApiRequest = Context.getRegisteredComponent("insuranceclaims.ExternalApiRequest", ExternalApiRequest.class);
-							if(externalApiRequest == null) {
+							if (externalApiRequest == null) {
 								System.err.println("Insurance Claims Module: All attempts failed to load ExternalApiRequest");
 							}
 						}
@@ -479,12 +506,11 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 						ex.printStackTrace();
 					}
 				}
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				System.err.println("Insurance Claims Module: ERROR: " + ex.getMessage());
 				ex.printStackTrace();
 			}
 		}
 	}
-	
+
 }
