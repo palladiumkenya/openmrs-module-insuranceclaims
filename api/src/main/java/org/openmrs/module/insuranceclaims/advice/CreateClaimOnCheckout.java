@@ -20,7 +20,6 @@ import org.openmrs.api.EncounterService;
 import org.openmrs.api.OrderService;
 import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.fhir2.api.translators.impl.BaseEncounterTranslator;
 import org.openmrs.module.insuranceclaims.api.model.InsuranceClaim;
 import org.openmrs.module.insuranceclaims.api.service.InsuranceClaimService;
 import org.openmrs.module.insuranceclaims.api.service.fhir.util.GeneralUtil;
@@ -49,8 +48,6 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 	@Autowired
 	@Qualifier("insuranceclaims.ExternalApiRequest")
 	private ExternalApiRequest externalApiRequest;
-	@Autowired
-	private BaseEncounterTranslator baseEncounterTranslator;
 
 	@Override
 	public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
@@ -101,7 +98,7 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 						if (patient != null) {
 							if (debugMode)
 								System.out.println("Insurance Claims Module: A patient was checked out. Checking for diagnosis: " + (externalApiRequest == null));
-							Boolean diagnosisFound = false;
+							boolean diagnosisFound = false;
 							String encounterUuid = "";
 							String providerUuid = "";
 							Diagnosis finalDiagnosis = null;
@@ -111,50 +108,54 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 							DiagnosisService diagnosisService = Context.getDiagnosisService();
 							OrderService orderService = Context.getOrderService();
 							EncounterService encounterService = Context.getEncounterService();
+						
 							for (Encounter enc : encounters) {
 								EncounterType consultationEncType = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_CONSULTATION);
-								if (enc.getEncounterType() == consultationEncType) {
-									System.out.println("Insurance Claims Module: Found Clinical Encounter type");
-									List<Diagnosis> diagnoses = diagnosisService.getDiagnosesByEncounter(enc, false, false);
-									finalDiagnosis =
-										diagnoses
-											.stream()
-											.filter(d -> d.getCertainty() == ConditionVerificationStatus.PROVISIONAL)
-											.findFirst()
-											.orElse(
-												diagnoses
-													.stream()
-													.filter(d -> d.getCertainty() == ConditionVerificationStatus.CONFIRMED)
-													.findFirst()
-													.orElse(null)
-											);
-									System.out.println("Final Diagnosis ==>" + finalDiagnosis);
-									if (finalDiagnosis != null) {
-										String diagName = "";
-										if (finalDiagnosis.getDiagnosis().getCoded() != null) {
-											Concept concept = finalDiagnosis.getDiagnosis().getCoded();
-											// Get the preferred name (locale-sensitive)
-											diagName = concept.getName().getName();
-											diagnosesInEncounter.add(concept.getUuid());
-										} else if (finalDiagnosis.getDiagnosis().getNonCoded() != null) {
-											diagName = finalDiagnosis.getDiagnosis().getNonCoded();
-										}
-										if (debugMode)
-											System.out.println("Insurance Claims Module: Found diagnosis: " + diagName);
 
-										diagnosisFound = true;
-										encounterUuid = enc.getUuid();
-										Provider provider = GeneralUtil.getProviderForEncounter(enc);
-										if (provider != null) {
-											providerUuid = provider.getUuid();
-											if (debugMode)
-												System.out.println("Insurance Claims Module: Got the provider uuid as: " + providerUuid);
+								if (enc.getEncounterType().equals(consultationEncType)) {
+									if (debugMode) System.out.println("Insurance Claims Module: Found Clinical Encounter type");
+
+									List<Diagnosis> diagnoses = diagnosisService.getDiagnosesByEncounter(enc, false, false);
+									if (!diagnoses.isEmpty()) {
+										if (debugMode)
+											System.out.println("Insurance Claims Module: Diagnosis is not empty ==>" + diagnoses.size());
+										
+										for (Diagnosis diagnosis : diagnoses) {											
+
+												String diagName = "";
+												if (diagnosis.getDiagnosis() != null) {
+													if (diagnosis.getDiagnosis().getCoded() != null) {
+														Concept concept = diagnosis.getDiagnosis().getCoded();
+														diagName = concept.getName().getName();
+														diagnosesInEncounter.add(concept.getUuid());
+													} else if (diagnosis.getDiagnosis().getNonCoded() != null) {
+														diagName = diagnosis.getDiagnosis().getNonCoded();
+													}
+												}
+
+												if (debugMode)
+													System.out.println("Insurance Claims Module: Found diagnosis: " + diagName);
+												
+												encounterUuid = enc.getUuid();
+
+												Provider provider = GeneralUtil.getProviderForEncounter(enc);
+												if (provider != null) {
+													providerUuid = provider.getUuid();
+													if (debugMode)
+														System.out.println("Insurance Claims Module: Got the provider uuid as: " + providerUuid);
+												}												
+										
 										}
+										System.out.println("Insurance Claims : Diagnosis found boolean : "+diagnosisFound);
+										diagnosisFound = true;	
 										break;
-									}									
+									}
 								}
 							}
-							System.out.println("Final Diagnosis ==>" + finalDiagnosis);
+
+							if (debugMode)
+								System.out.println("Insurance Claims Module: Got the diagnosisFound boolean as: " + diagnosisFound);
+
 							if (diagnosisFound) {
 								// We found a diagnosis
 								if (debugMode)
