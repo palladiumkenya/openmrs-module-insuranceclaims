@@ -108,50 +108,55 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 							DiagnosisService diagnosisService = Context.getDiagnosisService();
 							OrderService orderService = Context.getOrderService();
 							EncounterService encounterService = Context.getEncounterService();
-						
+
+							EncounterType consultationEncType =
+								encounterService.getEncounterTypeByUuid(
+									InsuranceClaimConstants.ENCOUNTER_TYPE_CONSULTATION);
+
 							for (Encounter enc : encounters) {
-								EncounterType consultationEncType = encounterService.getEncounterTypeByUuid(InsuranceClaimConstants.ENCOUNTER_TYPE_CONSULTATION);
 
 								if (enc.getEncounterType().equals(consultationEncType)) {
-									if (debugMode) System.out.println("Insurance Claims Module: Found Clinical Encounter type");
 
-									List<Diagnosis> diagnoses = diagnosisService.getDiagnosesByEncounter(enc, false, false);
+									if (debugMode)
+										System.out.println("Insurance Claims Module: Found Clinical Encounter type");
+
+									List<Diagnosis> diagnoses =
+										diagnosisService.getDiagnosesByEncounter(enc, false, false);
+									if (debugMode)
+										System.out.println("Insurance Claims Module: Diagnosis count ==> " + diagnoses.size());
+
 									if (!diagnoses.isEmpty()) {
+										Diagnosis diagnosis = pickDiagnosis(diagnoses);
 										if (debugMode)
-											System.out.println("Insurance Claims Module: Diagnosis is not empty ==>" + diagnoses.size());
-										
-										for (Diagnosis diagnosis : diagnoses) {											
+											System.out.println("Insurance Claims Module: Diagnosis found ==> ");
 
-												String diagName = "";
-												if (diagnosis.getDiagnosis() != null) {
-													if (diagnosis.getDiagnosis().getCoded() != null) {
-														Concept concept = diagnosis.getDiagnosis().getCoded();
-														diagName = concept.getName().getName();
-														diagnosesInEncounter.add(concept.getUuid());
-													} else if (diagnosis.getDiagnosis().getNonCoded() != null) {
-														diagName = diagnosis.getDiagnosis().getNonCoded();
-													}
-												}
+										String diagName = "";
 
-												if (debugMode)
-													System.out.println("Insurance Claims Module: Found diagnosis: " + diagName);
-												
-												encounterUuid = enc.getUuid();
-
-												Provider provider = GeneralUtil.getProviderForEncounter(enc);
-												if (provider != null) {
-													providerUuid = provider.getUuid();
-													if (debugMode)
-														System.out.println("Insurance Claims Module: Got the provider uuid as: " + providerUuid);
-												}												
-										
+										if (diagnosis.getDiagnosis().getCoded() != null) {
+											Concept concept = diagnosis.getDiagnosis().getCoded();
+											diagName = concept.getName().getName();
+											diagnosesInEncounter.add(concept.getUuid());
+										} else if (diagnosis.getDiagnosis().getNonCoded() != null) {
+											diagName = diagnosis.getDiagnosis().getNonCoded();
 										}
-										System.out.println("Insurance Claims : Diagnosis found boolean : "+diagnosisFound);
-										diagnosisFound = true;	
-										break;
+
+										if (debugMode)
+											System.out.println("Insurance Claims Module: Diagnosis name: " + diagName);
+
+										diagnosisFound = true;
+										encounterUuid = enc.getUuid();
+
+										Provider provider = GeneralUtil.getProviderForEncounter(enc);
+										if (provider != null) {
+											providerUuid = provider.getUuid();
+											if (debugMode)
+												System.out.println("Insurance Claims Module: Got provider uuid: " + providerUuid);
+										}
+										break; // ✅ stops BOTH loops
 									}
 								}
 							}
+
 
 							if (debugMode)
 								System.out.println("Insurance Claims Module: Got the diagnosisFound boolean as: " + diagnosisFound);
@@ -522,5 +527,42 @@ public class CreateClaimOnCheckout implements AfterReturningAdvice {
 			}
 		}
 	}
+
+	/**
+	 * A helper method to pick final diagnosis if it exists and impression if final diagnosis if main diagnosis is not available
+	 */
+	private Diagnosis pickDiagnosis(List<Diagnosis> diagnoses) {
+
+		if (diagnoses == null || diagnoses.isEmpty()) {
+			return null;
+		}
+		if (debugMode)
+			System.out.println("Insurance Claims Module: Helper method picking diagnosis ==> " + diagnoses.size());
+		Diagnosis confirmedDiagnosis = null;
+
+		for (Diagnosis diagnosis : diagnoses) {
+
+			if (diagnosis.getDiagnosis() == null || diagnosis.getCertainty() == null) {
+				continue;
+			}
+
+			if (ConditionVerificationStatus.PROVISIONAL
+				.equals(diagnosis.getCertainty())) {
+				if (debugMode)
+					System.out.println("Insurance Claims Module: Final Diagnosis ==> ");
+				return diagnosis; // highest priority
+			}
+
+			if (ConditionVerificationStatus.CONFIRMED
+				.equals(diagnosis.getCertainty())) {
+				if (debugMode)
+					System.out.println("Insurance Claims Module: Impression Diagnosis ==> ");
+				confirmedDiagnosis = diagnosis; // keep as fallback
+			}
+		}
+
+		return confirmedDiagnosis;
+	}
+
 
 }
